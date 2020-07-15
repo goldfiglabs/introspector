@@ -1,0 +1,73 @@
+version: 1
+resources:
+  - provider_type: User
+    service: iam
+    category: Principal
+    name: UserName
+    uri:
+      uri: Arn
+    attributes:
+      provider:
+        [
+          Path,
+          UserName,
+          UserId,
+          Arn,
+          CreateDate,
+          PasswordLastUsed,
+          PermissionsBoundary,
+          Tags,
+          AccessKeyMetadata,
+          MFADevices,
+          SSHPublicKeys,
+          ServiceSpecificCredentials,
+        ]
+      custom:
+        Metadata:
+          Tags:
+            path: Tags
+            transform: aws_tags
+    relations:
+      - path: PolicyList
+        relation: manages
+        invert: true
+        uri:
+          resource_name:
+            value: inline-policy
+          arn:
+            parent_path: Arn
+          policy_name:
+            path: PolicyName
+      - path: AttachedPolicies
+        relation: manages
+        invert: true
+        uri:
+          uri:
+            path: PolicyArn
+        attributes:
+          PolicyName:
+            path: PolicyName
+      - path: Groups
+        relation: contains
+        invert: true
+        uri:
+          uri:
+            path: Arn
+      - path: Certificates
+        relation: owns
+        uri:
+          parent_uri:
+            parent_path: Arn
+          certificate_id:
+            path: CertificateId
+subresources:
+  - type: signing-certificate
+    key: Certificates
+    parent:
+      user_arn:
+        path: Arn
+  - type: inline-policy
+    key: PolicyList
+    parent:
+      arn:
+        path: Arn

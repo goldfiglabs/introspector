@@ -1,0 +1,9 @@
+version: 1
+resources:
+  - provider_type: InlinePolicy
+    service: iam
+    name: PolicyName
+    uri:
+      policy_name: PolicyName
+    attributes:
+      provider: [PolicyName, PolicyDocument]

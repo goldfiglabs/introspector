@@ -1,0 +1,20 @@
+version: 1
+resources:
+  - provider_type: Listener
+    service: elb
+    name: Listener.LoadBalancerPort
+    uri:
+      listener_id: Listener.LoadBalancerPort
+    attributes:
+      provider:
+        [
+          Listener:
+            [
+              Protocol,
+              LoadBalancerPort,
+              InstanceProtocol,
+              InstancePort,
+              SSLCertificateId,
+            ],
+          PolicyNames,
+        ]

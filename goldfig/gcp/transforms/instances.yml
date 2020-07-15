@@ -1,0 +1,87 @@
+version: 1
+resources:
+  - category: VMInstance
+    provider_type: instance
+    service: compute
+    name: name
+    uri:
+      uri: selfLink
+    attributes:
+      provider:
+        [
+          canIpForward,
+          cpuPlatform,
+          creationTimestamp,
+          deletionProtection,
+          description,
+          disks,
+          displayDevice,
+          guestAccelerators,
+          hostname,
+          kind,
+          labelFingerprint,
+          labels,
+          machineType,
+          metadata,
+          minCpuPlatform,
+          name,
+          networkInterfaces,
+          reservationAffinity,
+          scheduling,
+          selfLink,
+          serviceAccounts,
+          shieldedInstanceConfig,
+          shieldedInstanceIntegrityPolicy,
+          startRestricted,
+          status,
+          statusMessage,
+          tags,
+          zone,
+        ]
+      custom:
+        Metadata:
+          Tags:
+            dict:
+              - path: labels
+              - path: metadata.items
+                transform: gcp_metadata
+            default: {}
+          Zone:
+            path: zone
+            transform: gcp_zone
+          Region:
+            path: zone
+            transform: gcp_region
+    relations:
+      - path: disks
+        relation: attached
+        uri:
+          uri:
+            path: source
+        attributes:
+          autoDelete:
+            path: autoDelete
+          boot:
+            path: boot
+          deviceName:
+            path: deviceName
+          index:
+            path: index
+          interface:
+            path: interface
+          mode:
+            path: mode
+          type:
+            path: type
+      - path: serviceAccounts
+        relation: acts-as
+        uri:
+          principal_id:
+            path: email
+          principal_type:
+            value: serviceAccount
+          resource_name:
+            value: scoped_principal
+        attributes:
+          scopes:
+            path: scopes

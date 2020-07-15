@@ -1,0 +1,48 @@
+version: 1
+resources:
+  - category: StorageBucket
+    service: storage
+    provider_type: bucket
+    name: name
+    uri:
+      uri: selfLink
+    attributes:
+      provider:
+        [
+          acl,
+          billing,
+          cors,
+          defaultEventBasedHold,
+          defaultObjectAcl,
+          encryption,
+          iamConfiguration,
+          kind,
+          labels,
+          lifecycle,
+          location,
+          locationType,
+          logging,
+          metageneration,
+          name,
+          owner,
+          projectNumber,
+          retentionPolicy,
+          selfLink,
+          storageClass,
+          timeCreated,
+          updated,
+          versioning,
+          website,
+        ]
+      custom:
+        Metadata:
+          Region:
+            path: location
+          Owner:
+            path: owner
+          Created:
+            path: timeCreated
+          Tags:
+            path: labels
+            default: {}
+

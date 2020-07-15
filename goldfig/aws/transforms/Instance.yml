@@ -1,0 +1,100 @@
+version: 1
+resources:
+  - category: VMInstance
+    service: ec2
+    provider_type: Instance
+    name: InstanceId
+    resource_name: instance
+    uri:
+      id: InstanceId
+      zone: Placement.AvailabilityZone
+    attributes:
+      provider:
+        [
+          AmiLaunchIndex,
+          ImageId,
+          InstanceId,
+          InstanceType,
+          KernelId,
+          KeyName,
+          LaunchTime,
+          Monitoring,
+          Placement,
+          Platform,
+          PrivateDnsName,
+          PrivateIpAddress,
+          ProductCodes,
+          PublicDnsName,
+          PublicIpAddress,
+          RamdiskId,
+          State,
+          StateTransitionReason,
+          SubnetId,
+          VpcId,
+          Architecture,
+          ClientToken,
+          EbsOptimized,
+          EnaSupport,
+          Hypervisor,
+          IamInstanceProfile,
+          InstanceLifecycle,
+          OutpostArn,
+          RootDeviceName,
+          RootDeviceType,
+          SourceDestCheck,
+          SpotInstanceRequestId,
+          SriovNetSupport,
+          StateReason,
+          Tags,
+          VirtualizationType,
+          CpuOptions,
+          CapacityReservationId,
+          CapacityReservationSpecification,
+          HibernationOptions,
+          Licenses,
+          MetadataOptions,
+        ]
+      custom:
+        Metadata:
+          Zone:
+            path: Placement.AvailabilityZone
+          Region:
+            path: Placement.AvailabilityZone
+            transform: aws_zone_to_region
+          Tags:
+            path: Tags
+            transform: aws_tags
+    relations:
+      - path: BlockDeviceMappings
+        relation: attached
+        uri:
+          resource_name:
+            value: volume
+          id:
+            path: Ebs.VolumeId
+        attributes:
+          DeleteOnTermiation:
+            path: Ebs.DeleteOnTermination
+          AttachTime:
+            path: Ebs.AttachTime
+          VolumeId:
+            path: Ebs.VolumeId
+          Status:
+            path: Ebs.Status
+          DeviceName:
+            path: DeviceName
+      - path: ImageId
+        relation: imaged
+        uri:
+          resource_name:
+            value: image
+          id:
+            path: ""
+          zone:
+            parent_path: Placement.AvailabilityZone
+      - path: IamInstanceProfile
+        relation: acts-as
+        #invert: true
+        uri:
+          uri:
+            path: Arn

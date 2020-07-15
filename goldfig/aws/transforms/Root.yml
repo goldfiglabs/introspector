@@ -1,0 +1,11 @@
+version: 1
+resources:
+  - name: Id
+    service: organizations
+    provider_type: Root
+    uri:
+      uri: Arn
+    category: Division
+    attributes:
+      provider:
+        [Id, Name, PolicyTypes, Arn, ServiceControlPolicies, TagPolicies]

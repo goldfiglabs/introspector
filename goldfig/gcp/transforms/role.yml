@@ -1,0 +1,11 @@
+version: 1
+resources:
+  - provider_type: role
+    service: iam
+    category: Role
+    name: name
+    uri:
+      uri: name
+    attributes:
+      provider:
+        [deleted, title, includedPermissions, description, etag, stage, name]

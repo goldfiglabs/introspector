@@ -1,0 +1,35 @@
+version: 1
+resources:
+  - category: LoadBalancer
+    service: compute
+    provider_type: targetHttpsProxy
+    name: name
+    uri:
+      uri: selfLink
+    attributes:
+      provider:
+        [
+          authentication,
+          authorization,
+          creationTimestamp,
+          description,
+          id,
+          kind,
+          name,
+          quicOverride,
+          region,
+          selfLink,
+        ]
+    relations:
+      - path: sslCertificates
+        relation: serves
+        uri:
+          uri:
+            path: ""
+# TODO:
+# - name: sslPolicy
+#   path: sslPolicy
+#   type: provider
+# - name: urlMap
+#   path: urlMap
+#   type: provider

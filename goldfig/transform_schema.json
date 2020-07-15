@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "attr_spec": {
+      "type": "object",
+      "properties": {
+        "value": {},
+        "path": {
+          "type": "string"
+        },
+        "context": {
+          "type": "string"
+        },
+        "transform": {
+          "type": "string"
+        },
+        "default": {},
+        "dict": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/attr_spec"
+          }
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "enum": [1]
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "provider_type", "uri", "service"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "VMInstance",
+              "Disk",
+              "StorageBucket",
+              "Image",
+              "LoadBalancer",
+              "Certificate",
+              "Endpoint",
+              "Principal",
+              "Group",
+              "Policy",
+              "Role",
+              "Organization",
+              "Division"
+            ]
+          },
+          "provider_type": {
+            "type": "string"
+          },
+          "resource_name": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "attributes": {
+            "type": "object",
+            "properties": {
+              "provider": {
+                "type": "array",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              "custom": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "Metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/definitions/attr_spec"
+                    }
+                  },
+                  "_": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "$ref": "#/definitions/attr_spec"
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["relation", "path", "uri"],
+                  "properties": {
+                    "invert": {
+                      "type": "boolean"
+                    },
+                    "relation": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "uri": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "parent_path": {
+                            "type": "string"
+                          },
+                          "value": {}
+                        },
+                        "minProperties": 1,
+                        "maxProperties": 1
+                      }
+                    },
+                    "attributes": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["path"],
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["fn", "path"],
+                  "properties": {
+                    "fn": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "subresources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "key"],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path"],
+              "properties": {
+                "path": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false,
+  "required": ["version"]
+}

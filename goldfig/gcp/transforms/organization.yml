@@ -1,0 +1,17 @@
+version: 1
+resources:
+  - provider_type: organization
+    service: cloudresourcemanager
+    category: Organization
+    name: displayName
+    uri:
+      leaf: name
+    resource_name: organization
+    attributes:
+      provider: [creationTime, owner, lifecycleState, name, displayName]
+    relations:
+      - path: bindings
+        fn: gcp_binding
+subresources:
+  - type: role
+    key: roles

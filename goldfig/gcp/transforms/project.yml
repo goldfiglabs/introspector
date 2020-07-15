@@ -1,0 +1,34 @@
+version: 1
+resources:
+  - category: Division
+    service: cloudresourcemanager
+    provider_type: project
+    resource_name: project
+    name: projectId
+    uri:
+      leaf: projectId
+    attributes:
+      provider:
+        [
+          lifecycleState,
+          projectNumber,
+          parent,
+          createTime,
+          labels,
+          name,
+          projectId,
+        ]
+      custom:
+        Metadata:
+          Tags:
+            path: labels
+            default: {}
+    # TODO: scope, classification (i.e. project not folder)
+    relations:
+      - path: bindings
+        fn: gcp_binding
+subresources:
+  - type: role
+    key: roles
+  - type: service-account
+    key: service_accounts

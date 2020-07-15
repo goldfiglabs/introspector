@@ -1,0 +1,10 @@
+version: 1
+resources:
+  - category: Certificate
+    service: iam
+    provider_type: SigningCertificate
+    name: CertificateId
+    uri:
+      certificate_id: CertificateId
+    attributes:
+      provider: [UserName, CertificateId, CertificateBody, Status, UploadDate]

@@ -1,0 +1,48 @@
+version: 1
+resources:
+- provider_type: forwardingRule
+  service: compute
+  name: name
+  uri:
+    uri: selfLink
+  attributes:
+    provider: [
+      IPAddress,
+      IPProtocol,
+      allPorts,
+      allowGlobalAccess,
+      backendService,
+      creationTimestamp,
+      description,
+      fingerprint,
+      id,
+      ipVersion,
+      isMirroringCollector,
+      kind,
+      labelFingerprint,
+      labels,
+      loadBalancingScheme,
+      metadataFilters,
+      name,
+      network,
+      networkTier,
+      portRange,
+      ports,
+      region,
+      selfLink,
+      serviceLabel,
+      serviceName,
+      subnetwork,
+      target
+    ]
+    custom:
+      Metadata:
+        Tags:
+          path: labels
+          default: {}
+  relations:
+  - path: target
+    relation: forwards-to
+    uri:
+      uri:
+        path: ''

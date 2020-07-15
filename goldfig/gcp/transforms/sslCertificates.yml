@@ -1,0 +1,26 @@
+version: 1
+resources:
+  - provider_type: sslCertificate
+    service: compute
+    category: Certificate
+    name: name
+    uri:
+      uri: selfLink
+    attributes:
+      provider:
+        [
+          certificate,
+          creationTimestamp,
+          description,
+          expireTime,
+          id,
+          kind,
+          managed,
+          name,
+          privateKey,
+          region,
+          selfLink,
+          selfManaged,
+          subjectAlternativeNames,
+          type,
+        ]

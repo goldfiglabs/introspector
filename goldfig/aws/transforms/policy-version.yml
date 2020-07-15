@@ -1,0 +1,9 @@
+version: 1
+resources:
+  - provider_type: PolicyVersion
+    service: iam
+    name: VersionId
+    uri:
+      version_id: VersionId
+    attributes:
+      provider: [Document, VersionId, IsDefaultVersion, CreateDate]

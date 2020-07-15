@@ -1,0 +1,14 @@
+version: 1
+resources:
+  - category: Division
+    provider_type: folder
+    service: cloudresourcemanager
+    resource_name: folder
+    name: name
+    uri:
+      leaf: name
+    attributes:
+      provider: [parent, createTime, lifecycleState, name, displayName]
+    relations:
+      - path: bindings
+        fn: gcp_binding
