@@ -68,7 +68,7 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 1. Clone repo:
 
    ```
-   git clone https://github.com/goldfig/goldfig.git
+   git clone https://github.com/goldfiglabs/goldfig.git
    ```
 
 1. Bootstrap in to correct environment. Also be sure to rerun these any time your pull down updates.

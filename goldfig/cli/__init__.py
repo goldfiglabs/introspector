@@ -55,7 +55,7 @@ def _setup_logging():
     logging.basicConfig(level=logging.WARN, format=log_format)
 
 
-def run_cli(args: List[str]):
+def run_cli():
   _setup_logging()
   try:
     cli()
