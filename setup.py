@@ -14,6 +14,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/goldfiglabs/goldfig",
     packages=setuptools.find_packages(),
+    package_data={"": ["views/*.sql", "transforms/*.yml"]},
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MPL 2.0 License",

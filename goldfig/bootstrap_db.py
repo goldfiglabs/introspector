@@ -44,7 +44,7 @@ SCHEMA_VERSION = 1
 
 def _view_files() -> Tuple[str, List[str]]:
   path = os.path.realpath(
-      os.path.join(os.path.dirname(__file__), '..', 'views'))
+      os.path.join(os.path.dirname(__file__), 'views'))
   files = [
       f for f in os.listdir(path)
       if os.path.isfile(os.path.join(path, f)) and f[-4:] == '.sql'
