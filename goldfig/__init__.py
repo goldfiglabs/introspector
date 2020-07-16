@@ -1,11 +1,14 @@
 import concurrent.futures as f
 import logging
+import os
 import traceback
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
 from goldfig.models import ImportJob, RawImport
+
+GOLDFIG_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 _log = logging.getLogger(__name__)
 
