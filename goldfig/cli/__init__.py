@@ -11,6 +11,7 @@ from goldfig.cli.init import cmd as init
 from goldfig.cli.internal import cmd as internal
 from goldfig.cli.meta import cmd as meta
 from goldfig.cli.query import cmd as query
+from goldfig.cli.serve import cmd as serve
 from goldfig.cli.status import cmd as status
 from goldfig.cli.tags import cmd as tags
 from goldfig.error import GFError
@@ -30,6 +31,7 @@ cli.add_command(tags)
 cli.add_command(query)
 cli.add_command(cis)
 cli.add_command(account)
+cli.add_command(serve)
 
 DEBUG = True
 

@@ -14,102 +14,79 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 
 ## Pre-requisites
 
-- Tested on MacOS High Sierra 10.13.6+, Ubuntu Linux 18.04
-- postgres (PostgreSQL) 12.3, pipenv, AWS, GCP command line interfaces
-
-* [pipenv](https://pypi.org/project/pipenv/)
-
-- [AWS command line interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) (Be sure to init and login)
+- Python 3.7
+- PostgreSQL 12.3
+- [AWS command line interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) 
 - [GCloud command line interface](https://cloud.google.com/sdk/docs/downloads-interactive)
 
-  - Mac:
+- Mac:
+  ```
+  brew update
+  brew doctor
+  brew install postgresql
+  brew services start postgresql
+  aws configure list
+  aws organizations describe-organization
+  gcloud login
+  ```
 
-    ```
-    brew update
-    brew doctor
-    brew install postgresql
-    brew services start postgresql
-    brew install pyenv
-    brew install pipenv
-    aws configure
-    gcloud login
-    ```
+- Linux:
+  ```
+  sudo apt-get update
+  sudo apt-get install postgresql
+  aws configure
+  gcloud login
+  ```
 
-  - Linux:
+- AWS EC2 Redhat:
+  ```
+  sudo yum install postgresql postgresql-server -y
+  sudo /usr/bin/postgresql-setup --initdb
+  sudo systemctl start postgresql
+  sudo systemctl enable postgresql
+  ```
 
-    ```
-    sudo apt-get update
-    sudo apt-get install postgresql
-    ```
+- Postgres login settings:
+ ```
+ cat >> /var/lib/pgsql/data/pg_hba.conf
+ host    all             goldfig             ::1/128                 password
+ systemctl restart postgresql.service
+ ```
 
-    Follow [pyenv github install](https://github.com/pyenv/pyenv#basic-github-checkout) instructions
+- Create database and user on your Postgres instance (e.g. using psql or equivalent):
 
-    ```
-    pip install pipenv
-    pyenv install 3.7.7
-    aws configure
-    gcloud login
-    ```
-
-  - AWS EC2 Redhat:
-
-    ```
-    sudo yum install postgresql postgresql-server -y
-    sudo /usr/bin/postgresql-setup --initdb
-    sudo systemctl start postgresql
-    sudo systemctl enable postgresql
-    sudo yum install @development -y
-    sudo yum install python38 -y
-    pip3 install --user pipenv
-    ```
-
+```
+create database goldfig;
+create user goldfig with encrypted password 'goldfig';
+create user goldfig_ro with encrypted password 'goldfig_ro';
+\c goldfig
+revoke create on schema public from public;
+grant all privileges on schema public to goldfig;
+grant select on all tables in schema public to goldfig_ro;
+alter default privileges for role goldfig in schema public grant select on tables to goldfig_ro;
+```
+ 
 ## Getting started
 
-1. Clone repo:
+1. With a Python 3.7 environment, pip install:
 
    ```
-   git clone https://github.com/goldfiglabs/goldfig.git
-   ```
-
-1. Bootstrap in to correct environment. Also be sure to rerun these any time your pull down updates.
-
-   ```
-   pipenv install
-   pipenv shell
-   ```
-
-1. Create database and user on your Postgres instance (e.g. using psql or equivalent):
-
-   ```
-   sudo -u postgres psql < db/install.sql
-   ```
-
-   For OSX:
-
-   ```
-   cat >> /var/lib/pgsql/data/pg_hba.conf
-   host    all             goldfig             ::1/128                 password
-   systemctl restart postgresql.service
+   pip install git+https://github.com/goldfiglabs/goldfig.git
    ```
 
 1. Initialize the CLI and Postgres schemas. Defaults to `postgres://localhost` with above credentials. Update connection strings in `bootstrap_db.py` if required.
 
    ```
-   ./gf init
+   gf init
    ```
-
-Check AWS settings:
-aws ec2 describe-iam-instance-profile-associations
-aws configure list
-aws organizations describe-organization
 
 ## Usage
 
 Import data from provider:
 
 ```
-./gf account aws import
-./gf account gcp import
+gf account aws import
+gf account gcp import
 
 ```
 
@@ -118,7 +95,7 @@ Note that currently this may take a couple minutes.
 At this stage the underlying data is ready for querying, analysis, or alerting. You can get a summary of what's been imported using:
 
 ```
-./gf status
+gf status
 ```
 
 ## Prepackaged Tools
@@ -126,26 +103,26 @@ At this stage the underlying data is ready for querying, analysis, or alerting. 
 Find all untagged resources:
 
 ```
-./gf tags find-untagged
+gf tags find-untagged
 ```
 
 Get a report on all tags used across every resource:
 
 ```
-./gf tags report
+gf tags report
 ```
 
 Run several queries demonstrating a sample of the [CIS](https://www.cisecurity.org/) 3-Tier Web Application Benchmark:
 Note that the `TAG_SPEC` below is used to identify infrastructure that is part of a specific tier. So it may look like `role=web,role=app` or `tier=frontend,tier=backend` or however you have tagged your resources.
 
 ```
-./gf cis --tags=<TAG_SPEC>
+gf cis --tags=<TAG_SPEC>
 ```
 
 Run an arbitrary SQL query against your data:
 
 ```
-./gf run "SELECT COUNT(*) FROM aws_ec2_instance"
+gf run "SELECT COUNT(*) FROM aws_ec2_instance"
 ```
 
 ## Example Queries
@@ -158,7 +135,7 @@ SELECT name,
   uri
 FROM resource
 WHERE category = 'StorageBucket'
-./gf run sample_queries/all_storage_buckets.sql
+gf run sample_queries/all_storage_buckets.sql
 ```
 
 Get all public IP addresses across all AWS instances:
@@ -167,7 +144,7 @@ Get all public IP addresses across all AWS instances:
 cat sample_queries/aws_ec2_instance_ips.sql
 SELECT instanceid, publicipaddress
 FROM aws_ec2_instance
-./gf run sample_queries/aws_ec2_instance_ips.sql
+gf run sample_queries/aws_ec2_instance_ips.sql
 ```
 
 Get every AWS storage bucket where payer is the bucket owner:
@@ -179,7 +156,7 @@ SELECT name,
   requestpayment->>'Payer' AS Payer
 FROM aws_s3_bucket
 WHERE requestpayment->>'Payer' = 'BucketOwner'
-./gf run sample_queries/aws_owner_pays_buckets.sql
+gf run sample_queries/aws_owner_pays_buckets.sql
 ```
 
 Get total size for all disks:
@@ -188,7 +165,7 @@ Get total size for all disks:
 cat sample_queries/gcp_total_disk_size.sql
 SELECT SUM(sizegb)
 FROM gcp_compute_disk
-./gf run sample_queries/gcp_total_disk_size.sql
+gf run sample_queries/gcp_total_disk_size.sql
 ```
 
 Get all GCP service accounts and their associated project
@@ -196,13 +173,13 @@ Get all GCP service accounts and their associated project
 ```
 cat sample_queries/gcp_serviceaccounts.sql
 select projectid, email from gcp_iam_serviceaccount
-./gf run sample_queries/gcp_serviceaccounts.sql
+gf run sample_queries/gcp_serviceaccounts.sql
 ```
 
 After running an import job multiple times, you can also query for resource that have been flagged as 'update' or 'delete':
 
 ```
-./gf run "SELECT * FROM resource_delta WHERE change_type = 'delete'"
+gf run "SELECT * FROM resource_delta WHERE change_type = 'delete'"
 ```
 
 ## FAQ
@@ -233,7 +210,7 @@ After running an import job multiple times, you can also query for resource that
 
 1. What's next on the Roadmap?
 
-   Increasing the breadth of services supported. Currently, only a few of the more common resources are properly mapped out, with relationships between them includes. We are hard at work adding support for more. If there's a particular resources of interest, please file an issue!
+   Increasing the breadth of services supported. Currently, only a few of the more common resources are properly mapped out, with relationships between them includes. We are hard at work adding support for more. If there's a particular resources of interest (or different services such as GitHub, GSuite, Segment), please file an issue!
 
 ## Schema Documentation
 
