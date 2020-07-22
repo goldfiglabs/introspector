@@ -1,0 +1,10 @@
+resources:
+  list:
+    - instances:
+        type: Reservations
+    - images:
+        args:
+          Filters:
+            - Name: is-public
+              Values:
+                - "False"

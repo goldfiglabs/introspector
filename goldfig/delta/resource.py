@@ -9,11 +9,11 @@ from goldfig.delta import json_diff
 from goldfig.error import GFInternal
 from goldfig.mapper import Mapper
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
-                               ResourceAttribute, ResourceDelta,
-                               ResourceAttributeDelta, ResourceRelation,
-                               ResourceRelationAttribute,
-                               ResourceRelationAttributeDelta,
-                               ResourceRelationDelta)
+                            ResourceAttribute, ResourceDelta,
+                            ResourceAttributeDelta, ResourceRelation,
+                            ResourceRelationAttribute,
+                            ResourceRelationAttributeDelta,
+                            ResourceRelationDelta)
 
 _log = logging.getLogger(__name__)
 
@@ -84,6 +84,7 @@ def map_relation_deletes(db: Session, import_job: ImportJob, path_prefix: str,
   deletes = db.query(ResourceRelation).filter(
       ~ResourceRelation.id.in_(found_relations), ).join(
           ResourceRelation.resource, aliased=True).filter(
+              Resource.provider_account_id == import_job.provider_account_id,
               or_(Resource.path.like(f'{path_prefix}$%'),
                   Resource.path == path_prefix))
   for deleted in deletes:

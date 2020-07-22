@@ -2,7 +2,8 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, Iterator, List, Optional, Tuple
+import yaml
 
 import botocore.exceptions
 from botocore.session import Session as Boto
@@ -29,7 +30,7 @@ class Cache(object):
     patch_dir = _THIS_DIR.parent.parent / 'patches' / 'aws' / str(patch_id)
     return cls(path=cls._DEFAULT_CACHE,
                update_on_miss=False,
-               patch_dir=patch_dir)
+               patch_dir=str(patch_dir))
 
   @classmethod
   def dummy(cls) -> 'Cache':
@@ -48,7 +49,7 @@ class Cache(object):
   def client(self, service: str, region: Optional[str]) -> 'ClientCache':
     patch = None
     if self._patch_dir is not None:
-      patch_path = self._patch_dir / f'{service}_{region}.json'
+      patch_path = Path(self._patch_dir) / f'{service}_{region}.json'
       if patch_path.exists():
         with open(str(patch_path), 'r') as f:
           patch = json.load(f)
@@ -124,7 +125,7 @@ class ClientProxy(object):
   def _should_import(self, key: str) -> bool:
     return True
 
-  def resource_names(self) -> Generator[str, None, None]:
+  def resource_names(self) -> Iterator[str]:
     return filter(self._should_import, dir(self._client))
 
   def _list_args(self, key: str) -> Dict:
@@ -280,6 +281,12 @@ class EC2ClientProxy(ClientProxy):
       'LocalGatewayVirtualInterfaceGroups', 'LocalGatewayVirtualInterfaces',
       'LocalGateways'
   ]
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    ec2_svc_file = _THIS_DIR / 'svcs' / 'ec2.yml'
+    with ec2_svc_file.open('r') as f:
+      self._spec = yaml.safe_load(f)
 
   def _patch_client(self):
     # Force loading of the pagination config

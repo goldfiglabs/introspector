@@ -1,8 +1,6 @@
 import concurrent.futures as f
 import logging
-import logging
 import os
-import textwrap
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from botocore.loaders import create_loader
@@ -12,8 +10,6 @@ from sqlalchemy.orm import Session
 
 from goldfig import collect_exceptions, PathStack
 from goldfig.aws.fetch import Proxy
-from goldfig.cli.util import query_yes_no
-from goldfig.error import GFError
 from goldfig.models import ImportJob, ProviderAccount, ProviderCredential
 
 ProxyBuilder = Callable[[boto.Session], Proxy]
@@ -36,55 +32,26 @@ def _patch_boto(session: boto.Session):
   parser_factory.set_parser_defaults(timestamp_parser=lambda x: x)
 
 
-def _get_boto_session() -> boto.Session:
+def get_boto_session() -> boto.Session:
   session = boto.get_session()
   _patch_boto(session)
   return session
 
 
-def _create_provider(proxy: Proxy) -> ProviderAccount:
+def create_provider_and_credential(db: Session, proxy: Proxy,
+                                   identity) -> ProviderAccount:
   org = proxy.service('organizations')
   org_resp = org.get('describe_organization')['Organization']
   org_id = org_resp['Id']
-  return ProviderAccount(provider='aws', name=org_id)
-
-
-def _create_scoped_credential(identity) -> ProviderCredential:
+  provider = ProviderAccount(provider='aws', name=org_id)
+  db.add(provider)
+  db.flush()
   credential = ProviderCredential(scope=identity['Account'],
                                   principal_uri=identity['Arn'],
                                   config={'from_environment': True})
-  return credential
-
-
-def add_account_interactive(db: Session, proxy_builder: ProxyBuilder,
-                            force: bool) -> ProviderAccount:
-  boto_session = _get_boto_session()
-  creds = boto_session.get_credentials()
-  if creds is not None:
-    sts = boto_session.create_client('sts')
-    identity = sts.get_caller_identity()
-    add = force or query_yes_no(
-        f'Add AWS account {identity["Account"]} using identity {identity["Arn"]}?',
-        default='yes')
-    if not add:
-      raise GFError('User cancelled')
-    proxy = proxy_builder(boto_session)
-    provider = _create_provider(proxy)
-    db.add(provider)
-    db.flush()
-    credential = _create_scoped_credential(identity)
-    credential.provider_id = provider.id
-    db.add(credential)
-    return provider
-  else:
-    # TODO: point to docs on specifying credentials
-    msg = textwrap.dedent('''
-      No AWS credentials found. Please set up AWS credentials
-      as described here:
-
-      https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config
-    ''')
-    raise GFError(msg)
+  credential.provider_id = provider.id
+  db.add(credential)
+  return provider
 
 
 def walk_graph(org, graph) -> Generator[Tuple[str, str, Dict], None, None]:

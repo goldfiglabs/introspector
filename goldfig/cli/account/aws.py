@@ -1,4 +1,5 @@
 import logging
+import textwrap
 from typing import Optional
 
 import click
@@ -6,10 +7,10 @@ from sqlalchemy.orm import Session
 from tabulate import tabulate
 
 from goldfig.account import delete_account
-from goldfig.aws import (add_account_interactive, build_aws_import_job,
-                         make_proxy_builder, map_import, ProxyBuilder,
-                         run_single_session, run_parallel_session,
-                         account_paths_for_import)
+from goldfig.aws import (build_aws_import_job, make_proxy_builder, map_import,
+                         ProxyBuilder, run_single_session,
+                         create_provider_and_credential, run_parallel_session,
+                         account_paths_for_import, get_boto_session)
 from goldfig.bootstrap_db import import_session, refresh_views
 from goldfig.cli.util import print_report, query_yes_no
 from goldfig.delta.report import report_for_import
@@ -17,6 +18,31 @@ from goldfig.error import GFError, GFInternal
 from goldfig.models import ProviderAccount, ImportJob
 
 _log = logging.getLogger(__name__)
+
+
+def _add_account_interactive(db: Session, proxy_builder: ProxyBuilder,
+                             force: bool) -> ProviderAccount:
+  boto_session = get_boto_session()
+  creds = boto_session.get_credentials()
+  if creds is not None:
+    sts = boto_session.create_client('sts')
+    identity = sts.get_caller_identity()
+    add = force or query_yes_no(
+        f'Add AWS account {identity["Account"]} using identity {identity["Arn"]}?',
+        default='yes')
+    if not add:
+      raise GFError('User cancelled')
+    proxy = proxy_builder(boto_session)
+    return create_provider_and_credential(db, proxy, identity)
+  else:
+    # TODO: point to docs on specifying credentials
+    msg = textwrap.dedent('''
+      No AWS credentials found. Please set up AWS credentials
+      as described here:
+
+      https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config
+    ''')
+    raise GFError(msg)
 
 
 def _find_provider(db: Session,
@@ -34,7 +60,7 @@ def _find_provider(db: Session,
     elif len(accounts) == 1:
       return accounts[0]
     else:
-      return add_account_interactive(db, proxy_builder, force)
+      return _add_account_interactive(db, proxy_builder, force)
   else:
     raise NotImplementedError('cannot specify account yet')
 

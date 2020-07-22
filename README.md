@@ -14,88 +14,57 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 
 ## Pre-requisites
 
-- Python 3.7
-- PostgreSQL 12.3
+- [Docker](https://docs.docker.com/get-docker/)
+  ```
+  $ docker --version
+  Docker version 19.03.8, build afacb8b
+  $ docker-compose --version
+  docker-compose version 1.25.5, build 8a1c60f6
+  ```
+
 - [AWS command line interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) 
-- [GCloud command line interface](https://cloud.google.com/sdk/docs/downloads-interactive)
-
-- Mac:
   ```
-  brew update
-  brew doctor
-  brew install postgresql
-  brew services start postgresql
   aws configure list
-  aws organizations describe-organization
-  gcloud login
   ```
 
-- Linux:
+- [GCloud command line interface](https://cloud.google.com/sdk/docs/downloads-interactive)
   ```
-  sudo apt-get update
-  sudo apt-get install postgresql
-  aws configure
-  gcloud login
+  gcloud auth application-default login
   ```
-
-- AWS EC2 Redhat:
-  ```
-  sudo yum install postgresql postgresql-server -y
-  sudo /usr/bin/postgresql-setup --initdb
-  sudo systemctl start postgresql
-  sudo systemctl enable postgresql
-  ```
-
-- Postgres login settings:
- ```
- cat >> /var/lib/pgsql/data/pg_hba.conf
- host    all             goldfig             ::1/128                 password
- systemctl restart postgresql.service
- ```
-
-- Create database and user on your Postgres instance (e.g. using psql or equivalent):
-
-```
-create database goldfig;
-create user goldfig with encrypted password 'goldfig';
-create user goldfig_ro with encrypted password 'goldfig_ro';
-\c goldfig
-revoke create on schema public from public;
-grant all privileges on schema public to goldfig;
-grant select on all tables in schema public to goldfig_ro;
-alter default privileges for role goldfig in schema public grant select on tables to goldfig_ro;
-```
  
 ## Getting started
 
-1. With a Python 3.7 environment, pip install:
-
+1. Download the latest Gold Fig [release](https://github.com/goldfiglabs/goldfig/releases):
    ```
-   pip install git+https://github.com/goldfiglabs/goldfig.git
+    curl -LO https://github.com/goldfiglabs/goldfig/releases/latest/download/goldfig_osx.zip
+
+    unzip goldfig_osx.zip
    ```
 
-1. Initialize the CLI and Postgres schemas. Defaults to `postgres://localhost` with above credentials. Update connection strings in `bootstrap_db.py` if required.
-
+1. Start Gold Fig containers:
    ```
-   gf init
+    docker-compose up -d
    ```
 
 ## Usage
 
-Import data from provider:
-
+Initialize Gold Fig system and schemas:
 ```
-gf account aws import
-gf account gcp import
+./gf init
+```
 
+Import data from provider:
+```
+./gf account aws import
+./gf account gcp import
 ```
 
 Note that currently this may take a couple minutes.
 
-At this stage the underlying data is ready for querying, analysis, or alerting. You can get a summary of what's been imported using:
+At this stage the underlying data is ready for querying, analysis, or alerting. You can get a summary of the import using:
 
 ```
-gf status
+./gf status
 ```
 
 ## Prepackaged Tools
@@ -103,26 +72,26 @@ gf status
 Find all untagged resources:
 
 ```
-gf tags find-untagged
+./gf tags find-untagged
 ```
 
 Get a report on all tags used across every resource:
 
 ```
-gf tags report
+./gf tags report
 ```
 
 Run several queries demonstrating a sample of the [CIS](https://www.cisecurity.org/) 3-Tier Web Application Benchmark:
 Note that the `TAG_SPEC` below is used to identify infrastructure that is part of a specific tier. So it may look like `role=web,role=app` or `tier=frontend,tier=backend` or however you have tagged your resources.
 
 ```
-gf cis --tags=<TAG_SPEC>
+./gf cis --tags=<TAG_SPEC>
 ```
 
 Run an arbitrary SQL query against your data:
 
 ```
-gf run "SELECT COUNT(*) FROM aws_ec2_instance"
+./gf run "SELECT COUNT(*) FROM aws_ec2_instance"
 ```
 
 ## Example Queries
@@ -130,56 +99,56 @@ gf run "SELECT COUNT(*) FROM aws_ec2_instance"
 Get every storage bucket:
 
 ```
-cat sample_queries/all_storage_buckets.sql
+cat /app/sample_queries/all_storage_buckets.sql
 SELECT name,
   uri
 FROM resource
 WHERE category = 'StorageBucket'
-gf run sample_queries/all_storage_buckets.sql
+./gf run /app/sample_queries/all_storage_buckets.sql
 ```
 
 Get all public IP addresses across all AWS instances:
 
 ```
-cat sample_queries/aws_ec2_instance_ips.sql
+cat /app/sample_queries/aws_ec2_instance_ips.sql
 SELECT instanceid, publicipaddress
 FROM aws_ec2_instance
-gf run sample_queries/aws_ec2_instance_ips.sql
+./gf run /app/sample_queries/aws_ec2_instance_ips.sql
 ```
 
 Get every AWS storage bucket where payer is the bucket owner:
 
 ```
-cat sample_queries/aws_owner_pays_buckets.sql
+cat /app/sample_queries/aws_owner_pays_buckets.sql
 SELECT name,
   uri,
   requestpayment->>'Payer' AS Payer
 FROM aws_s3_bucket
 WHERE requestpayment->>'Payer' = 'BucketOwner'
-gf run sample_queries/aws_owner_pays_buckets.sql
+./gf run /app/sample_queries/aws_owner_pays_buckets.sql
 ```
 
 Get total size for all disks:
 
 ```
-cat sample_queries/gcp_total_disk_size.sql
+cat /app/sample_queries/gcp_total_disk_size.sql
 SELECT SUM(sizegb)
 FROM gcp_compute_disk
-gf run sample_queries/gcp_total_disk_size.sql
+./gf run /app/sample_queries/gcp_total_disk_size.sql
 ```
 
 Get all GCP service accounts and their associated project
 
 ```
-cat sample_queries/gcp_serviceaccounts.sql
+cat /app/sample_queries/gcp_serviceaccounts.sql
 select projectid, email from gcp_iam_serviceaccount
-gf run sample_queries/gcp_serviceaccounts.sql
+./gf run /app/sample_queries/gcp_serviceaccounts.sql
 ```
 
 After running an import job multiple times, you can also query for resource that have been flagged as 'update' or 'delete':
 
 ```
-gf run "SELECT * FROM resource_delta WHERE change_type = 'delete'"
+./gf run "SELECT * FROM resource_delta WHERE change_type = 'delete'"
 ```
 
 ## FAQ
