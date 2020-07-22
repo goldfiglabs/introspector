@@ -35,9 +35,9 @@ SELECT DISTINCT
     (_clsc_12.attr_value #>> '{}') AS "location",
     (_clsc_13.attr_value #>> '{}') AS "locationtype",
     (_clsc_14.attr_value::jsonb) AS "logging",
-    (_clsc_15.attr_value  #>> '{}')::bigint AS "metageneration",
+    (_clsc_15.attr_value #>> '{}')::bigint AS "metageneration",
     (_clsc_16.attr_value #>> '{}') AS "name",
-    (_clsc_18.attr_value  #>> '{}')::bigint AS "projectnumber", -- this type is def as unsigned long ???
+    (_clsc_18.attr_value #>> '{}')::bigint AS "projectnumber", -- this type is def as unsigned long ???
     (_clsc_20.attr_value::jsonb) AS "retentionpolicy",
     (_clsc_21.attr_value #>> '{}') AS "selflink",
     (_clsc_22.attr_value #>> '{}') AS "storageclass",

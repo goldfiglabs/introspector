@@ -1,29 +1,37 @@
 import concurrent.futures as f
+from contextlib import contextmanager
+import httplib2
 import json
 import logging
 import os
-import subprocess
+from tempfile import NamedTemporaryFile
+
 import textwrap
-from typing import Callable, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
+from warnings import catch_warnings
 
 import googleapiclient.errors
-from google.oauth2 import credentials
+import google.auth
+import google.auth.environment_vars
+import google_auth_httplib2
+import requests
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
 
 from goldfig import collect_exceptions, PathStack, db_import_writer
 from goldfig.error import GFError
 from goldfig.gcp.fetch import Proxy
+from goldfig.gcp.types import GcpCredentials
 from goldfig.models import ImportJob, ProviderAccount
 
-ProxyBuilder = Callable[[credentials.Credentials], Proxy]
+ProxyBuilder = Callable[[GcpCredentials], Proxy]
 
 _log = logging.getLogger(__name__)
 
 
 def make_proxy_builder(use_cache: bool = False,
                        patch_id: Optional[int] = None) -> ProxyBuilder:
-  def _fn(creds: credentials.Credentials) -> Proxy:
+  def _fn(creds: GcpCredentials) -> Proxy:
     if use_cache:
       return Proxy.build(creds, patch_id=patch_id)
     else:
@@ -32,33 +40,47 @@ def make_proxy_builder(use_cache: bool = False,
   return _fn
 
 
-def get_gcloud_output(*args):
-  result = subprocess.run(['gcloud', *args],
-                          stdout=subprocess.PIPE,
-                          stderr=subprocess.PIPE,
-                          text=True)
-  return result.stdout
+def get_gcloud_credentials() -> GcpCredentials:
+  with catch_warnings(record=True):
+    # Don't need project id, we're getting whole org
+    creds, _ = google.auth.default(
+        scopes=['https://www.googleapis.com/auth/cloud-platform'])
+  return creds
 
 
-def get_gcloud_auth_var(*args) -> str:
-  return get_gcloud_output('auth', *args)
+@contextmanager
+def gcp_auth_env():
+  gcp_auth = os.environ.get('GOLDFIG_GCP_AUTH')
+  if gcp_auth is not None:
+    with NamedTemporaryFile(mode='w') as f:
+      #json.dump(gcp_auth, f)
+      f.write(gcp_auth)
+      f.flush()
+      with open(f.name, 'r') as ff:
+        bounce = json.load(ff)
+      print('bounce', bounce)
+      os.environ[google.auth.environment_vars.CREDENTIALS] = f.name
+      try:
+        yield
+      finally:
+        os.environ.pop('GOLDFIG_GCP_AUTH')
+  else:
+    # Nothing to be done
+    yield
 
 
-def get_gcloud_credentials() -> Tuple[str, str]:
-  # TODO: get refresh token and stuff like that
-  id_token = get_gcloud_auth_var('print-identity-token').strip()
-  access_token = get_gcloud_auth_var('print-access-token').strip()
-  return id_token, access_token
-
-
-def get_gcloud_info():
-  info = get_gcloud_output('info', '--format="json"')
-  return json.loads(info)
-
-
-def get_gcloud_user() -> str:
-  gcloud_info = get_gcloud_info()
-  return gcloud_info['config']['account']
+def get_gcloud_user(creds: GcpCredentials) -> str:
+  if not creds.valid:
+    refresh_http = httplib2.Http()
+    request = google_auth_httplib2.Request(refresh_http)
+    creds.refresh(request)
+    assert creds.valid
+  assert len(creds.id_token) > 0
+  resp = requests.get('https://www.googleapis.com/oauth2/v1/tokeninfo',
+                      params={'id_token': creds.id_token})
+  token_info = resp.json()
+  return token_info.get('email',
+                        token_info.get('user_id', token_info['issued_to']))
 
 
 def get_org_graph(org_id: str, proxy: Proxy, principal: str):
@@ -121,10 +143,14 @@ def get_org_graph(org_id: str, proxy: Proxy, principal: str):
   return folder_paths, project_paths
 
 
-def credentials_from_config(configuration) -> credentials.Credentials:
-  id_token = configuration['credentials']['id_token']
-  access_token = configuration['credentials']['access_token']
-  return credentials.Credentials(access_token, id_token=id_token)
+def credentials_from_config(configuration: Dict[str, Any]) -> GcpCredentials:
+  credentials = configuration.get('credentials')
+  if credentials is None:
+    return get_gcloud_credentials()
+  else:
+    id_token = credentials['id_token']
+    access_token = credentials['access_token']
+    return credentials.Credentials(access_token, id_token=id_token)
 
 
 def add_graph_to_import_job(db: Session, import_job_id: int,
@@ -162,10 +188,9 @@ def add_account_interactive(db: Session, org_id: str, org_name: str,
 
 
 def build_gcloud_import_job(proxy_builder: ProxyBuilder) -> Dict:
-  id_token, access_token = get_gcloud_credentials()
-  user = get_gcloud_user()
+  creds = get_gcloud_credentials()
+  user = get_gcloud_user(creds)
 
-  creds = credentials.Credentials(access_token, id_token=id_token)
   proxy = proxy_builder(creds)
 
   service = proxy.service('cloudresourcemanager', 'v1')
@@ -181,10 +206,6 @@ def build_gcloud_import_job(proxy_builder: ProxyBuilder) -> Dict:
       'account': {
           'account_id': org_id,
           'provider': 'gcp'
-      },
-      'credentials': {
-          'id_token': id_token,
-          'access_token': access_token
       },
       'principal': {
           'provider_id': user,
@@ -251,8 +272,6 @@ def run_parallel_session(import_job: ImportJob,
   # db.flush()
   # import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   ps = PathStack.from_import_job(import_job)
-  org = import_job.configuration['gcp_org']
-  graph = import_job.configuration['gcp_graph']
   with f.ProcessPoolExecutor(max_workers=workers) as pool:
     results = import_account_iam_with_pool(pool, import_job.id,
                                            proxy_builder_args, ps,

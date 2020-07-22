@@ -138,3 +138,4 @@ FROM ( SELECT DISTINCT
 REFRESH MATERIALIZED VIEW aws_s3_bucket;
 
 COMMENT ON MATERIALIZED VIEW aws_s3_bucket IS 'AWS S3 buckets and their associated attributes.';
+

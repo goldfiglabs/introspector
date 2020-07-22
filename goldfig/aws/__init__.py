@@ -3,7 +3,7 @@ import logging
 import logging
 import os
 import textwrap
-from typing import Callable, Dict, Generator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
 from botocore.loaders import create_loader
 from botocore.regions import EndpointResolver
@@ -162,7 +162,7 @@ def _build_org_graph(proxy: Proxy):
   }
 
 
-def load_boto_session_from_config(config: Dict) -> boto.Session:
+def load_boto_session_from_config(config: Dict[str, Any]) -> boto.Session:
   if config.get('from_environment', False):
     session = boto.get_session()
   else:

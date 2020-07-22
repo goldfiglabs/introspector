@@ -73,7 +73,7 @@ resources:
           id:
             path: Ebs.VolumeId
         attributes:
-          DeleteOnTermiation:
+          DeleteOnTermination:
             path: Ebs.DeleteOnTermination
           AttachTime:
             path: Ebs.AttachTime

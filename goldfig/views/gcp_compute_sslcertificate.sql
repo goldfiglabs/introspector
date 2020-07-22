@@ -22,7 +22,7 @@ SELECT DISTINCT
     _key.resource_id,
     _key.uri,
     _key.provider_account_id,
-    (_clsc_1.attr_value  #>> '{}') AS "certificate",
+    (_clsc_1.attr_value #>> '{}') AS "certificate",
     (TO_TIMESTAMP(_clsc_2.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS "creationtimestamp",
     (_clsc_3.attr_value #>> '{}') AS "description",
     (TO_TIMESTAMP(_clsc_4.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS "expiretime",

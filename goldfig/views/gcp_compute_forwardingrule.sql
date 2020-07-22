@@ -29,8 +29,8 @@ SELECT DISTINCT
     (_clsc_5.attr_value #>> '{}') AS "description",
     (_clsc_6.attr_value #>> '{}') AS "fingerprint",
     (_clsc_7.attr_value #>> '{}') AS "id",
-    (_clsc_8.attr_value  #>> '{}') AS "ipaddress", -- note, this should not be inet; can be gcp opaque strings
-    (_clsc_9.attr_value  #>> '{}') AS "ipprotocol",
+    (_clsc_8.attr_value #>> '{}') AS "ipaddress", -- note, this should not be inet; can be gcp opaque strings
+    (_clsc_9.attr_value #>> '{}') AS "ipprotocol",
     (_clsc_10.attr_value #>> '{}') AS "ipversion",
     (_clsc_11.attr_value::boolean) AS "ismirroringcollector",
     (_clsc_12.attr_value #>> '{}') AS "kind",

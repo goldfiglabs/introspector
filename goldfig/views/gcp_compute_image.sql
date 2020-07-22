@@ -29,7 +29,7 @@ SELECT DISTINCT
     (_clsc_5.attr_value #>> '{}')::bigint AS "disksizegb",
     (_clsc_6.attr_value #>> '{}') AS "family",
     (_clsc_7.attr_value::jsonb) AS "guestosfeatures",
-    (_clsc_8.attr_value  #>> '{}')::bigint AS "id",
+    (_clsc_8.attr_value #>> '{}')::bigint AS "id",
     (_clsc_9.attr_value::jsonb) AS "imageencryptionkey",
     (_clsc_11.attr_value #>> '{}') AS "kind",
     (_clsc_12.attr_value #>> '{}') AS "labelfingerprint",

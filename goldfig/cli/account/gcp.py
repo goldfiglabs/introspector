@@ -10,10 +10,11 @@ from goldfig.bootstrap_db import refresh_views, import_session
 from goldfig.cli.util import print_report, query_yes_no
 from goldfig.delta.report import report_for_import
 from goldfig.error import GFError, GFInternal
-from goldfig.gcp import (build_gcloud_import_job, make_proxy_builder,
-                         map_import, run_single_session,
-                         add_account_interactive, add_graph_to_import_job,
-                         run_parallel_session)
+from goldfig.gcp import (build_gcloud_import_job, get_gcloud_credentials,
+                         get_gcloud_user, make_proxy_builder, map_import,
+                         run_single_session, add_account_interactive,
+                         add_graph_to_import_job, run_parallel_session,
+                         gcp_auth_env)
 from goldfig.models import ProviderAccount, ImportJob
 
 _log = logging.getLogger(__name__)
@@ -78,36 +79,35 @@ def import_gcp_cmd(account: Optional[str], debug: bool,
   proxy_builder_args = (use_cache, patch_id)
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   db = import_session()
-  import_desc = build_gcloud_import_job(proxy_builder)
-  provider = _find_provider(db, import_desc['gcp_org'], account, force=force)
-  import_job = ImportJob.create(provider, import_desc)
-  db.add(import_job)
-  db.flush()
-  if debug:
-    run_single_session(db, import_job.id, proxy_builder)
-    db.flush()
-    map_import(db, import_job.id, proxy_builder)
-    refresh_views(db)
-    import_job.mark_complete(exceptions=[])
+  with gcp_auth_env():
+    import_desc = build_gcloud_import_job(proxy_builder)
+    provider = _find_provider(db, import_desc['gcp_org'], account, force=force)
+    import_job = ImportJob.create(provider, import_desc)
     db.add(import_job)
-    if not dry_run:
-      db.commit()
-  else:
-    add_graph_to_import_job(db, import_job.id, proxy_builder)
-    db.commit()
-    # No db required for parallel invocation
-    exceptions = run_parallel_session(import_job, proxy_builder_args)
-    # Re-open db for mapping
-    db = import_session()
-    if len(exceptions) == 0:
+    db.flush()
+    if debug:
+      run_single_session(db, import_job.id, proxy_builder)
+      db.flush()
       map_import(db, import_job.id, proxy_builder)
       refresh_views(db)
       import_job.mark_complete(exceptions=[])
+      db.add(import_job)
+      if not dry_run:
+        db.commit()
     else:
-      import_job.mark_complete(exceptions)
-      print(exceptions)
-    db.add(import_job)
-    db.commit()
+      add_graph_to_import_job(db, import_job.id, proxy_builder)
+      db.commit()
+      # No db required for parallel invocation
+      exceptions = run_parallel_session(import_job, proxy_builder_args)
+      if len(exceptions) == 0:
+        map_import(db, import_job.id, proxy_builder)
+        refresh_views(db)
+        import_job.mark_complete(exceptions=[])
+      else:
+        import_job.mark_complete(exceptions)
+        print(exceptions)
+      db.add(import_job)
+      db.commit()
   report = report_for_import(db, import_job)
   print(f'Results - Import #{import_job.id}')
   print_report(report)
@@ -143,7 +143,8 @@ def remap_cmd(import_job_id: Optional[int], use_cache: bool,
   _log.info('Mapping a GCP import')
   proxy_builder = make_proxy_builder(use_cache, patch_id)
   db = import_session()
-  map_import(db, import_job_id, proxy_builder)
+  with gcp_auth_env():
+    map_import(db, import_job_id, proxy_builder)
   refresh_views(db)
   if not dry_run:
     db.commit()
@@ -151,6 +152,21 @@ def remap_cmd(import_job_id: Optional[int], use_cache: bool,
   report = report_for_import(db, import_job)
   print(f'Results - Remap of import #{import_job.id}')
   print_report(report)
+
+
+@cmd.command('credential', hidden=True)
+def check_credential():
+  import os
+  gcp_auth = os.environ.get('GOLDFIG_GCP_AUTH')
+  if gcp_auth is not None:
+    print('gcp auth', gcp_auth)
+  else:
+    print('missing env')
+  with gcp_auth_env():
+    creds = get_gcloud_credentials()
+    print(creds.to_json())
+    user = get_gcloud_user(creds)
+    print(user)
 
 
 @cmd.command('list', help='Show all installed GCP accounts')

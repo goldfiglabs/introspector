@@ -5,13 +5,14 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Generator, Tuple, Any
 
-from google.oauth2 import credentials
+# from google.oauth2 import credentials
 from googleapiclient.discovery import build as build_raw
 from googleapiclient.discovery_cache.base import Cache as GoogleCache
 
 import jsonpatch
 
 from goldfig.error import GFInternal
+from goldfig.gcp.types import GcpCredentials
 
 _THIS_DIR: Path = Path(os.path.dirname(__file__))
 
@@ -341,7 +342,7 @@ class GCPFetch(object):
       'cloudresourcemanager': _CloudResourceManagerWRapper
   }
 
-  def __init__(self, creds: credentials.Credentials):
+  def __init__(self, creds: GcpCredentials):
     self._credentials = creds
 
   def service(self, service: str, version: str) -> 'GCPServiceFetch':
@@ -354,8 +355,7 @@ class GCPFetch(object):
 
 class Proxy(object):
   @classmethod
-  def build(cls, creds: credentials.Credentials,
-            patch_id: Optional[int]) -> 'Proxy':
+  def build(cls, creds: GcpCredentials, patch_id: Optional[int]) -> 'Proxy':
     if patch_id is not None:
       cache = Cache.patched(patch_id)
     else:
@@ -363,7 +363,7 @@ class Proxy(object):
     return cls(GCPFetch(creds), cache)
 
   @classmethod
-  def dummy(cls, creds: credentials.Credentials) -> 'Proxy':
+  def dummy(cls, creds: GcpCredentials) -> 'Proxy':
     cache = Cache.dummy()
     return cls(GCPFetch(creds), cache)
 

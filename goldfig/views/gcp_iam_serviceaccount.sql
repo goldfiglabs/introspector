@@ -27,7 +27,7 @@ SELECT DISTINCT
     (_clsc_4.attr_value #>> '{}') AS "name",
     (_clsc_5.attr_value #>> '{}') AS "oauth2clientid",
     (_clsc_6.attr_value #>> '{}') AS "projectid",
-    (_clsc_9.attr_value #>> '{}' ) AS "uniqueid"
+    (_clsc_9.attr_value #>> '{}') AS "uniqueid"
 FROM ( SELECT DISTINCT
         uri,
         resource_id,
