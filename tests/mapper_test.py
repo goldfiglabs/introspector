@@ -3,7 +3,7 @@ import yaml
 
 import goldfig.gcp as gcp
 from goldfig.gcp.map import GCP_MAPPER_FNS
-from goldfig.mapper import DivisionURI, Mapper
+from goldfig.mapper import DivisionURI, Mapper, Transform, Transforms
 
 _disk_raw = {
     "id": "7384694770064152004",
@@ -45,10 +45,10 @@ def _attr(attrs, typ: str, name: str):
 
 def test_gcp_disk_mapper_v1():
   disk_transform_path = os.path.join(os.path.dirname(gcp.__file__),
-                                     'transforms', 'disks.yml')
+                                     'transforms', 'compute', 'disks.yml')
   with open(disk_transform_path, 'r') as f:
     v1_transform = yaml.safe_load(f)
-  transforms = {'disk': v1_transform}
+  transforms: Transforms = {'svc': {'disk': Transform('svc', v1_transform)}}
   division_uri = DivisionURI()
   mapper = Mapper(transforms,
                   provider_account_id=0,
@@ -57,6 +57,7 @@ def test_gcp_disk_mapper_v1():
   mapped = list(
       mapper.map_resources(raw_list=[_disk_raw],
                            ctx=None,
+                           service='svc',
                            resource_name='disk',
                            raw_uri_fn=_dummy_uri))
   assert len(mapped) == 1
@@ -81,27 +82,31 @@ def test_gcp_disk_mapper_v1():
 
 
 def test_context():
-  transforms = {
-      'foo': {
-          'version':
-          1,
-          'resources': [{
-              'name': 'name',
-              'provider_type': 'foo',
-              'uri': {
-                  'name': 'name'
-              },
-              'service': 'foo_svc',
-              'attributes': {
-                  'custom': {
-                      'Metadata': {
-                          'FromContext': {
-                              'context': 'bar'
+  transforms: Transforms = {
+      'svc': {
+          'foo':
+          Transform(
+              'svc', {
+                  'version':
+                  1,
+                  'resources': [{
+                      'name': 'name',
+                      'provider_type': 'foo',
+                      'uri': {
+                          'name': 'name'
+                      },
+                      'service': 'foo_svc',
+                      'attributes': {
+                          'custom': {
+                              'Metadata': {
+                                  'FromContext': {
+                                      'context': 'bar'
+                                  }
+                              }
                           }
                       }
-                  }
-              }
-          }]
+                  }]
+              })
       }
   }
   division_uri = DivisionURI()
@@ -115,6 +120,7 @@ def test_context():
   results = list(
       mapper.map_resources(raw_list,
                            ctx,
+                           service='svc',
                            resource_name='foo',
                            raw_uri_fn=uri_fn))
   assert len(results) == 1

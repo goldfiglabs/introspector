@@ -1,0 +1,12 @@
+version: 1
+resources:
+- service: iam
+  provider_type: RolePolicy
+  name: PolicyName
+  uri:
+    policy_name: PolicyName
+  attributes:
+    provider:
+    - RoleName
+    - PolicyName
+    - PolicyDocument

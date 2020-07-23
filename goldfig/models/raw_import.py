@@ -15,6 +15,7 @@ class RawImport(Base):
   import_job_id = Column(Integer,
                          ForeignKey('import_job.id'),
                          comment='Import job id.')
+  service = Column(String(256), nullable=False)
   path = Column(String(1024), comment='Path for raw import.')
   resource_name = Column(String(256), comment='Resource name.')
   raw = Column(JSONB, comment='Raw JSON response from provider.')

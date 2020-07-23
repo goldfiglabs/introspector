@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Set, Optional
+from typing import Dict, Iterator, List, Set, Optional
 
 from sqlalchemy import or_, inspect
 from sqlalchemy.exc import IntegrityError
@@ -30,7 +30,7 @@ def map_resource_relations(db: Session,
                            uri_fn,
                            resource_name: str = None) -> Set[int]:
   provider_account_id = import_job.provider_account_id
-  imports = db.query(RawImport).filter(
+  imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
       or_(RawImport.path.like(f'{path_prefix}%'),
           RawImport.path == path_prefix))
@@ -41,6 +41,7 @@ def map_resource_relations(db: Session,
         else raw_import.resource_name
     relations = mapper.map_relations(raw_import.path,
                                      raw_import.raw_resources(),
+                                     raw_import.context, raw_import.service,
                                      import_resource_name, uri_fn)
     _log.debug(f'checking for map {raw_import.path}, {import_resource_name}')
     for parent_uri, relation_type, target_uri, attrs in relations:
@@ -258,7 +259,7 @@ def map_resource_prefix(db: Session,
                         uri_fn,
                         resource_name: str = None):
   _log.info(f'Mapping prefix {path_prefix}')
-  imports = db.query(RawImport).filter(
+  imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
       RawImport.path.like(f'{path_prefix}%'), RawImport.mapped == False)
   for raw_import in imports:
@@ -267,6 +268,7 @@ def map_resource_prefix(db: Session,
         else raw_import.resource_name
     for mapped, attrs in mapper.map_resources(raw_import.raw_resources(),
                                               raw_import.context,
+                                              raw_import.service,
                                               import_resource_name, uri_fn):
       apply_mapped_attrs(db,
                          import_job,

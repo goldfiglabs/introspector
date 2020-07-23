@@ -1,0 +1,28 @@
+version: 1
+resources:
+- service: iam
+  provider_type: InstanceProfile
+  name: InstanceProfileName
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Path
+    - InstanceProfileName
+    - InstanceProfileId
+    - Arn
+    - CreateDate
+    - Roles
+  category: Role
+  relations:
+  - path: Roles
+    relation: contains
+    uri:
+      uri:
+        path: Arn
+  - path: Roles
+    relation: manages
+    invert: true
+    uri:
+      uri:
+        path: Arn

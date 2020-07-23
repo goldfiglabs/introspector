@@ -158,7 +158,7 @@ def init_db():
   try:
     db = import_session()
   except OperationalError as e:
-    if 'password authentication failed' in str(e):
+    if 'password authentication failed' in str(e) or 'database "goldfig" does not exist' in str(e):
       # need to set up db
       _install_db_and_roles()
       db = import_session()

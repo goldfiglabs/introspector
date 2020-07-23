@@ -1,20 +1,38 @@
 version: 1
 resources:
-  - category: Group
-    service: iam
-    provider_type: Group
-    name: GroupName
+  - service: iam
+    provider_type: Role
+    name: RoleName
     uri:
       uri: Arn
     attributes:
-      provider: [Path, GroupName, GroupId, Arn, CreateDate]
+      provider:
+        - Path
+        - RoleName
+        - RoleId
+        - Arn
+        - CreateDate
+        - AssumeRolePolicyDocument
+        - Description
+        - MaxSessionDuration
+        - PermissionsBoundary
+        - Tags
+        - RoleLastUsed
+        - PolicyList
+        - AttachedPolicies
+      custom:
+        Metadata:
+          Tags:
+            path: Tags
+            transform: aws_tags
+    category: Role
     relations:
       - path: PolicyList
         relation: manages
         invert: true
         uri:
           resource_name:
-            value: inline-policy
+            value: RolePolicy
           arn:
             parent_path: Arn
           policy_name:
@@ -29,7 +47,7 @@ resources:
           PolicyName:
             path: PolicyName
 subresources:
-  - type: inline-policy
+  - type: RolePolicy
     key: PolicyList
     parent:
       arn:

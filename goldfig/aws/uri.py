@@ -7,9 +7,9 @@ from goldfig.error import GFError, GFInternal
 def _iam_uri_fn(resource_name, **kwargs):
   if resource_name == 'policy-version':
     return f'{kwargs["policy_arn"]}:{kwargs["version_id"]}'
-  elif resource_name == 'inline-policy':
+  elif resource_name in ('RolePolicy', 'UserPolicy', 'GroupPolicy'):
     return f'{kwargs["arn"]}:{kwargs["policy_name"]}'
-  raise GFInternal(f'Failed IAM ARN {kwargs}')
+  raise GFInternal(f'Failed IAM ARN ({resource_name}) {kwargs}')
 
 
 def _listener_arn_fn(loadbalancer_name, listener_id, account, region,
@@ -79,7 +79,13 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
     return _elb_arn_fn(resource_name, partition, account_id, **kwargs)
   elif service == 'iam':
     return _iam_uri_fn(resource_name, **kwargs)
-  raise GFInternal(f'No uri handler for {service} {resource_name} {kwargs}')
+  id = kwargs.get('id')
+  if id is None:
+    raise GFInternal(f'Missing id in {kwargs}')
+  region = _get_with_parent('region', kwargs)
+  if region is None:
+    raise GFInternal(f'Missing region in {kwargs}')
+  return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
 
 
 def get_arn_fn(master_account: str,

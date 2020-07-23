@@ -1,90 +1,104 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elb_loadbalancer CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elb_loadbalancer AS
-WITH cte_resourceattrs AS (
-    SELECT
-        resource.id,
-        resource.uri,
-        resource.provider_account_id,
-        resource_attribute.resource_id,
-        LOWER(resource_attribute.attr_name) AS attr_name,
-        resource_attribute.attr_value
-    FROM
-        RESOURCE
-        INNER JOIN provider_account ON resource.provider_account_id = provider_account.id
-        INNER JOIN resource_attribute ON resource.id = resource_attribute.resource_id
-    WHERE
-        resource.provider_type = 'LoadBalancer'
-        AND provider_account.provider = 'aws'
-        AND resource_attribute.type = 'provider'
+WITH attrs AS (
+  SELECT
+    R.id,
+    LOWER(RA.attr_name) AS attr_name,
+    RA.attr_value
+  FROM
+    resource AS R
+    INNER JOIN resource_attribute AS RA
+      ON RA.resource_id = R.id
+  WHERE
+    RA.type = 'provider'
 )
-SELECT DISTINCT
-    _key.resource_id,
-    _key.uri,
-    _key.provider_account_id,
-    (_clsc_1.attr_value::jsonb) AS "attributes",
-    (_clsc_2.attr_value #>> '{}') AS "canonicalhostedzonename",
-    (TO_TIMESTAMP(_clsc_3.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS "createdtime",
-    (_clsc_4.attr_value #>> '{}') AS "dnsname",
-    (_clsc_5.attr_value::jsonb) AS "healthcheck",
-    (_clsc_6.attr_value #>> '{}') AS "loadbalancername",
-    (_clsc_7.attr_value::jsonb) AS "policies",
-    (_clsc_8.attr_value #>> '{}') AS "scheme",
-    (_clsc_9.attr_value::jsonb) AS "sourcesecuritygroup",
-    (_clsc_10.attr_value::jsonb) AS "tags",
-    (_clsc_11.attr_value #>> '{}') AS "vpcid"
-FROM ( SELECT DISTINCT
-        uri,
-        resource_id,
-        id,
-        provider_account_id
-    FROM
-        cte_resourceattrs) _key
-    LEFT JOIN cte_resourceattrs AS _clsc_1 ON _clsc_1.uri = _key.uri
-        AND _clsc_1.resource_id = _key.resource_id
-        AND _clsc_1.id = _key.id
-        AND _clsc_1.attr_name = 'attributes'
-    LEFT JOIN cte_resourceattrs AS _clsc_2 ON _clsc_2.uri = _key.uri
-        AND _clsc_2.resource_id = _key.resource_id
-        AND _clsc_2.id = _key.id
-        AND _clsc_2.attr_name = 'canonicalhostedzonename'
-    LEFT JOIN cte_resourceattrs AS _clsc_3 ON _clsc_3.uri = _key.uri
-        AND _clsc_3.resource_id = _key.resource_id
-        AND _clsc_3.id = _key.id
-        AND _clsc_3.attr_name = 'createdtime'
-    LEFT JOIN cte_resourceattrs AS _clsc_4 ON _clsc_4.uri = _key.uri
-        AND _clsc_4.resource_id = _key.resource_id
-        AND _clsc_4.id = _key.id
-        AND _clsc_4.attr_name = 'dnsname'
-    LEFT JOIN cte_resourceattrs AS _clsc_5 ON _clsc_5.uri = _key.uri
-        AND _clsc_5.resource_id = _key.resource_id
-        AND _clsc_5.id = _key.id
-        AND _clsc_5.attr_name = 'healthcheck'
-    LEFT JOIN cte_resourceattrs AS _clsc_6 ON _clsc_6.uri = _key.uri
-        AND _clsc_6.resource_id = _key.resource_id
-        AND _clsc_6.id = _key.id
-        AND _clsc_6.attr_name = 'loadbalancername'
-    LEFT JOIN cte_resourceattrs AS _clsc_7 ON _clsc_7.uri = _key.uri
-        AND _clsc_7.resource_id = _key.resource_id
-        AND _clsc_7.id = _key.id
-        AND _clsc_7.attr_name = 'policies'
-    LEFT JOIN cte_resourceattrs AS _clsc_8 ON _clsc_8.uri = _key.uri
-        AND _clsc_8.resource_id = _key.resource_id
-        AND _clsc_8.id = _key.id
-        AND _clsc_8.attr_name = 'scheme'
-    LEFT JOIN cte_resourceattrs AS _clsc_9 ON _clsc_9.uri = _key.uri
-        AND _clsc_9.resource_id = _key.resource_id
-        AND _clsc_9.id = _key.id
-        AND _clsc_9.attr_name = 'sourcesecuritygroup'
-    LEFT JOIN cte_resourceattrs AS _clsc_10 ON _clsc_10.uri = _key.uri
-        AND _clsc_10.resource_id = _key.resource_id
-        AND _clsc_10.id = _key.id
-        AND _clsc_10.attr_name = 'tags'
-    LEFT JOIN cte_resourceattrs AS _clsc_11 ON _clsc_11.uri = _key.uri
-        AND _clsc_11.resource_id = _key.resource_id
-        AND _clsc_11.id = _key.id
-        AND _clsc_11.attr_name = 'vpcid' WITH NO DATA;
+SELECT
+  R.id AS resource_id,
+  R.uri,
+  R.provider_account_id,
+  loadbalancername.attr_value #>> '{}' AS loadbalancername,
+  dnsname.attr_value #>> '{}' AS dnsname,
+  canonicalhostedzonename.attr_value #>> '{}' AS canonicalhostedzonename,
+  canonicalhostedzonenameid.attr_value #>> '{}' AS canonicalhostedzonenameid,
+  listenerdescriptions.attr_value::jsonb AS listenerdescriptions,
+  policies.attr_value::jsonb AS policies,
+  backendserverdescriptions.attr_value::jsonb AS backendserverdescriptions,
+  availabilityzones.attr_value::jsonb AS availabilityzones,
+  subnets.attr_value::jsonb AS subnets,
+  vpcid.attr_value #>> '{}' AS vpcid,
+  instances.attr_value::jsonb AS instances,
+  healthcheck.attr_value::jsonb AS healthcheck,
+  sourcesecuritygroup.attr_value::jsonb AS sourcesecuritygroup,
+  securitygroups.attr_value::jsonb AS securitygroups,
+  (TO_TIMESTAMP(createdtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdtime,
+  scheme.attr_value #>> '{}' AS scheme,
+  tags.attr_value::jsonb AS tags,
+  attributes.attr_value::jsonb AS attributes
+  
+FROM
+  resource AS R
+  INNER JOIN provider_account AS PA
+    ON PA.id = R.provider_account_id
+  LEFT JOIN attrs AS loadbalancername
+    ON loadbalancername.id = R.id
+    AND loadbalancername.attr_name = 'loadbalancername'
+  LEFT JOIN attrs AS dnsname
+    ON dnsname.id = R.id
+    AND dnsname.attr_name = 'dnsname'
+  LEFT JOIN attrs AS canonicalhostedzonename
+    ON canonicalhostedzonename.id = R.id
+    AND canonicalhostedzonename.attr_name = 'canonicalhostedzonename'
+  LEFT JOIN attrs AS canonicalhostedzonenameid
+    ON canonicalhostedzonenameid.id = R.id
+    AND canonicalhostedzonenameid.attr_name = 'canonicalhostedzonenameid'
+  LEFT JOIN attrs AS listenerdescriptions
+    ON listenerdescriptions.id = R.id
+    AND listenerdescriptions.attr_name = 'listenerdescriptions'
+  LEFT JOIN attrs AS policies
+    ON policies.id = R.id
+    AND policies.attr_name = 'policies'
+  LEFT JOIN attrs AS backendserverdescriptions
+    ON backendserverdescriptions.id = R.id
+    AND backendserverdescriptions.attr_name = 'backendserverdescriptions'
+  LEFT JOIN attrs AS availabilityzones
+    ON availabilityzones.id = R.id
+    AND availabilityzones.attr_name = 'availabilityzones'
+  LEFT JOIN attrs AS subnets
+    ON subnets.id = R.id
+    AND subnets.attr_name = 'subnets'
+  LEFT JOIN attrs AS vpcid
+    ON vpcid.id = R.id
+    AND vpcid.attr_name = 'vpcid'
+  LEFT JOIN attrs AS instances
+    ON instances.id = R.id
+    AND instances.attr_name = 'instances'
+  LEFT JOIN attrs AS healthcheck
+    ON healthcheck.id = R.id
+    AND healthcheck.attr_name = 'healthcheck'
+  LEFT JOIN attrs AS sourcesecuritygroup
+    ON sourcesecuritygroup.id = R.id
+    AND sourcesecuritygroup.attr_name = 'sourcesecuritygroup'
+  LEFT JOIN attrs AS securitygroups
+    ON securitygroups.id = R.id
+    AND securitygroups.attr_name = 'securitygroups'
+  LEFT JOIN attrs AS createdtime
+    ON createdtime.id = R.id
+    AND createdtime.attr_name = 'createdtime'
+  LEFT JOIN attrs AS scheme
+    ON scheme.id = R.id
+    AND scheme.attr_name = 'scheme'
+  LEFT JOIN attrs AS tags
+    ON tags.id = R.id
+    AND tags.attr_name = 'tags'
+  LEFT JOIN attrs AS attributes
+    ON attributes.id = R.id
+    AND attributes.attr_name = 'attributes'
+  WHERE
+  PA.provider = 'aws'
+  AND LOWER(R.provider_type) = 'loadbalancer'
+WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elb_loadbalancer;
 
-COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'AWS ELB load balancers and their associated attributes.'
+COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'elb loadbalancer resources and their associated attributes.';

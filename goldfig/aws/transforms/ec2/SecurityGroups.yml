@@ -1,0 +1,23 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: SecurityGroup
+  name: GroupName
+  uri:
+    id: GroupId
+  attributes:
+    provider:
+    - Description
+    - GroupName
+    - IpPermissions
+    - OwnerId
+    - GroupId
+    - IpPermissionsEgress
+    - Tags
+    - VpcId
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: security-group

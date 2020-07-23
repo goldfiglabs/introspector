@@ -1,0 +1,21 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Vpcs
+  name: VpcId
+  uri:
+    id: VpcId
+  attributes:
+    provider:
+    - CidrBlock
+    - DhcpOptionsId
+    - State
+    - VpcId
+    - OwnerId
+    - InstanceTenancy
+    - Ipv6CidrBlockAssociationSet
+    - CidrBlockAssociationSet
+    - IsDefault
+    - Tags
+    custom: {}
+  resource_name: vpc

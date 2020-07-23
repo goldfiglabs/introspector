@@ -81,7 +81,13 @@ def cmd():
     help=
     'Specify which AWS account to add. Required if more than one AWS account has been added to Gold Fig'
 )
-@click.option('-d', '--debug', 'debug', default=False, type=bool, hidden=True)
+@click.option('-d',
+              '--debug',
+              'debug',
+              is_flag=True,
+              default=False,
+              type=bool,
+              hidden=True)
 @click.option('-p',
               '--patch-id',
               'patch_id',
@@ -125,8 +131,8 @@ def import_aws_cmd(account: Optional[str], debug: bool,
     db.commit()
     # No db required for parallel invocation
     exceptions = run_parallel_session(accounts, import_job, proxy_builder_args)
-    # Re-open db for mapping
-    db = import_session()
+    # Make certain we're using the current db session
+    import_job = db.query(ImportJob).get(import_job.id)
     if len(exceptions) == 0:
       map_import(db, import_job.id, proxy_builder)
       refresh_views(db)

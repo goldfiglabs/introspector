@@ -99,6 +99,8 @@ def import_gcp_cmd(account: Optional[str], debug: bool,
       db.commit()
       # No db required for parallel invocation
       exceptions = run_parallel_session(import_job, proxy_builder_args)
+      # Make certain we're using the current db session
+      import_job = db.query(ImportJob).get(import_job.id)
       if len(exceptions) == 0:
         map_import(db, import_job.id, proxy_builder)
         refresh_views(db)

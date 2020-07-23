@@ -1,0 +1,19 @@
+version: 1
+resources:
+- service: organizations
+  provider_type: Organization
+  name: Id
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Id
+    - Arn
+    - FeatureSet
+    - MasterAccountArn
+    - MasterAccountId
+    - MasterAccountEmail
+    - AvailablePolicyTypes
+    - ServiceControlPolicies
+    - TagPolicies
+  category: Organization

@@ -1,0 +1,25 @@
+version: 1
+resources:
+- service: organizations
+  provider_type: Account
+  name: Id
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Id
+    - Arn
+    - Email
+    - Name
+    - Status
+    - JoinedMethod
+    - JoinedTimestamp
+    - ServiceControlPolicies
+    - TagPolicies
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  category: Division

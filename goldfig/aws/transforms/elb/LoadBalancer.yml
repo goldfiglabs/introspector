@@ -1,0 +1,54 @@
+version: 1
+resources:
+- service: elb
+  provider_type: LoadBalancer
+  name: LoadBalancerName
+  uri:
+    name: LoadBalancerName
+  attributes:
+    provider:
+    - LoadBalancerName
+    - DNSName
+    - CanonicalHostedZoneName
+    - CanonicalHostedZoneNameID
+    - ListenerDescriptions
+    - Policies
+    - BackendServerDescriptions
+    - AvailabilityZones
+    - Subnets
+    - VPCId
+    - Instances
+    - HealthCheck
+    - SourceSecurityGroup
+    - SecurityGroups
+    - CreatedTime
+    - Scheme
+    - Tags
+    - Attributes
+    - Policies
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+        Region:
+          context: region
+  resource_name: loadbalancer
+  category: LoadBalancer
+  relations:
+  - path: ListenerDescriptions
+    relation: forwards-to
+    invert: true
+    uri:
+      listener_id:
+        path: Listener.LoadBalancerPort
+      loadbalancer_name:
+        parent_path: LoadBalancerName
+      resource_name:
+        value: Listener
+subresources:
+- type: Listener
+  key: ListenerDescriptions
+  parent:
+    loadbalancer_name:
+      path: LoadBalancerName

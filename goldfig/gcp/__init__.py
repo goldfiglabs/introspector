@@ -53,12 +53,8 @@ def gcp_auth_env():
   gcp_auth = os.environ.get('GOLDFIG_GCP_AUTH')
   if gcp_auth is not None:
     with NamedTemporaryFile(mode='w') as f:
-      #json.dump(gcp_auth, f)
       f.write(gcp_auth)
       f.flush()
-      with open(f.name, 'r') as ff:
-        bounce = json.load(ff)
-      print('bounce', bounce)
       os.environ[google.auth.environment_vars.CREDENTIALS] = f.name
       try:
         yield
@@ -291,5 +287,4 @@ def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   creds = credentials_from_config(import_job.configuration)
   proxy = proxy_builder(creds)
-  writer = db_import_writer(db, import_job_id, phase=1)
-  library_map_import(db, import_job, proxy, writer)
+  library_map_import(db, import_job, proxy)

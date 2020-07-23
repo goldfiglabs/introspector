@@ -1,250 +1,241 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_instance AS
-WITH cte_resourceattrs AS (
-    SELECT
-        resource.id,
-        resource.uri,
-        resource.provider_account_id,
-        resource_attribute.resource_id,
-        LOWER(resource_attribute.attr_name) AS attr_name,
-        resource_attribute.attr_value
-    FROM
-        RESOURCE
-        INNER JOIN provider_account ON resource.provider_account_id = provider_account.id
-        INNER JOIN resource_attribute ON resource.id = resource_attribute.resource_id
-    WHERE
-        resource.provider_type = 'Instance'
-        AND provider_account.provider = 'aws'
-        AND resource_attribute.type = 'provider'
+WITH attrs AS (
+  SELECT
+    R.id,
+    LOWER(RA.attr_name) AS attr_name,
+    RA.attr_value
+  FROM
+    resource AS R
+    INNER JOIN resource_attribute AS RA
+      ON RA.resource_id = R.id
+  WHERE
+    RA.type = 'provider'
 )
-SELECT DISTINCT
-    _key.resource_id,
-    _key.uri,
-    _key.provider_account_id,
-    (_clsc_1.attr_value::integer) AS "amilaunchindex",
-    (_clsc_2.attr_value #>> '{}') AS "architecture",
-    (_clsc_3.attr_value #>> '{}') AS "capacityreservationid",
-    (_clsc_4.attr_value::jsonb) AS "capacityreservationspecification",
-    (_clsc_5.attr_value #>> '{}') AS "clienttoken",
-    (_clsc_6.attr_value::jsonb) AS "cpuoptions",
-    (_clsc_7.attr_value::boolean) AS "ebsoptimized",
-    (_clsc_8.attr_value::boolean) AS "enasupport",
-    (_clsc_9.attr_value::jsonb) AS "hibernationoptions",
-    (_clsc_10.attr_value #>> '{}') AS "hypervisor",
-    (_clsc_11.attr_value::jsonb) AS "iaminstanceprofile",
-    (_clsc_12.attr_value #>> '{}') AS "imageid",
-    (_clsc_13.attr_value #>> '{}') AS "instanceid",
-    (_clsc_14.attr_value #>> '{}') AS "instancelifecycle",
-    (_clsc_15.attr_value #>> '{}') AS "instancetype",
-    (_clsc_16.attr_value #>> '{}') AS "kernelid",
-    (_clsc_17.attr_value #>> '{}') AS "keyname",
-    (TO_TIMESTAMP(_clsc_18.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS "launchtime",
-    (_clsc_19.attr_value::jsonb) AS "licenses",
-    (_clsc_20.attr_value::jsonb) AS "metadataoptionszone",
-    (_clsc_21.attr_value::jsonb) AS "monitoring",
-    (_clsc_22.attr_value #>> '{}') AS "outpostarn",
-    (_clsc_23.attr_value::jsonb) AS "placement",
-    (_clsc_24.attr_value #>> '{}') AS "platform",
-    (_clsc_25.attr_value #>> '{}') AS "privatednsname",
-    ((_clsc_26.attr_value #>> '{}')::inet) AS "privateipaddress",
-    (_clsc_27.attr_value::jsonb) AS "productcodes",
-    (_clsc_28.attr_value #>> '{}') AS "publicdnsname",
-    ((_clsc_29.attr_value #>> '{}')::inet) AS "publicipaddress",
-    (_clsc_30.attr_value #>> '{}') AS "ramdiskid",
-    (_clsc_31.attr_value #>> '{}') AS "region",
-    (_clsc_32.attr_value #>> '{}') AS "rootdevicename",
-    (_clsc_33.attr_value #>> '{}') AS "rootdevicetype",
-    (_clsc_34.attr_value::boolean) AS "sourcedestcheck",
-    (_clsc_35.attr_value #>> '{}') AS "spotinstancerequestid",
-    (_clsc_36.attr_value #>> '{}') AS "sriovnetsupport",
-    (_clsc_37.attr_value::jsonb) AS "state",
-    (_clsc_38.attr_value::jsonb) AS "statereason",
-    (_clsc_39.attr_value::jsonb) AS "statetransitionreason",
-    (_clsc_40.attr_value #>> '{}') AS "subnetid",
-    (_clsc_41.attr_value::jsonb) AS "tags",
-    (_clsc_42.attr_value #>> '{}') AS "virtualizationtype",
-    (_clsc_43.attr_value #>> '{}') AS "vpcid"
-FROM ( SELECT DISTINCT
-        uri,
-        resource_id,
-        id,
-        provider_account_id
-    FROM
-        cte_resourceattrs) _key
-    LEFT JOIN cte_resourceattrs AS _clsc_1 ON _clsc_1.uri = _key.uri
-        AND _clsc_1.resource_id = _key.resource_id
-        AND _clsc_1.id = _key.id
-        AND _clsc_1.attr_name = 'amilaunchindex'
-    LEFT JOIN cte_resourceattrs AS _clsc_2 ON _clsc_2.uri = _key.uri
-        AND _clsc_2.resource_id = _key.resource_id
-        AND _clsc_2.id = _key.id
-        AND _clsc_2.attr_name = 'architecture'
-    LEFT JOIN cte_resourceattrs AS _clsc_3 ON _clsc_3.uri = _key.uri
-        AND _clsc_3.resource_id = _key.resource_id
-        AND _clsc_3.id = _key.id
-        AND _clsc_3.attr_name = 'capacityreservationid'
-    LEFT JOIN cte_resourceattrs AS _clsc_4 ON _clsc_4.uri = _key.uri
-        AND _clsc_4.resource_id = _key.resource_id
-        AND _clsc_4.id = _key.id
-        AND _clsc_4.attr_name = 'capacityreservationspecification'
-    LEFT JOIN cte_resourceattrs AS _clsc_5 ON _clsc_5.uri = _key.uri
-        AND _clsc_5.resource_id = _key.resource_id
-        AND _clsc_5.id = _key.id
-        AND _clsc_5.attr_name = 'clienttoken'
-    LEFT JOIN cte_resourceattrs AS _clsc_6 ON _clsc_6.uri = _key.uri
-        AND _clsc_6.resource_id = _key.resource_id
-        AND _clsc_6.id = _key.id
-        AND _clsc_6.attr_name = 'cpuoptions'
-    LEFT JOIN cte_resourceattrs AS _clsc_7 ON _clsc_7.uri = _key.uri
-        AND _clsc_7.resource_id = _key.resource_id
-        AND _clsc_7.id = _key.id
-        AND _clsc_7.attr_name = 'ebsoptimized'
-    LEFT JOIN cte_resourceattrs AS _clsc_8 ON _clsc_8.uri = _key.uri
-        AND _clsc_8.resource_id = _key.resource_id
-        AND _clsc_8.id = _key.id
-        AND _clsc_8.attr_name = 'enasupport'
-    LEFT JOIN cte_resourceattrs AS _clsc_9 ON _clsc_9.uri = _key.uri
-        AND _clsc_9.resource_id = _key.resource_id
-        AND _clsc_9.id = _key.id
-        AND _clsc_9.attr_name = 'hibernationoptions'
-    LEFT JOIN cte_resourceattrs AS _clsc_10 ON _clsc_10.uri = _key.uri
-        AND _clsc_10.resource_id = _key.resource_id
-        AND _clsc_10.id = _key.id
-        AND _clsc_10.attr_name = 'hypervisor'
-    LEFT JOIN cte_resourceattrs AS _clsc_11 ON _clsc_11.uri = _key.uri
-        AND _clsc_11.resource_id = _key.resource_id
-        AND _clsc_11.id = _key.id
-        AND _clsc_11.attr_name = 'iaminstanceprofile'
-    LEFT JOIN cte_resourceattrs AS _clsc_12 ON _clsc_12.uri = _key.uri
-        AND _clsc_12.resource_id = _key.resource_id
-        AND _clsc_12.id = _key.id
-        AND _clsc_12.attr_name = 'imageid'
-    LEFT JOIN cte_resourceattrs AS _clsc_13 ON _clsc_13.uri = _key.uri
-        AND _clsc_13.resource_id = _key.resource_id
-        AND _clsc_13.id = _key.id
-        AND _clsc_13.attr_name = 'instanceid'
-    LEFT JOIN cte_resourceattrs AS _clsc_14 ON _clsc_14.uri = _key.uri
-        AND _clsc_14.resource_id = _key.resource_id
-        AND _clsc_14.id = _key.id
-        AND _clsc_14.attr_name = 'instancelifecycle'
-    LEFT JOIN cte_resourceattrs AS _clsc_15 ON _clsc_15.uri = _key.uri
-        AND _clsc_15.resource_id = _key.resource_id
-        AND _clsc_15.id = _key.id
-        AND _clsc_15.attr_name = 'instancetype'
-    LEFT JOIN cte_resourceattrs AS _clsc_16 ON _clsc_16.uri = _key.uri
-        AND _clsc_16.resource_id = _key.resource_id
-        AND _clsc_16.id = _key.id
-        AND _clsc_16.attr_name = 'kernelid'
-    LEFT JOIN cte_resourceattrs AS _clsc_17 ON _clsc_17.uri = _key.uri
-        AND _clsc_17.resource_id = _key.resource_id
-        AND _clsc_17.id = _key.id
-        AND _clsc_17.attr_name = 'keyname'
-    LEFT JOIN cte_resourceattrs AS _clsc_18 ON _clsc_18.uri = _key.uri
-        AND _clsc_18.resource_id = _key.resource_id
-        AND _clsc_18.id = _key.id
-        AND _clsc_18.attr_name = 'launchtime'
-    LEFT JOIN cte_resourceattrs AS _clsc_19 ON _clsc_19.uri = _key.uri
-        AND _clsc_19.resource_id = _key.resource_id
-        AND _clsc_19.id = _key.id
-        AND _clsc_19.attr_name = 'licenses'
-    LEFT JOIN cte_resourceattrs AS _clsc_20 ON _clsc_20.uri = _key.uri
-        AND _clsc_20.resource_id = _key.resource_id
-        AND _clsc_20.id = _key.id
-        AND _clsc_20.attr_name = 'metadataoptionszone'
-    LEFT JOIN cte_resourceattrs AS _clsc_21 ON _clsc_21.uri = _key.uri
-        AND _clsc_21.resource_id = _key.resource_id
-        AND _clsc_21.id = _key.id
-        AND _clsc_21.attr_name = 'monitoring'
-    LEFT JOIN cte_resourceattrs AS _clsc_22 ON _clsc_22.uri = _key.uri
-        AND _clsc_22.resource_id = _key.resource_id
-        AND _clsc_22.id = _key.id
-        AND _clsc_22.attr_name = 'outpostarn'
-    LEFT JOIN cte_resourceattrs AS _clsc_23 ON _clsc_23.uri = _key.uri
-        AND _clsc_23.resource_id = _key.resource_id
-        AND _clsc_23.id = _key.id
-        AND _clsc_23.attr_name = 'placement'
-    LEFT JOIN cte_resourceattrs AS _clsc_24 ON _clsc_24.uri = _key.uri
-        AND _clsc_24.resource_id = _key.resource_id
-        AND _clsc_24.id = _key.id
-        AND _clsc_24.attr_name = 'platform'
-    LEFT JOIN cte_resourceattrs AS _clsc_25 ON _clsc_25.uri = _key.uri
-        AND _clsc_25.resource_id = _key.resource_id
-        AND _clsc_25.id = _key.id
-        AND _clsc_25.attr_name = 'privatednsname'
-    LEFT JOIN cte_resourceattrs AS _clsc_26 ON _clsc_26.uri = _key.uri
-        AND _clsc_26.resource_id = _key.resource_id
-        AND _clsc_26.id = _key.id
-        AND _clsc_26.attr_name = 'privateipaddress'
-    LEFT JOIN cte_resourceattrs AS _clsc_27 ON _clsc_27.uri = _key.uri
-        AND _clsc_27.resource_id = _key.resource_id
-        AND _clsc_27.id = _key.id
-        AND _clsc_27.attr_name = 'productcodes'
-    LEFT JOIN cte_resourceattrs AS _clsc_28 ON _clsc_28.uri = _key.uri
-        AND _clsc_28.resource_id = _key.resource_id
-        AND _clsc_28.id = _key.id
-        AND _clsc_28.attr_name = 'publicdnsname'
-    LEFT JOIN cte_resourceattrs AS _clsc_29 ON _clsc_29.uri = _key.uri
-        AND _clsc_29.resource_id = _key.resource_id
-        AND _clsc_29.id = _key.id
-        AND _clsc_29.attr_name = 'publicipaddress'
-    LEFT JOIN cte_resourceattrs AS _clsc_30 ON _clsc_30.uri = _key.uri
-        AND _clsc_30.resource_id = _key.resource_id
-        AND _clsc_30.id = _key.id
-        AND _clsc_30.attr_name = 'ramdiskid'
-    LEFT JOIN cte_resourceattrs AS _clsc_31 ON _clsc_31.uri = _key.uri
-        AND _clsc_31.resource_id = _key.resource_id
-        AND _clsc_31.id = _key.id
-        AND _clsc_31.attr_name = 'region'
-    LEFT JOIN cte_resourceattrs AS _clsc_32 ON _clsc_32.uri = _key.uri
-        AND _clsc_32.resource_id = _key.resource_id
-        AND _clsc_32.id = _key.id
-        AND _clsc_32.attr_name = 'rootdevicename'
-    LEFT JOIN cte_resourceattrs AS _clsc_33 ON _clsc_33.uri = _key.uri
-        AND _clsc_33.resource_id = _key.resource_id
-        AND _clsc_33.id = _key.id
-        AND _clsc_33.attr_name = 'rootdevicetype'
-    LEFT JOIN cte_resourceattrs AS _clsc_34 ON _clsc_34.uri = _key.uri
-        AND _clsc_34.resource_id = _key.resource_id
-        AND _clsc_34.id = _key.id
-        AND _clsc_34.attr_name = 'sourcedestcheck'
-    LEFT JOIN cte_resourceattrs AS _clsc_35 ON _clsc_35.uri = _key.uri
-        AND _clsc_35.resource_id = _key.resource_id
-        AND _clsc_35.id = _key.id
-        AND _clsc_35.attr_name = 'spotinstancerequestid'
-    LEFT JOIN cte_resourceattrs AS _clsc_36 ON _clsc_36.uri = _key.uri
-        AND _clsc_36.resource_id = _key.resource_id
-        AND _clsc_36.id = _key.id
-        AND _clsc_36.attr_name = 'sriovnetsupport'
-    LEFT JOIN cte_resourceattrs AS _clsc_37 ON _clsc_37.uri = _key.uri
-        AND _clsc_37.resource_id = _key.resource_id
-        AND _clsc_37.id = _key.id
-        AND _clsc_37.attr_name = 'state'
-    LEFT JOIN cte_resourceattrs AS _clsc_38 ON _clsc_38.uri = _key.uri
-        AND _clsc_38.resource_id = _key.resource_id
-        AND _clsc_38.id = _key.id
-        AND _clsc_38.attr_name = 'statereason'
-    LEFT JOIN cte_resourceattrs AS _clsc_39 ON _clsc_39.uri = _key.uri
-        AND _clsc_39.resource_id = _key.resource_id
-        AND _clsc_39.id = _key.id
-        AND _clsc_39.attr_name = 'statetransitionreason'
-    LEFT JOIN cte_resourceattrs AS _clsc_40 ON _clsc_40.uri = _key.uri
-        AND _clsc_40.resource_id = _key.resource_id
-        AND _clsc_40.id = _key.id
-        AND _clsc_40.attr_name = 'subnetid'
-    LEFT JOIN cte_resourceattrs AS _clsc_41 ON _clsc_41.uri = _key.uri
-        AND _clsc_41.resource_id = _key.resource_id
-        AND _clsc_41.id = _key.id
-        AND _clsc_41.attr_name = 'tags'
-    LEFT JOIN cte_resourceattrs AS _clsc_42 ON _clsc_42.uri = _key.uri
-        AND _clsc_42.resource_id = _key.resource_id
-        AND _clsc_42.id = _key.id
-        AND _clsc_42.attr_name = 'virtualizationtype'
-    LEFT JOIN cte_resourceattrs AS _clsc_43 ON _clsc_43.uri = _key.uri
-        AND _clsc_43.resource_id = _key.resource_id
-        AND _clsc_43.id = _key.id
-        AND _clsc_43.attr_name = 'vpcid' WITH NO DATA;
+SELECT
+  R.id AS resource_id,
+  R.uri,
+  R.provider_account_id,
+  amilaunchindex.attr_value::integer AS amilaunchindex,
+  imageid.attr_value #>> '{}' AS imageid,
+  instanceid.attr_value #>> '{}' AS instanceid,
+  instancetype.attr_value #>> '{}' AS instancetype,
+  kernelid.attr_value #>> '{}' AS kernelid,
+  keyname.attr_value #>> '{}' AS keyname,
+  (TO_TIMESTAMP(launchtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS launchtime,
+  monitoring.attr_value::jsonb AS monitoring,
+  placement.attr_value::jsonb AS placement,
+  platform.attr_value #>> '{}' AS platform,
+  privatednsname.attr_value #>> '{}' AS privatednsname,
+  (privateipaddress.attr_value #>> '{}')::inet AS privateipaddress,
+  productcodes.attr_value::jsonb AS productcodes,
+  publicdnsname.attr_value #>> '{}' AS publicdnsname,
+  (publicipaddress.attr_value #>> '{}')::inet AS publicipaddress,
+  ramdiskid.attr_value #>> '{}' AS ramdiskid,
+  state.attr_value::jsonb AS state,
+  statetransitionreason.attr_value #>> '{}' AS statetransitionreason,
+  subnetid.attr_value #>> '{}' AS subnetid,
+  vpcid.attr_value #>> '{}' AS vpcid,
+  architecture.attr_value #>> '{}' AS architecture,
+  blockdevicemappings.attr_value::jsonb AS blockdevicemappings,
+  clienttoken.attr_value #>> '{}' AS clienttoken,
+  ebsoptimized.attr_value::boolean AS ebsoptimized,
+  enasupport.attr_value::boolean AS enasupport,
+  hypervisor.attr_value #>> '{}' AS hypervisor,
+  iaminstanceprofile.attr_value::jsonb AS iaminstanceprofile,
+  instancelifecycle.attr_value #>> '{}' AS instancelifecycle,
+  elasticgpuassociations.attr_value::jsonb AS elasticgpuassociations,
+  elasticinferenceacceleratorassociations.attr_value::jsonb AS elasticinferenceacceleratorassociations,
+  networkinterfaces.attr_value::jsonb AS networkinterfaces,
+  outpostarn.attr_value #>> '{}' AS outpostarn,
+  rootdevicename.attr_value #>> '{}' AS rootdevicename,
+  rootdevicetype.attr_value #>> '{}' AS rootdevicetype,
+  securitygroups.attr_value::jsonb AS securitygroups,
+  sourcedestcheck.attr_value::boolean AS sourcedestcheck,
+  spotinstancerequestid.attr_value #>> '{}' AS spotinstancerequestid,
+  sriovnetsupport.attr_value #>> '{}' AS sriovnetsupport,
+  statereason.attr_value::jsonb AS statereason,
+  tags.attr_value::jsonb AS tags,
+  virtualizationtype.attr_value #>> '{}' AS virtualizationtype,
+  cpuoptions.attr_value::jsonb AS cpuoptions,
+  capacityreservationid.attr_value #>> '{}' AS capacityreservationid,
+  capacityreservationspecification.attr_value::jsonb AS capacityreservationspecification,
+  hibernationoptions.attr_value::jsonb AS hibernationoptions,
+  licenses.attr_value::jsonb AS licenses,
+  metadataoptions.attr_value::jsonb AS metadataoptions,
+  
+    _aws_ec2_image.id AS _image_id,
+    _aws_iam_instanceprofile.id AS _iam_instanceprofile_id,
+    _aws_organizations_account.id AS _account_id
+FROM
+  resource AS R
+  INNER JOIN provider_account AS PA
+    ON PA.id = R.provider_account_id
+  LEFT JOIN attrs AS amilaunchindex
+    ON amilaunchindex.id = R.id
+    AND amilaunchindex.attr_name = 'amilaunchindex'
+  LEFT JOIN attrs AS imageid
+    ON imageid.id = R.id
+    AND imageid.attr_name = 'imageid'
+  LEFT JOIN attrs AS instanceid
+    ON instanceid.id = R.id
+    AND instanceid.attr_name = 'instanceid'
+  LEFT JOIN attrs AS instancetype
+    ON instancetype.id = R.id
+    AND instancetype.attr_name = 'instancetype'
+  LEFT JOIN attrs AS kernelid
+    ON kernelid.id = R.id
+    AND kernelid.attr_name = 'kernelid'
+  LEFT JOIN attrs AS keyname
+    ON keyname.id = R.id
+    AND keyname.attr_name = 'keyname'
+  LEFT JOIN attrs AS launchtime
+    ON launchtime.id = R.id
+    AND launchtime.attr_name = 'launchtime'
+  LEFT JOIN attrs AS monitoring
+    ON monitoring.id = R.id
+    AND monitoring.attr_name = 'monitoring'
+  LEFT JOIN attrs AS placement
+    ON placement.id = R.id
+    AND placement.attr_name = 'placement'
+  LEFT JOIN attrs AS platform
+    ON platform.id = R.id
+    AND platform.attr_name = 'platform'
+  LEFT JOIN attrs AS privatednsname
+    ON privatednsname.id = R.id
+    AND privatednsname.attr_name = 'privatednsname'
+  LEFT JOIN attrs AS privateipaddress
+    ON privateipaddress.id = R.id
+    AND privateipaddress.attr_name = 'privateipaddress'
+  LEFT JOIN attrs AS productcodes
+    ON productcodes.id = R.id
+    AND productcodes.attr_name = 'productcodes'
+  LEFT JOIN attrs AS publicdnsname
+    ON publicdnsname.id = R.id
+    AND publicdnsname.attr_name = 'publicdnsname'
+  LEFT JOIN attrs AS publicipaddress
+    ON publicipaddress.id = R.id
+    AND publicipaddress.attr_name = 'publicipaddress'
+  LEFT JOIN attrs AS ramdiskid
+    ON ramdiskid.id = R.id
+    AND ramdiskid.attr_name = 'ramdiskid'
+  LEFT JOIN attrs AS state
+    ON state.id = R.id
+    AND state.attr_name = 'state'
+  LEFT JOIN attrs AS statetransitionreason
+    ON statetransitionreason.id = R.id
+    AND statetransitionreason.attr_name = 'statetransitionreason'
+  LEFT JOIN attrs AS subnetid
+    ON subnetid.id = R.id
+    AND subnetid.attr_name = 'subnetid'
+  LEFT JOIN attrs AS vpcid
+    ON vpcid.id = R.id
+    AND vpcid.attr_name = 'vpcid'
+  LEFT JOIN attrs AS architecture
+    ON architecture.id = R.id
+    AND architecture.attr_name = 'architecture'
+  LEFT JOIN attrs AS blockdevicemappings
+    ON blockdevicemappings.id = R.id
+    AND blockdevicemappings.attr_name = 'blockdevicemappings'
+  LEFT JOIN attrs AS clienttoken
+    ON clienttoken.id = R.id
+    AND clienttoken.attr_name = 'clienttoken'
+  LEFT JOIN attrs AS ebsoptimized
+    ON ebsoptimized.id = R.id
+    AND ebsoptimized.attr_name = 'ebsoptimized'
+  LEFT JOIN attrs AS enasupport
+    ON enasupport.id = R.id
+    AND enasupport.attr_name = 'enasupport'
+  LEFT JOIN attrs AS hypervisor
+    ON hypervisor.id = R.id
+    AND hypervisor.attr_name = 'hypervisor'
+  LEFT JOIN attrs AS iaminstanceprofile
+    ON iaminstanceprofile.id = R.id
+    AND iaminstanceprofile.attr_name = 'iaminstanceprofile'
+  LEFT JOIN attrs AS instancelifecycle
+    ON instancelifecycle.id = R.id
+    AND instancelifecycle.attr_name = 'instancelifecycle'
+  LEFT JOIN attrs AS elasticgpuassociations
+    ON elasticgpuassociations.id = R.id
+    AND elasticgpuassociations.attr_name = 'elasticgpuassociations'
+  LEFT JOIN attrs AS elasticinferenceacceleratorassociations
+    ON elasticinferenceacceleratorassociations.id = R.id
+    AND elasticinferenceacceleratorassociations.attr_name = 'elasticinferenceacceleratorassociations'
+  LEFT JOIN attrs AS networkinterfaces
+    ON networkinterfaces.id = R.id
+    AND networkinterfaces.attr_name = 'networkinterfaces'
+  LEFT JOIN attrs AS outpostarn
+    ON outpostarn.id = R.id
+    AND outpostarn.attr_name = 'outpostarn'
+  LEFT JOIN attrs AS rootdevicename
+    ON rootdevicename.id = R.id
+    AND rootdevicename.attr_name = 'rootdevicename'
+  LEFT JOIN attrs AS rootdevicetype
+    ON rootdevicetype.id = R.id
+    AND rootdevicetype.attr_name = 'rootdevicetype'
+  LEFT JOIN attrs AS securitygroups
+    ON securitygroups.id = R.id
+    AND securitygroups.attr_name = 'securitygroups'
+  LEFT JOIN attrs AS sourcedestcheck
+    ON sourcedestcheck.id = R.id
+    AND sourcedestcheck.attr_name = 'sourcedestcheck'
+  LEFT JOIN attrs AS spotinstancerequestid
+    ON spotinstancerequestid.id = R.id
+    AND spotinstancerequestid.attr_name = 'spotinstancerequestid'
+  LEFT JOIN attrs AS sriovnetsupport
+    ON sriovnetsupport.id = R.id
+    AND sriovnetsupport.attr_name = 'sriovnetsupport'
+  LEFT JOIN attrs AS statereason
+    ON statereason.id = R.id
+    AND statereason.attr_name = 'statereason'
+  LEFT JOIN attrs AS tags
+    ON tags.id = R.id
+    AND tags.attr_name = 'tags'
+  LEFT JOIN attrs AS virtualizationtype
+    ON virtualizationtype.id = R.id
+    AND virtualizationtype.attr_name = 'virtualizationtype'
+  LEFT JOIN attrs AS cpuoptions
+    ON cpuoptions.id = R.id
+    AND cpuoptions.attr_name = 'cpuoptions'
+  LEFT JOIN attrs AS capacityreservationid
+    ON capacityreservationid.id = R.id
+    AND capacityreservationid.attr_name = 'capacityreservationid'
+  LEFT JOIN attrs AS capacityreservationspecification
+    ON capacityreservationspecification.id = R.id
+    AND capacityreservationspecification.attr_name = 'capacityreservationspecification'
+  LEFT JOIN attrs AS hibernationoptions
+    ON hibernationoptions.id = R.id
+    AND hibernationoptions.attr_name = 'hibernationoptions'
+  LEFT JOIN attrs AS licenses
+    ON licenses.id = R.id
+    AND licenses.attr_name = 'licenses'
+  LEFT JOIN attrs AS metadataoptions
+    ON metadataoptions.id = R.id
+    AND metadataoptions.attr_name = 'metadataoptions'
+  LEFT JOIN resource_relation AS _aws_ec2_image_relation
+    ON _aws_ec2_image_relation.resource_id = R.id
+    AND _aws_ec2_image_relation.relation = 'imaged'
+  INNER JOIN resource AS _aws_ec2_image
+    ON _aws_ec2_image_relation.target_id = _aws_ec2_image.id
+    AND _aws_ec2_image.provider_type = 'Image'
+  LEFT JOIN resource_relation AS _aws_iam_instanceprofile_relation
+    ON _aws_iam_instanceprofile_relation.resource_id = R.id
+    AND _aws_iam_instanceprofile_relation.relation = 'acts-as'
+  INNER JOIN resource AS _aws_iam_instanceprofile
+    ON _aws_iam_instanceprofile_relation.target_id = _aws_iam_instanceprofile.id
+    AND _aws_iam_instanceprofile.provider_type = 'InstanceProfile'
+  LEFT JOIN resource_relation AS _aws_organizations_account_relation
+    ON _aws_organizations_account_relation.resource_id = R.id
+    AND _aws_organizations_account_relation.relation = 'in'
+  INNER JOIN resource AS _aws_organizations_account
+    ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+    AND _aws_organizations_account.provider_type = 'Account'
+  WHERE
+  PA.provider = 'aws'
+  AND LOWER(R.provider_type) = 'instance'
+WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_instance;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'AWS EC2 instances and their associated attributes.'
+COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'ec2 instance resources and their associated attributes.';

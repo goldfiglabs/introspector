@@ -363,9 +363,35 @@ class ELBClientProxy(ClientProxy):
     return key.startswith('describe_') and key not in self.SKIPLIST
 
 
+class LambdaClientProxy(ClientProxy):
+
+  SKIPLIST: List[str] = []
+
+  def _should_import(self, key: str) -> bool:
+    return key.startswith('list_') and key not in self.SKIPLIST
+
+
+class RDSClientProxy(ClientProxy):
+
+  SKIPLIST = [
+      'describe_custom_availability_zones',
+      'describe_installation_media',
+      'describe_export_tasks',
+      'describe_reserved_db_instances_offerings',
+      'describe_db_engine_versions',
+      'describe_valid_db_instance_modifications',
+      'describe_option_group_options',
+      'describe_db_proxies',  # Not sure why this comes back with unknown
+      'describe_global_clusters'
+  ]
+
+  def _should_import(self, key: str) -> bool:
+    return key.startswith('describe_') and key not in self.SKIPLIST
+
+
 class IAMClientProxy(ClientProxy):
 
-  SKIPLIST = []
+  SKIPLIST: List[str] = []
   MISSING_PAGINATION = {'list_user_tags': 'Tags', 'list_role_tags': 'Tags'}
 
   def _should_import(self, key: str) -> bool:
@@ -390,7 +416,9 @@ class AWSFetch(object):
       'ec2': EC2ClientProxy,
       's3': S3ClientProxy,
       'elb': ELBClientProxy,
-      'iam': IAMClientProxy
+      'iam': IAMClientProxy,
+      'rds': RDSClientProxy,
+      'lambda': LambdaClientProxy
   }
 
   def __init__(self, boto: Boto):
@@ -412,10 +440,10 @@ class ServiceProxy(object):
     self._impl = impl
     self._cache = cache
 
-  def resource_names(self) -> Generator[str, None, None]:
+  def resource_names(self) -> Iterator[str]:
     return self._impl.resource_names()
 
-  def list(self, resource: str, **kwargs) -> List[Any]:
+  def list(self, resource: str, **kwargs) -> Optional[Tuple[str, Any]]:
     cached = self._cache.list(resource, kwargs)
     if cached is None:
       _log.info(f'cache miss list {resource} {kwargs}')

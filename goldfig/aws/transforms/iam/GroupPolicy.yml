@@ -1,0 +1,12 @@
+version: 1
+resources:
+- service: iam
+  provider_type: GroupPolicy
+  name: PolicyName
+  uri:
+    policy_name: PolicyName
+  attributes:
+    provider:
+    - GroupName
+    - PolicyName
+    - PolicyDocument

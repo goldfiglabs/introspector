@@ -1,90 +1,84 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_role CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_role AS
-WITH cte_resourceattrs AS (
-    SELECT
-        resource.id,
-        resource.uri,
-        resource.provider_account_id,
-        resource_attribute.resource_id,
-        LOWER(resource_attribute.attr_name) AS attr_name,
-        resource_attribute.attr_value
-    FROM
-        RESOURCE
-        INNER JOIN provider_account ON resource.provider_account_id = provider_account.id
-        INNER JOIN resource_attribute ON resource.id = resource_attribute.resource_id
-    WHERE
-        resource.provider_type = 'Role'
-        AND provider_account.provider = 'aws'
-        AND resource_attribute.type = 'provider'
+WITH attrs AS (
+  SELECT
+    R.id,
+    LOWER(RA.attr_name) AS attr_name,
+    RA.attr_value
+  FROM
+    resource AS R
+    INNER JOIN resource_attribute AS RA
+      ON RA.resource_id = R.id
+  WHERE
+    RA.type = 'provider'
 )
-SELECT DISTINCT
-    _key.resource_id,
-    _key.uri,
-    _key.provider_account_id,
-    (_clsc_1.attr_value #>> '{}') AS "arn",
-    (_clsc_2.attr_value::jsonb) AS "assumerolepolicydocument",
-    (TO_TIMESTAMP(_clsc_3.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS "createdate",
-    (_clsc_4.attr_value #>> '{}') AS "description",
-    (_clsc_5.attr_value::integer) AS "maxsessionduration",
-    (_clsc_6.attr_value #>> '{}') AS "path",
-    (_clsc_7.attr_value::jsonb) AS "permissionsboundary",
-    (_clsc_8.attr_value #>> '{}') AS "roleid",
-    (_clsc_9.attr_value::jsonb) AS "rolelastused",
-    (_clsc_10.attr_value #>> '{}') AS "rolename",
-    (_clsc_11.attr_value::jsonb) AS "tags"
-FROM ( SELECT DISTINCT
-        uri,
-        resource_id,
-        id,
-        provider_account_id
-    FROM
-        cte_resourceattrs) _key
-    LEFT JOIN cte_resourceattrs AS _clsc_1 ON _clsc_1.uri = _key.uri
-        AND _clsc_1.resource_id = _key.resource_id
-        AND _clsc_1.id = _key.id
-        AND _clsc_1.attr_name = 'arn'
-    LEFT JOIN cte_resourceattrs AS _clsc_2 ON _clsc_2.uri = _key.uri
-        AND _clsc_2.resource_id = _key.resource_id
-        AND _clsc_2.id = _key.id
-        AND _clsc_2.attr_name = 'assumerolepolicydocument'
-    LEFT JOIN cte_resourceattrs AS _clsc_3 ON _clsc_3.uri = _key.uri
-        AND _clsc_3.resource_id = _key.resource_id
-        AND _clsc_3.id = _key.id
-        AND _clsc_3.attr_name = 'createdate'
-    LEFT JOIN cte_resourceattrs AS _clsc_4 ON _clsc_4.uri = _key.uri
-        AND _clsc_4.resource_id = _key.resource_id
-        AND _clsc_4.id = _key.id
-        AND _clsc_4.attr_name = 'description'
-    LEFT JOIN cte_resourceattrs AS _clsc_5 ON _clsc_5.uri = _key.uri
-        AND _clsc_5.resource_id = _key.resource_id
-        AND _clsc_5.id = _key.id
-        AND _clsc_5.attr_name = 'maxsessionduration'
-    LEFT JOIN cte_resourceattrs AS _clsc_6 ON _clsc_6.uri = _key.uri
-        AND _clsc_6.resource_id = _key.resource_id
-        AND _clsc_6.id = _key.id
-        AND _clsc_6.attr_name = 'path'
-    LEFT JOIN cte_resourceattrs AS _clsc_7 ON _clsc_7.uri = _key.uri
-        AND _clsc_7.resource_id = _key.resource_id
-        AND _clsc_7.id = _key.id
-        AND _clsc_7.attr_name = 'permissionsboundary'
-    LEFT JOIN cte_resourceattrs AS _clsc_8 ON _clsc_8.uri = _key.uri
-        AND _clsc_8.resource_id = _key.resource_id
-        AND _clsc_8.id = _key.id
-        AND _clsc_8.attr_name = 'roleid'
-    LEFT JOIN cte_resourceattrs AS _clsc_9 ON _clsc_9.uri = _key.uri
-        AND _clsc_9.resource_id = _key.resource_id
-        AND _clsc_9.id = _key.id
-        AND _clsc_9.attr_name = 'rolelastused'
-    LEFT JOIN cte_resourceattrs AS _clsc_10 ON _clsc_10.uri = _key.uri
-        AND _clsc_10.resource_id = _key.resource_id
-        AND _clsc_10.id = _key.id
-        AND _clsc_10.attr_name = 'rolename'
-    LEFT JOIN cte_resourceattrs AS _clsc_11 ON _clsc_11.uri = _key.uri
-        AND _clsc_11.resource_id = _key.resource_id
-        AND _clsc_11.id = _key.id
-        AND _clsc_11.attr_name = 'tags' WITH NO DATA;
+SELECT
+  R.id AS resource_id,
+  R.uri,
+  R.provider_account_id,
+  path.attr_value #>> '{}' AS path,
+  rolename.attr_value #>> '{}' AS rolename,
+  roleid.attr_value #>> '{}' AS roleid,
+  arn.attr_value #>> '{}' AS arn,
+  (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate,
+  assumerolepolicydocument.attr_value #>> '{}' AS assumerolepolicydocument,
+  description.attr_value #>> '{}' AS description,
+  maxsessionduration.attr_value::integer AS maxsessionduration,
+  permissionsboundary.attr_value::jsonb AS permissionsboundary,
+  tags.attr_value::jsonb AS tags,
+  rolelastused.attr_value::jsonb AS rolelastused,
+  policylist.attr_value::jsonb AS policylist,
+  attachedpolicies.attr_value::jsonb AS attachedpolicies
+  
+FROM
+  resource AS R
+  INNER JOIN provider_account AS PA
+    ON PA.id = R.provider_account_id
+  LEFT JOIN attrs AS path
+    ON path.id = R.id
+    AND path.attr_name = 'path'
+  LEFT JOIN attrs AS rolename
+    ON rolename.id = R.id
+    AND rolename.attr_name = 'rolename'
+  LEFT JOIN attrs AS roleid
+    ON roleid.id = R.id
+    AND roleid.attr_name = 'roleid'
+  LEFT JOIN attrs AS arn
+    ON arn.id = R.id
+    AND arn.attr_name = 'arn'
+  LEFT JOIN attrs AS createdate
+    ON createdate.id = R.id
+    AND createdate.attr_name = 'createdate'
+  LEFT JOIN attrs AS assumerolepolicydocument
+    ON assumerolepolicydocument.id = R.id
+    AND assumerolepolicydocument.attr_name = 'assumerolepolicydocument'
+  LEFT JOIN attrs AS description
+    ON description.id = R.id
+    AND description.attr_name = 'description'
+  LEFT JOIN attrs AS maxsessionduration
+    ON maxsessionduration.id = R.id
+    AND maxsessionduration.attr_name = 'maxsessionduration'
+  LEFT JOIN attrs AS permissionsboundary
+    ON permissionsboundary.id = R.id
+    AND permissionsboundary.attr_name = 'permissionsboundary'
+  LEFT JOIN attrs AS tags
+    ON tags.id = R.id
+    AND tags.attr_name = 'tags'
+  LEFT JOIN attrs AS rolelastused
+    ON rolelastused.id = R.id
+    AND rolelastused.attr_name = 'rolelastused'
+  LEFT JOIN attrs AS policylist
+    ON policylist.id = R.id
+    AND policylist.attr_name = 'policylist'
+  LEFT JOIN attrs AS attachedpolicies
+    ON attachedpolicies.id = R.id
+    AND attachedpolicies.attr_name = 'attachedpolicies'
+  WHERE
+  PA.provider = 'aws'
+  AND LOWER(R.provider_type) = 'role'
+WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_role;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_role IS 'AWS IAM roles and their associated attributes.'
+COMMENT ON MATERIALIZED VIEW aws_iam_role IS 'iam role resources and their associated attributes.';

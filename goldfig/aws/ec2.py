@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 
 from goldfig import ImportWriter, db_import_writer, PathStack
 from goldfig.aws import (account_paths_for_import, load_boto_session,
-                            ProxyBuilder, make_proxy_builder,
-                            load_boto_session_from_config)
+                         ProxyBuilder, make_proxy_builder,
+                         load_boto_session_from_config)
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.bootstrap_db import import_session
 from goldfig.models import ImportJob, ProviderCredential
@@ -28,7 +28,7 @@ def _import_ec2_region(
 def import_account_ec2_region_to_db(db: Session, import_job_id: int,
                                     region: str, proxy_builder: ProxyBuilder):
   job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, phase=0)
+  writer = db_import_writer(db, job.id, 'ec2', phase=0)
   for path, account in account_paths_for_import(db, job):
     boto = load_boto_session(account)
     proxy = proxy_builder(boto)
@@ -41,7 +41,7 @@ def _import_ec2_region_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack,
   service_proxy = proxy.service('ec2', region)
   ps = ps.scope(region)
   for resource_name, raw_resources in _import_ec2_region(service_proxy):
-    writer(ps, resource_name, raw_resources)
+    writer(ps, resource_name, raw_resources, {'region': region})
 
 
 def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
@@ -50,7 +50,7 @@ def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   boto = load_boto_session_from_config(config)
   proxy = proxy_builder(boto)
-  writer = db_import_writer(db, import_job_id, phase=0)
+  writer = db_import_writer(db, import_job_id, 'ec2', phase=0)
   f(proxy, writer, ps, region)
   db.commit()
 

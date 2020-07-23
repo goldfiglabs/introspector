@@ -1,0 +1,15 @@
+version: 1
+resources:
+- service: organizations
+  provider_type: OrganizationalUnit
+  name: Id
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Id
+    - Arn
+    - Name
+    - ServiceControlPolicies
+    - TagPolicies
+  category: Division

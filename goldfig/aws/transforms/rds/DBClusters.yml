@@ -1,0 +1,82 @@
+version: 1
+resources:
+- service: rds
+  provider_type: DBCluster
+  name: DatabaseName
+  uri:
+    uri: DBClusterArn
+  attributes:
+    provider:
+    - AllocatedStorage
+    - AvailabilityZones
+    - BackupRetentionPeriod
+    - CharacterSetName
+    - DatabaseName
+    - DBClusterIdentifier
+    - DBClusterParameterGroup
+    - DBSubnetGroup
+    - Status
+    - PercentProgress
+    - EarliestRestorableTime
+    - Endpoint
+    - ReaderEndpoint
+    - CustomEndpoints
+    - MultiAZ
+    - Engine
+    - EngineVersion
+    - LatestRestorableTime
+    - Port
+    - MasterUsername
+    - DBClusterOptionGroupMemberships
+    - PreferredBackupWindow
+    - PreferredMaintenanceWindow
+    - ReplicationSourceIdentifier
+    - ReadReplicaIdentifiers
+    - DBClusterMembers
+    - VpcSecurityGroups
+    - HostedZoneId
+    - StorageEncrypted
+    - KmsKeyId
+    - DbClusterResourceId
+    - DBClusterArn
+    - AssociatedRoles
+    - IAMDatabaseAuthenticationEnabled
+    - CloneGroupId
+    - ClusterCreateTime
+    - EarliestBacktrackTime
+    - BacktrackWindow
+    - BacktrackConsumedChangeRecords
+    - EnabledCloudwatchLogsExports
+    - Capacity
+    - EngineMode
+    - ScalingConfigurationInfo
+    - DeletionProtection
+    - HttpEndpointEnabled
+    - ActivityStreamMode
+    - ActivityStreamStatus
+    - ActivityStreamKmsKeyId
+    - ActivityStreamKinesisStreamName
+    - CopyTagsToSnapshot
+    - CrossAccountClone
+    - DomainMemberships
+    - GlobalWriteForwardingStatus
+    - GlobalWriteForwardingRequested
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+        Region:
+          context: region
+  resource_name: cluster
+  relations:
+  - path: VpcSecurityGroups
+    relation: in
+    uri:
+      resource_name:
+        value: security-group
+      id:
+        path: VpcSecurityGroupId
+      service:
+        value: ec2

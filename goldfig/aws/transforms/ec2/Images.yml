@@ -1,0 +1,48 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Image
+  name: ImageId
+  uri:
+    id: ImageId
+  attributes:
+    provider:
+    - Architecture
+    - CreationDate
+    - ImageId
+    - ImageLocation
+    - ImageType
+    - Public
+    - KernelId
+    - OwnerId
+    - Platform
+    - PlatformDetails
+    - UsageOperation
+    - ProductCodes
+    - RamdiskId
+    - State
+    - BlockDeviceMappings
+    - Description
+    - EnaSupport
+    - Hypervisor
+    - ImageOwnerAlias
+    - Name
+    - RootDeviceName
+    - RootDeviceType
+    - SriovNetSupport
+    - StateReason
+    - Tags
+    - VirtualizationType
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+      _:
+        Public:
+          path: Public
+        IsThirdParty:
+          path: OwnerId
+          transform: aws_not_in_org
+  resource_name: image
+  category: Image

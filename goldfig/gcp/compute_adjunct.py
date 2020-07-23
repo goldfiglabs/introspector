@@ -64,7 +64,7 @@ def _find_adjunct_data(db: Session, proxy: Proxy, writer: ImportWriter,
 def import_adjunct_data(db: Session, import_job: ImportJob, proxy: Proxy):
   provider_account_id = import_job.provider_account_id
 
-  writer = db_import_writer(db, import_job.id, phase=1)
+  writer = db_import_writer(db, import_job.id, 'compute', phase=1)
   ps = PathStack.from_import_job(import_job)
   _find_adjunct_data(db, proxy, writer, ps, provider_account_id)
 

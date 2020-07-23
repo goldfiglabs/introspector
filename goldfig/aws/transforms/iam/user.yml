@@ -1,39 +1,41 @@
 version: 1
 resources:
-  - provider_type: User
-    service: iam
-    category: Principal
+  - service: iam
+    provider_type: User
     name: UserName
     uri:
       uri: Arn
     attributes:
       provider:
-        [
-          Path,
-          UserName,
-          UserId,
-          Arn,
-          CreateDate,
-          PasswordLastUsed,
-          PermissionsBoundary,
-          Tags,
-          AccessKeyMetadata,
-          MFADevices,
-          SSHPublicKeys,
-          ServiceSpecificCredentials,
-        ]
+        - Path
+        - UserName
+        - UserId
+        - Arn
+        - CreateDate
+        - PasswordLastUsed
+        - PermissionsBoundary
+        - Tags
+        - PolicyList
+        - AttachedPolicies
+        - AccessKeys
+        - Groups
+        - MFADevices
+        - SSHPublicKeys
+        - ServiceSpecificCredentials
+        - Certificates
       custom:
         Metadata:
           Tags:
             path: Tags
             transform: aws_tags
+    category: Principal
     relations:
       - path: PolicyList
         relation: manages
         invert: true
         uri:
           resource_name:
-            value: inline-policy
+            value: UserPolicy
           arn:
             parent_path: Arn
           policy_name:
@@ -66,7 +68,7 @@ subresources:
     parent:
       user_arn:
         path: Arn
-  - type: inline-policy
+  - type: UserPolicy
     key: PolicyList
     parent:
       arn:

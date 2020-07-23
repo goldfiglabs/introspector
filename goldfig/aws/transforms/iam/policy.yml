@@ -1,0 +1,41 @@
+version: 1
+resources:
+- service: iam
+  provider_type: Policy
+  name: PolicyName
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - PolicyName
+    - PolicyId
+    - Arn
+    - Path
+    - DefaultVersionId
+    - AttachmentCount
+    - PermissionsBoundaryUsageCount
+    - IsAttachable
+    - Description
+    - CreateDate
+    - UpdateDate
+    - PolicyGroups
+    - PolicyUsers
+    - PolicyRoles
+    - Versions
+  category: Policy
+  relations:
+  - path: Versions
+    relation: contains-version
+    uri:
+      resource_name:
+        value: policy-version
+      policy_arn:
+        parent_path: Arn
+      version_id:
+        path: VersionId
+subresources:
+- type: policy-version
+  key: Versions
+  parent:
+    policy_arn:
+      path: Arn

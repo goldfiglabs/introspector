@@ -1,0 +1,12 @@
+version: 1
+resources:
+- service: iam
+  provider_type: UserPolicy
+  name: PolicyName
+  uri:
+    policy_name: PolicyName
+  attributes:
+    provider:
+    - UserName
+    - PolicyName
+    - PolicyDocument

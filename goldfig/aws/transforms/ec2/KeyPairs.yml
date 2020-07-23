@@ -1,0 +1,19 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: KeyPairInfo
+  name: KeyPairId
+  uri:
+    id: KeyPairId
+  attributes:
+    provider:
+    - KeyPairId
+    - KeyFingerprint
+    - KeyName
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: key-pair

@@ -1,0 +1,42 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Volume
+  name: VolumeId
+  uri:
+    id: VolumeId
+    zone: AvailabilityZone
+  attributes:
+    provider:
+    - Attachments
+    - AvailabilityZone
+    - CreateTime
+    - Encrypted
+    - KmsKeyId
+    - OutpostArn
+    - Size
+    - SnapshotId
+    - State
+    - VolumeId
+    - Iops
+    - Tags
+    - VolumeType
+    - FastRestored
+    - MultiAttachEnabled
+    custom:
+      Metadata:
+        Zone:
+          path: AvailabilityZone
+        Region:
+          path: AvailabilityZone
+          transform: aws_zone_to_region
+        Tags:
+          path: Tags
+          transform: aws_tags
+      _:
+        Size:
+          path: Size
+        Encrypted:
+          path: Encrypted
+  resource_name: volume
+  category: Disk

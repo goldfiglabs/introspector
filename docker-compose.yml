@@ -9,6 +9,8 @@ services:
       - GOLDFIG_DB_SU_PASSWORD=postgres
     depends_on:
       - db
+    ports:
+      - "5000:5000"
   db:
     image: postgres
     environment:

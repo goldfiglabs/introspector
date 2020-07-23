@@ -38,10 +38,12 @@ GLOBAL = '$'
 
 
 class ImportWriter:
-  def __init__(self, db: Session, import_job_id: int, phase: int):
+  def __init__(self, db: Session, import_job_id: int, service: str,
+               phase: int):
     self._db = db
     self._import_job_id = import_job_id
     self._phase = phase
+    self._service = service
 
   def __call__(self,
                path: Union[PathStack, str],
@@ -53,6 +55,7 @@ class ImportWriter:
     _log.info(f'writing {path} - {resource_name}')
     model = RawImport(import_job_id=self._import_job_id,
                       path=path,
+                      service=self._service,
                       resource_name=resource_name,
                       raw=raw,
                       context=context,
@@ -60,9 +63,9 @@ class ImportWriter:
     self._db.add(model)
 
 
-def db_import_writer(db: Session, import_job_id: int,
+def db_import_writer(db: Session, import_job_id: int, service: str,
                      phase: int) -> ImportWriter:
-  return ImportWriter(db, import_job_id, phase)
+  return ImportWriter(db, import_job_id, service, phase)
 
 
 def collect_exceptions(results: List[f.Future]) -> List[str]:

@@ -111,7 +111,7 @@ def map_import(db: Session, import_job: ImportJob,
   assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
   mapper = _get_mapper(db, import_job)
-  writer = db_import_writer(db, import_job.id, phase=1)
+  adjunct_writer = db_import_writer(db, import_job.id, 'ec2', phase=1)
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope)
     # TODO: use path for 'in' relation?
@@ -119,7 +119,7 @@ def map_import(db: Session, import_job: ImportJob,
     boto = load_boto_session(account)
     proxy = proxy_builder(boto)
     # Additional ec2 work
-    find_adjunct_data(db, proxy, writer, import_job, ps.scope(path),
+    find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
                       import_job)
     # Additional elb work
     synthesize_endpoints(db, import_job)

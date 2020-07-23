@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from goldfig import ImportWriter
+from goldfig import ImportWriter, db_import_writer
 from goldfig.delta.resource import apply_mapped_attrs, map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
 from goldfig.error import GFInternal
 from goldfig.gcp import Proxy, projects
@@ -207,8 +207,7 @@ class GCPDivisionURI(DivisionURI):
       return '/'.join(parent_path[-2:])
 
 
-def map_import(db: Session, import_job: ImportJob, proxy: Proxy,
-               writer: ImportWriter):
+def map_import(db: Session, import_job: ImportJob, proxy: Proxy):
   assert import_job.path_prefix == ''
   org_id = import_job.configuration['account']['account_id']
   division_uri = GCPDivisionURI(org_id)
@@ -227,7 +226,8 @@ def map_import(db: Session, import_job: ImportJob, proxy: Proxy,
 
   # IAM additional work
   _map_principals(db, import_job)
-  find_and_import_roles(db, proxy, writer, import_job)
+  iam_writer = db_import_writer(db, import_job.id, 'iam', phase=1)
+  find_and_import_roles(db, proxy, iam_writer, import_job)
 
   # Compute additional work
   # TODO: rename and make proper imports

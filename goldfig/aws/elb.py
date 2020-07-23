@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from goldfig import ImportWriter, db_import_writer, PathStack
 from goldfig.aws import (load_boto_session, account_paths_for_import,
-                            ProxyBuilder, make_proxy_builder,
-                            load_boto_session_from_config)
+                         ProxyBuilder, make_proxy_builder,
+                         load_boto_session_from_config)
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.bootstrap_db import import_session
 from goldfig.models import ImportJob, ProviderCredential
@@ -54,7 +54,7 @@ def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   boto = load_boto_session_from_config(config)
   proxy = proxy_builder(boto)
-  writer = db_import_writer(db, import_job_id, phase=0)
+  writer = db_import_writer(db, import_job_id, 'elb', phase=0)
   f(proxy, writer, ps, region)
   db.commit()
 
@@ -82,7 +82,7 @@ def import_account_elb_region_with_pool(
 def import_account_elb_region_to_db(db: Session, import_job_id: int,
                                     region: str, proxy_builder: ProxyBuilder):
   job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, phase=0)
+  writer = db_import_writer(db, job.id, 'elb', phase=0)
   for path, account in account_paths_for_import(db, job):
     boto = load_boto_session(account)
     proxy = proxy_builder(boto)

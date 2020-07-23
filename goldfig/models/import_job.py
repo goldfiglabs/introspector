@@ -1,9 +1,28 @@
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import (Column, Integer, String, ForeignKey, DateTime)
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.dialects.postgresql import JSONB
+
+
+@dataclass
+class AwsAccount:
+  id: str
+
+
+AwsAccounts = Dict[str, List[AwsAccount]]
+
+
+@dataclass
+class AwsGraph:
+  accounts: AwsAccounts
+
+
+@dataclass
+class AwsConfig:
+  graph: AwsGraph
 
 
 def _utc_now() -> datetime:
@@ -44,6 +63,8 @@ class ImportJob(Base):
 
   provider = relationship('ProviderAccount')
 
+  _aws_config: Optional[AwsConfig] = None
+
   @classmethod
   def create(cls, provider: ProviderAccount, config) -> 'ImportJob':
     return cls(provider=provider, configuration=config, path_prefix='')
@@ -63,3 +84,15 @@ class ImportJob(Base):
 
   def __repr__(self):
     return f'<ImportJob(id={self.id}, provider_account_id={self.provider_account_id})>'
+
+  @property
+  def aws_config(self) -> AwsConfig:
+    if self._aws_config is None:
+      config: Any = self.configuration
+      graph: Any = config['aws_graph']
+      accounts: AwsAccounts = {
+          path: [AwsAccount(id=account['Id']) for account in accounts]
+          for path, accounts in graph['accounts'].items()
+      }
+      self._aws_config = AwsConfig(graph=AwsGraph(accounts=accounts))
+    return self._aws_config
