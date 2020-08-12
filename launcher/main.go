@@ -43,7 +43,6 @@ func loadAwsCredentials(ctx context.Context) (map[string]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(creds)
 	env := make(map[string]string)
 	env["AWS_ACCESS_KEY_ID"] = creds.AccessKeyID
 	env["AWS_SECRET_ACCESS_KEY"] = creds.SecretAccessKey

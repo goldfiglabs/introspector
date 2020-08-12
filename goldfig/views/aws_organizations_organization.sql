@@ -66,3 +66,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_organizations_organization;
 
 COMMENT ON MATERIALIZED VIEW aws_organizations_organization IS 'organizations organization resources and their associated attributes.';
+

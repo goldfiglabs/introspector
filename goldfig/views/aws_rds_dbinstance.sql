@@ -25,7 +25,7 @@ SELECT
   dbname.attr_value #>> '{}' AS dbname,
   endpoint.attr_value::jsonb AS endpoint,
   allocatedstorage.attr_value::integer AS allocatedstorage,
-  (TO_TIMESTAMP(instancecreatetime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS instancecreatetime,
+  instancecreatetime.attr_value AS instancecreatetime,
   preferredbackupwindow.attr_value #>> '{}' AS preferredbackupwindow,
   backupretentionperiod.attr_value::integer AS backupretentionperiod,
   dbsecuritygroups.attr_value::jsonb AS dbsecuritygroups,
@@ -35,7 +35,7 @@ SELECT
   dbsubnetgroup.attr_value::jsonb AS dbsubnetgroup,
   preferredmaintenancewindow.attr_value #>> '{}' AS preferredmaintenancewindow,
   pendingmodifiedvalues.attr_value::jsonb AS pendingmodifiedvalues,
-  (TO_TIMESTAMP(latestrestorabletime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestrestorabletime,
+  latestrestorabletime.attr_value AS latestrestorabletime,
   multiaz.attr_value::boolean AS multiaz,
   engineversion.attr_value #>> '{}' AS engineversion,
   autominorversionupgrade.attr_value::boolean AS autominorversionupgrade,
@@ -75,8 +75,10 @@ SELECT
   associatedroles.attr_value::jsonb AS associatedroles,
   listenerendpoint.attr_value::jsonb AS listenerendpoint,
   maxallocatedstorage.attr_value::integer AS maxallocatedstorage,
-  tags.attr_value::jsonb AS tags
+  tags.attr_value::jsonb AS tags,
   
+    _dbcluster_id.target_id AS _dbcluster_id,
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -258,6 +260,32 @@ FROM
   LEFT JOIN attrs AS tags
     ON tags.id = R.id
     AND tags.attr_name = 'tags'
+  LEFT JOIN (
+    SELECT
+      _aws_rds_dbcluster_relation.resource_id AS resource_id,
+      _aws_rds_dbcluster.id AS target_id
+    FROM
+      resource_relation AS _aws_rds_dbcluster_relation
+      INNER JOIN resource AS _aws_rds_dbcluster
+        ON _aws_rds_dbcluster_relation.target_id = _aws_rds_dbcluster.id
+        AND _aws_rds_dbcluster.provider_type = 'DBCluster'
+        AND _aws_rds_dbcluster.service = 'rds'
+    WHERE
+      _aws_rds_dbcluster_relation.relation = 'in'
+  ) AS _dbcluster_id ON _dbcluster_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'dbinstance'
@@ -266,3 +294,23 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_rds_dbinstance;
 
 COMMENT ON MATERIALIZED VIEW aws_rds_dbinstance IS 'rds dbinstance resources and their associated attributes.';
+
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbinstance_ec2_securitygroup CASCADE;
+
+CREATE MATERIALIZED VIEW aws_rds_dbinstance_ec2_securitygroup AS
+SELECT
+  aws_rds_dbinstance.id AS dbinstance_id,
+  aws_ec2_securitygroup.id AS securitygroup_id
+FROM
+  resource AS aws_rds_dbinstance
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_rds_dbinstance.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_securitygroup
+    ON aws_ec2_securitygroup.id = RR.target_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_rds_dbinstance_ec2_securitygroup;

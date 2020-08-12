@@ -48,7 +48,7 @@ def _import_rds_region_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack,
 def import_account_rds_region_to_db(db: Session, import_job_id: int,
                                     region: str, proxy_builder: ProxyBuilder):
   job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, 'rds', phase=0)
+  writer = db_import_writer(db, job.id, 'rds', phase=0, source='base')
   for path, account in account_paths_for_import(db, job):
     boto = load_boto_session(account)
     proxy = proxy_builder(boto)
@@ -62,7 +62,7 @@ def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   boto = load_boto_session_from_config(config)
   proxy = proxy_builder(boto)
-  writer = db_import_writer(db, import_job_id, 'rds', phase=0)
+  writer = db_import_writer(db, import_job_id, 'rds', phase=0, source='base')
   _import_rds_region_to_db(proxy, writer, ps, region)
   db.commit()
 

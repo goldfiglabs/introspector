@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>mapped_uri</h1><p><span id="recordNumber">868</span> rows</p><br />
+                    <h1>mapped_uri</h1><p><span id="recordNumber">218</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -131,6 +131,23 @@
                                         </table>
                                     </td>
                                     <td><p>Mapped URI.</p></td>
+                                </tr>
+                                <tr>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="source">source</span></td>
+                                    <td>varchar</td>
+                                    <td>256</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
                                 </tr>
                                 <tr>
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="import_job_id">import_job_id</span></td>
@@ -201,8 +218,8 @@
                                 <tr>
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> mapped_uri_pkey</td>
                                     <td>Primary key</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>uri + import_job_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>uri + source + import_job_id</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -227,20 +244,20 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="mapped_uri.html" target="_top" title="mapped_uri" alt="" coords="508,5,833,163">
-<area shape="rect" id="node2" href="import_job.html" target="_top" title="import_job" alt="" coords="5,67,235,213">
-<area shape="rect" id="node3" href="raw_import.html" target="_top" title="raw_import" alt="" coords="279,89,464,236">
+<area shape="rect" id="node1" href="mapped_uri.html" target="_top" title="mapped_uri" alt="" coords="508,5,833,192">
+<area shape="rect" id="node2" href="import_job.html" target="_top" title="import_job" alt="" coords="5,96,235,243">
+<area shape="rect" id="node3" href="raw_import.html" target="_top" title="raw_import" alt="" coords="279,119,464,265">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/mapped_uri.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="import_job.html" target="_top" title="import_job" alt="" coords="253,185,483,332">
-<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,217,209,305">
-<area shape="rect" id="node3" href="mapped_uri.html" target="_top" title="mapped_uri" alt="" coords="816,5,1141,163">
-<area shape="rect" id="node4" href="raw_import.html" target="_top" title="raw_import" alt="" coords="557,89,742,236">
-<area shape="rect" id="node5" href="resource_delta.html" target="_top" title="resource_delta" alt="" coords="557,253,742,341">
-<area shape="rect" id="node6" href="resource_relation_delta.html" target="_top" title="resource_relation_delta" alt="" coords="527,359,772,447">
+<area shape="rect" id="node1" href="import_job.html" target="_top" title="import_job" alt="" coords="253,215,483,361">
+<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,247,209,335">
+<area shape="rect" id="node3" href="mapped_uri.html" target="_top" title="mapped_uri" alt="" coords="816,5,1141,192">
+<area shape="rect" id="node4" href="raw_import.html" target="_top" title="raw_import" alt="" coords="557,119,742,265">
+<area shape="rect" id="node5" href="resource_delta.html" target="_top" title="resource_delta" alt="" coords="557,283,742,371">
+<area shape="rect" id="node6" href="resource_relation_delta.html" target="_top" title="resource_relation_delta" alt="" coords="527,388,772,476">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/mapped_uri.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>

@@ -39,7 +39,22 @@
         "required": ["name", "provider_type", "uri", "service"],
         "properties": {
           "name": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": ["value"],
+                "minProperties": 1,
+                "additionalProperties": false
+              }
+            ]
           },
           "service": {
             "type": "string"

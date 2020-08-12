@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>AWS ELB load balancers and their associated attributes.</p>
+                            <p>elb loadbalancer resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,8 +167,25 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="attributes">attributes</span></td>
-                                    <td>jsonb</td>
+                                    <td><span id="loadbalancername">loadbalancername</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="dnsname">dnsname</span></td>
+                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -201,24 +218,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="createdtime">createdtime</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="dnsname">dnsname</span></td>
+                                    <td><span id="canonicalhostedzonenameid">canonicalhostedzonenameid</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -235,25 +235,8 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="healthcheck">healthcheck</span></td>
+                                    <td><span id="listenerdescriptions">listenerdescriptions</span></td>
                                     <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="loadbalancername">loadbalancername</span></td>
-                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -286,24 +269,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="scheme">scheme</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="sourcesecuritygroup">sourcesecuritygroup</span></td>
+                                    <td><span id="backendserverdescriptions">backendserverdescriptions</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -320,7 +286,24 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="tags">tags</span></td>
+                                    <td><span id="availabilityzones">availabilityzones</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="subnets">subnets</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -353,6 +336,159 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="instances">instances</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="healthcheck">healthcheck</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="sourcesecuritygroup">sourcesecuritygroup</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="securitygroups">securitygroups</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="createdtime">createdtime</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="scheme">scheme</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="tags">tags</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="attributes">attributes</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -367,7 +503,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH cte_resourceattrs AS (&#10;         SELECT resource.id,&#10;            resource.uri,&#10;            resource.provider_account_id,&#10;            resource_attribute.resource_id,&#10;            lower((resource_attribute.attr_name)::text) AS attr_name,&#10;            resource_attribute.attr_value&#10;           FROM ((resource&#10;             JOIN provider_account ON ((resource.provider_account_id = provider_account.id)))&#10;             JOIN resource_attribute ON ((resource.id = resource_attribute.resource_id)))&#10;          WHERE (((resource.provider_type)::text = &#39;LoadBalancer&#39;::text) AND (provider_account.provider = &#39;aws&#39;::provider) AND ((resource_attribute.type)::text = &#39;provider&#39;::text))&#10;        )&#10; SELECT DISTINCT _key.resource_id,&#10;    _key.uri,&#10;    _key.provider_account_id,&#10;    _clsc_1.attr_value AS attributes,&#10;    (_clsc_2.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS canonicalhostedzonename,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((_clsc_3.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS createdtime,&#10;    (_clsc_4.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dnsname,&#10;    _clsc_5.attr_value AS healthcheck,&#10;    (_clsc_6.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS loadbalancername,&#10;    _clsc_7.attr_value AS policies,&#10;    (_clsc_8.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS scheme,&#10;    _clsc_9.attr_value AS sourcesecuritygroup,&#10;    _clsc_10.attr_value AS tags,&#10;    (_clsc_11.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS vpcid&#10;   FROM (((((((((((( SELECT DISTINCT cte_resourceattrs.uri,&#10;            cte_resourceattrs.resource_id,&#10;            cte_resourceattrs.id,&#10;            cte_resourceattrs.provider_account_id&#10;           FROM cte_resourceattrs) _key&#10;     LEFT JOIN cte_resourceattrs _clsc_1 ON ((((_clsc_1.uri)::text = (_key.uri)::text) AND (_clsc_1.resource_id = _key.resource_id) AND (_clsc_1.id = _key.id) AND (_clsc_1.attr_name = &#39;attributes&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_2 ON ((((_clsc_2.uri)::text = (_key.uri)::text) AND (_clsc_2.resource_id = _key.resource_id) AND (_clsc_2.id = _key.id) AND (_clsc_2.attr_name = &#39;canonicalhostedzonename&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_3 ON ((((_clsc_3.uri)::text = (_key.uri)::text) AND (_clsc_3.resource_id = _key.resource_id) AND (_clsc_3.id = _key.id) AND (_clsc_3.attr_name = &#39;createdtime&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_4 ON ((((_clsc_4.uri)::text = (_key.uri)::text) AND (_clsc_4.resource_id = _key.resource_id) AND (_clsc_4.id = _key.id) AND (_clsc_4.attr_name = &#39;dnsname&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_5 ON ((((_clsc_5.uri)::text = (_key.uri)::text) AND (_clsc_5.resource_id = _key.resource_id) AND (_clsc_5.id = _key.id) AND (_clsc_5.attr_name = &#39;healthcheck&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_6 ON ((((_clsc_6.uri)::text = (_key.uri)::text) AND (_clsc_6.resource_id = _key.resource_id) AND (_clsc_6.id = _key.id) AND (_clsc_6.attr_name = &#39;loadbalancername&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_7 ON ((((_clsc_7.uri)::text = (_key.uri)::text) AND (_clsc_7.resource_id = _key.resource_id) AND (_clsc_7.id = _key.id) AND (_clsc_7.attr_name = &#39;policies&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_8 ON ((((_clsc_8.uri)::text = (_key.uri)::text) AND (_clsc_8.resource_id = _key.resource_id) AND (_clsc_8.id = _key.id) AND (_clsc_8.attr_name = &#39;scheme&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_9 ON ((((_clsc_9.uri)::text = (_key.uri)::text) AND (_clsc_9.resource_id = _key.resource_id) AND (_clsc_9.id = _key.id) AND (_clsc_9.attr_name = &#39;sourcesecuritygroup&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_10 ON ((((_clsc_10.uri)::text = (_key.uri)::text) AND (_clsc_10.resource_id = _key.resource_id) AND (_clsc_10.id = _key.id) AND (_clsc_10.attr_name = &#39;tags&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_11 ON ((((_clsc_11.uri)::text = (_key.uri)::text) AND (_clsc_11.resource_id = _key.resource_id) AND (_clsc_11.id = _key.id) AND (_clsc_11.attr_name = &#39;vpcid&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (loadbalancername.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS loadbalancername,&#10;    (dnsname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dnsname,&#10;    (canonicalhostedzonename.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS canonicalhostedzonename,&#10;    (canonicalhostedzonenameid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS canonicalhostedzonenameid,&#10;    listenerdescriptions.attr_value AS listenerdescriptions,&#10;    policies.attr_value AS policies,&#10;    backendserverdescriptions.attr_value AS backendserverdescriptions,&#10;    availabilityzones.attr_value AS availabilityzones,&#10;    subnets.attr_value AS subnets,&#10;    (vpcid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS vpcid,&#10;    instances.attr_value AS instances,&#10;    healthcheck.attr_value AS healthcheck,&#10;    sourcesecuritygroup.attr_value AS sourcesecuritygroup,&#10;    securitygroups.attr_value AS securitygroups,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((createdtime.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS createdtime,&#10;    (scheme.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS scheme,&#10;    tags.attr_value AS tags,&#10;    attributes.attr_value AS attributes,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs loadbalancername ON (((loadbalancername.id = r.id) AND (loadbalancername.attr_name = &#39;loadbalancername&#39;::text))))&#10;     LEFT JOIN attrs dnsname ON (((dnsname.id = r.id) AND (dnsname.attr_name = &#39;dnsname&#39;::text))))&#10;     LEFT JOIN attrs canonicalhostedzonename ON (((canonicalhostedzonename.id = r.id) AND (canonicalhostedzonename.attr_name = &#39;canonicalhostedzonename&#39;::text))))&#10;     LEFT JOIN attrs canonicalhostedzonenameid ON (((canonicalhostedzonenameid.id = r.id) AND (canonicalhostedzonenameid.attr_name = &#39;canonicalhostedzonenameid&#39;::text))))&#10;     LEFT JOIN attrs listenerdescriptions ON (((listenerdescriptions.id = r.id) AND (listenerdescriptions.attr_name = &#39;listenerdescriptions&#39;::text))))&#10;     LEFT JOIN attrs policies ON (((policies.id = r.id) AND (policies.attr_name = &#39;policies&#39;::text))))&#10;     LEFT JOIN attrs backendserverdescriptions ON (((backendserverdescriptions.id = r.id) AND (backendserverdescriptions.attr_name = &#39;backendserverdescriptions&#39;::text))))&#10;     LEFT JOIN attrs availabilityzones ON (((availabilityzones.id = r.id) AND (availabilityzones.attr_name = &#39;availabilityzones&#39;::text))))&#10;     LEFT JOIN attrs subnets ON (((subnets.id = r.id) AND (subnets.attr_name = &#39;subnets&#39;::text))))&#10;     LEFT JOIN attrs vpcid ON (((vpcid.id = r.id) AND (vpcid.attr_name = &#39;vpcid&#39;::text))))&#10;     LEFT JOIN attrs instances ON (((instances.id = r.id) AND (instances.attr_name = &#39;instances&#39;::text))))&#10;     LEFT JOIN attrs healthcheck ON (((healthcheck.id = r.id) AND (healthcheck.attr_name = &#39;healthcheck&#39;::text))))&#10;     LEFT JOIN attrs sourcesecuritygroup ON (((sourcesecuritygroup.id = r.id) AND (sourcesecuritygroup.attr_name = &#39;sourcesecuritygroup&#39;::text))))&#10;     LEFT JOIN attrs securitygroups ON (((securitygroups.id = r.id) AND (securitygroups.attr_name = &#39;securitygroups&#39;::text))))&#10;     LEFT JOIN attrs createdtime ON (((createdtime.id = r.id) AND (createdtime.attr_name = &#39;createdtime&#39;::text))))&#10;     LEFT JOIN attrs scheme ON (((scheme.id = r.id) AND (scheme.attr_name = &#39;scheme&#39;::text))))&#10;     LEFT JOIN attrs tags ON (((tags.id = r.id) AND (tags.attr_name = &#39;tags&#39;::text))))&#10;     LEFT JOIN attrs attributes ON (((attributes.id = r.id) AND (attributes.attr_name = &#39;attributes&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;loadbalancer&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -380,6 +516,7 @@
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_attribute.html">resource_attribute</a></li>
                                         <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

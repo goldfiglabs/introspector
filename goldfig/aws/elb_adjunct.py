@@ -93,7 +93,13 @@ def _find_endpoints(
 def synthesize_endpoints(db: Session, import_job: ImportJob) -> None:
   for path, mapped, attrs in _find_endpoints(db,
                                              import_job.provider_account_id):
-    apply_mapped_attrs(db, import_job, path, mapped, attrs, raw_import_id=None)
+    apply_mapped_attrs(db,
+                       import_job,
+                       path,
+                       mapped,
+                       attrs,
+                       source='base',
+                       raw_import_id=None)
 
 
 def synthesize_resources(db: Session, import_job_id: int) -> None:

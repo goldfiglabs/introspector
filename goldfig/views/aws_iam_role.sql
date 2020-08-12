@@ -29,8 +29,9 @@ SELECT
   tags.attr_value::jsonb AS tags,
   rolelastused.attr_value::jsonb AS rolelastused,
   policylist.attr_value::jsonb AS policylist,
-  attachedpolicies.attr_value::jsonb AS attachedpolicies
+  attachedpolicies.attr_value::jsonb AS attachedpolicies,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -74,6 +75,19 @@ FROM
   LEFT JOIN attrs AS attachedpolicies
     ON attachedpolicies.id = R.id
     AND attachedpolicies.attr_name = 'attachedpolicies'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'role'
@@ -82,3 +96,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_iam_role;
 
 COMMENT ON MATERIALIZED VIEW aws_iam_role IS 'iam role resources and their associated attributes.';
+

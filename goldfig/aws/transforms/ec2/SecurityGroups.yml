@@ -21,3 +21,11 @@ resources:
           path: Tags
           transform: aws_tags
   resource_name: security-group
+  relations:
+  - relation: in
+    path: VpcId
+    uri:
+      resource_name:
+        value: vpc
+      id:
+        path: ''

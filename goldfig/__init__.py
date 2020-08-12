@@ -2,7 +2,7 @@ import concurrent.futures as f
 import logging
 import os
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -38,12 +38,17 @@ GLOBAL = '$'
 
 
 class ImportWriter:
-  def __init__(self, db: Session, import_job_id: int, service: str,
-               phase: int):
+  def __init__(self, db: Session, import_job_id: int, service: str, phase: int,
+               source: str):
     self._db = db
     self._import_job_id = import_job_id
     self._phase = phase
     self._service = service
+    self.source = source
+
+  def for_source(self, source: str) -> 'ImportWriter':
+    return ImportWriter(self._db, self._import_job_id, self._service,
+                        self._phase, source)
 
   def __call__(self,
                path: Union[PathStack, str],
@@ -52,20 +57,21 @@ class ImportWriter:
                context: Optional[Dict] = None):
     if isinstance(path, PathStack):
       path = path.path()
-    _log.info(f'writing {path} - {resource_name}')
+    _log.info(f'writing {self.source} - {path} - {resource_name}')
     model = RawImport(import_job_id=self._import_job_id,
                       path=path,
                       service=self._service,
                       resource_name=resource_name,
                       raw=raw,
                       context=context,
-                      phase=self._phase)
+                      phase=self._phase,
+                      source=self.source)
     self._db.add(model)
 
 
-def db_import_writer(db: Session, import_job_id: int, service: str,
-                     phase: int) -> ImportWriter:
-  return ImportWriter(db, import_job_id, service, phase)
+def db_import_writer(db: Session, import_job_id: int, service: str, phase: int,
+                     source: str) -> ImportWriter:
+  return ImportWriter(db, import_job_id, service, phase, source)
 
 
 def collect_exceptions(results: List[f.Future]) -> List[str]:
@@ -74,5 +80,7 @@ def collect_exceptions(results: List[f.Future]) -> List[str]:
     try:
       _ = result.result()
     except:
-      exceptions.append(traceback.format_exc())
+      exc = traceback.format_exc()
+      _log.error('exception caught in import', exc_info=True)
+      exceptions.append(exc)
   return exceptions

@@ -1,0 +1,26 @@
+version: 1
+resources:
+- service: cloudtrail
+  provider_type: Trail
+  name: Name
+  uri:
+    uri: TrailARN
+  attributes:
+    provider:
+    - Name
+    - S3BucketName
+    - S3KeyPrefix
+    - SnsTopicName
+    - SnsTopicARN
+    - IncludeGlobalServiceEvents
+    - IsMultiRegionTrail
+    - HomeRegion
+    - TrailARN
+    - LogFileValidationEnabled
+    - CloudWatchLogsLogGroupArn
+    - CloudWatchLogsRoleArn
+    - KmsKeyId
+    - HasCustomEventSelectors
+    - HasInsightSelectors
+    - IsOrganizationTrail
+  resource_name: trail

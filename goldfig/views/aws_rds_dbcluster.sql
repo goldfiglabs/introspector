@@ -27,14 +27,14 @@ SELECT
   dbsubnetgroup.attr_value #>> '{}' AS dbsubnetgroup,
   status.attr_value #>> '{}' AS status,
   percentprogress.attr_value #>> '{}' AS percentprogress,
-  (TO_TIMESTAMP(earliestrestorabletime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS earliestrestorabletime,
+  earliestrestorabletime.attr_value AS earliestrestorabletime,
   endpoint.attr_value #>> '{}' AS endpoint,
   readerendpoint.attr_value #>> '{}' AS readerendpoint,
   customendpoints.attr_value::jsonb AS customendpoints,
   multiaz.attr_value::boolean AS multiaz,
   engine.attr_value #>> '{}' AS engine,
   engineversion.attr_value #>> '{}' AS engineversion,
-  (TO_TIMESTAMP(latestrestorabletime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestrestorabletime,
+  latestrestorabletime.attr_value AS latestrestorabletime,
   port.attr_value::integer AS port,
   masterusername.attr_value #>> '{}' AS masterusername,
   dbclusteroptiongroupmemberships.attr_value::jsonb AS dbclusteroptiongroupmemberships,
@@ -52,8 +52,8 @@ SELECT
   associatedroles.attr_value::jsonb AS associatedroles,
   iamdatabaseauthenticationenabled.attr_value::boolean AS iamdatabaseauthenticationenabled,
   clonegroupid.attr_value #>> '{}' AS clonegroupid,
-  (TO_TIMESTAMP(clustercreatetime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS clustercreatetime,
-  (TO_TIMESTAMP(earliestbacktracktime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS earliestbacktracktime,
+  clustercreatetime.attr_value AS clustercreatetime,
+  earliestbacktracktime.attr_value AS earliestbacktracktime,
   backtrackwindow.attr_value::bigint AS backtrackwindow,
   backtrackconsumedchangerecords.attr_value::bigint AS backtrackconsumedchangerecords,
   enabledcloudwatchlogsexports.attr_value::jsonb AS enabledcloudwatchlogsexports,
@@ -71,8 +71,9 @@ SELECT
   domainmemberships.attr_value::jsonb AS domainmemberships,
   globalwriteforwardingstatus.attr_value #>> '{}' AS globalwriteforwardingstatus,
   globalwriteforwardingrequested.attr_value::boolean AS globalwriteforwardingrequested,
-  tags.attr_value::jsonb AS tags
+  tags.attr_value::jsonb AS tags,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -242,6 +243,19 @@ FROM
   LEFT JOIN attrs AS tags
     ON tags.id = R.id
     AND tags.attr_name = 'tags'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'dbcluster'
@@ -250,3 +264,23 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_rds_dbcluster;
 
 COMMENT ON MATERIALIZED VIEW aws_rds_dbcluster IS 'rds dbcluster resources and their associated attributes.';
+
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbcluster_ec2_securitygroup CASCADE;
+
+CREATE MATERIALIZED VIEW aws_rds_dbcluster_ec2_securitygroup AS
+SELECT
+  aws_rds_dbcluster.id AS dbcluster_id,
+  aws_ec2_securitygroup.id AS securitygroup_id
+FROM
+  resource AS aws_rds_dbcluster
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_rds_dbcluster.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_securitygroup
+    ON aws_ec2_securitygroup.id = RR.target_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_rds_dbcluster_ec2_securitygroup;

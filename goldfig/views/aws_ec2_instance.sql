@@ -65,9 +65,10 @@ SELECT
   licenses.attr_value::jsonb AS licenses,
   metadataoptions.attr_value::jsonb AS metadataoptions,
   
-    _aws_ec2_image.id AS _image_id,
-    _aws_iam_instanceprofile.id AS _iam_instanceprofile_id,
-    _aws_organizations_account.id AS _account_id
+    _image_id.target_id AS _image_id,
+    _iam_instanceprofile_id.target_id AS _iam_instanceprofile_id,
+    _vpc_id.target_id AS _vpc_id,
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -213,24 +214,58 @@ FROM
   LEFT JOIN attrs AS metadataoptions
     ON metadataoptions.id = R.id
     AND metadataoptions.attr_name = 'metadataoptions'
-  LEFT JOIN resource_relation AS _aws_ec2_image_relation
-    ON _aws_ec2_image_relation.resource_id = R.id
-    AND _aws_ec2_image_relation.relation = 'imaged'
-  INNER JOIN resource AS _aws_ec2_image
-    ON _aws_ec2_image_relation.target_id = _aws_ec2_image.id
-    AND _aws_ec2_image.provider_type = 'Image'
-  LEFT JOIN resource_relation AS _aws_iam_instanceprofile_relation
-    ON _aws_iam_instanceprofile_relation.resource_id = R.id
-    AND _aws_iam_instanceprofile_relation.relation = 'acts-as'
-  INNER JOIN resource AS _aws_iam_instanceprofile
-    ON _aws_iam_instanceprofile_relation.target_id = _aws_iam_instanceprofile.id
-    AND _aws_iam_instanceprofile.provider_type = 'InstanceProfile'
-  LEFT JOIN resource_relation AS _aws_organizations_account_relation
-    ON _aws_organizations_account_relation.resource_id = R.id
-    AND _aws_organizations_account_relation.relation = 'in'
-  INNER JOIN resource AS _aws_organizations_account
-    ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-    AND _aws_organizations_account.provider_type = 'Account'
+  LEFT JOIN (
+    SELECT
+      _aws_ec2_image_relation.resource_id AS resource_id,
+      _aws_ec2_image.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_image_relation
+      INNER JOIN resource AS _aws_ec2_image
+        ON _aws_ec2_image_relation.target_id = _aws_ec2_image.id
+        AND _aws_ec2_image.provider_type = 'Image'
+        AND _aws_ec2_image.service = 'ec2'
+    WHERE
+      _aws_ec2_image_relation.relation = 'imaged'
+  ) AS _image_id ON _image_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_iam_instanceprofile_relation.resource_id AS resource_id,
+      _aws_iam_instanceprofile.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_instanceprofile_relation
+      INNER JOIN resource AS _aws_iam_instanceprofile
+        ON _aws_iam_instanceprofile_relation.target_id = _aws_iam_instanceprofile.id
+        AND _aws_iam_instanceprofile.provider_type = 'InstanceProfile'
+        AND _aws_iam_instanceprofile.service = 'iam'
+    WHERE
+      _aws_iam_instanceprofile_relation.relation = 'acts-as'
+  ) AS _iam_instanceprofile_id ON _iam_instanceprofile_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_ec2_vpc_relation.resource_id AS resource_id,
+      _aws_ec2_vpc.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_vpc_relation
+      INNER JOIN resource AS _aws_ec2_vpc
+        ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
+        AND _aws_ec2_vpc.provider_type = 'Vpc'
+        AND _aws_ec2_vpc.service = 'ec2'
+    WHERE
+      _aws_ec2_vpc_relation.relation = 'in'
+  ) AS _vpc_id ON _vpc_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'instance'
@@ -239,3 +274,43 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_ec2_instance;
 
 COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'ec2 instance resources and their associated attributes.';
+
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_volume CASCADE;
+
+CREATE MATERIALIZED VIEW aws_ec2_instance_volume AS
+SELECT
+  aws_ec2_instance.id AS instance_id,
+  aws_ec2_volume.id AS volume_id,
+  DeleteOnTermiation.value::boolean AS deleteontermiation,
+  (TO_TIMESTAMP(AttachTime.value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS attachtime,
+  VolumeId.value #>> '{}' AS volumeid,
+  Status.value #>> '{}' AS status,
+  DeviceName.value #>> '{}' AS devicename
+FROM
+  resource AS aws_ec2_instance
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_ec2_instance.id
+    AND RR.relation = 'attached'
+  INNER JOIN resource AS aws_ec2_volume
+    ON aws_ec2_volume.id = RR.target_id
+    AND aws_ec2_volume.provider_type = 'Volume'
+  LEFT JOIN resource_relation_attribute AS DeleteOnTermiation
+    ON DeleteOnTermiation.relation_id = RR.id
+    AND DeleteOnTermiation.name = 'DeleteOnTermiation'
+  LEFT JOIN resource_relation_attribute AS AttachTime
+    ON AttachTime.relation_id = RR.id
+    AND AttachTime.name = 'AttachTime'
+  LEFT JOIN resource_relation_attribute AS VolumeId
+    ON VolumeId.relation_id = RR.id
+    AND VolumeId.name = 'VolumeId'
+  LEFT JOIN resource_relation_attribute AS Status
+    ON Status.relation_id = RR.id
+    AND Status.name = 'Status'
+  LEFT JOIN resource_relation_attribute AS DeviceName
+    ON DeviceName.relation_id = RR.id
+    AND DeviceName.name = 'DeviceName'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_ec2_instance_volume;

@@ -5,5 +5,5 @@ from goldfig.models.raw_import import RawImport, MappedURI
 from goldfig.models.resource import Resource, ResourceAttribute, \
     ResourceRelation, ResourceRelationAttribute, ResourceDelta, \
         ResourceAttributeDelta, ResourceRelationDelta, \
-            ResourceRelationAttributeDelta
+            ResourceRelationAttributeDelta, ResourceRaw
 from goldfig.models.schema_version import SchemaVersion

@@ -22,8 +22,9 @@ SELECT
   name.attr_value #>> '{}' AS name,
   policytypes.attr_value::jsonb AS policytypes,
   servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
-  tagpolicies.attr_value::jsonb AS tagpolicies
+  tagpolicies.attr_value::jsonb AS tagpolicies,
   
+    _organization_id.target_id AS _organization_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -46,6 +47,19 @@ FROM
   LEFT JOIN attrs AS tagpolicies
     ON tagpolicies.id = R.id
     AND tagpolicies.attr_name = 'tagpolicies'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_organization_relation.resource_id AS resource_id,
+      _aws_organizations_organization.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_organization_relation
+      INNER JOIN resource AS _aws_organizations_organization
+        ON _aws_organizations_organization_relation.target_id = _aws_organizations_organization.id
+        AND _aws_organizations_organization.provider_type = 'Organization'
+        AND _aws_organizations_organization.service = 'organizations'
+    WHERE
+      _aws_organizations_organization_relation.relation = 'in'
+  ) AS _organization_id ON _organization_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'root'
@@ -54,3 +68,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_organizations_root;
 
 COMMENT ON MATERIALIZED VIEW aws_organizations_root IS 'organizations root resources and their associated attributes.';
+

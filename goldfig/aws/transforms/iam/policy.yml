@@ -24,8 +24,8 @@ resources:
     - Versions
   category: Policy
   relations:
-  - path: Versions
-    relation: contains-version
+  - relation: contains-version
+    path: Versions
     uri:
       resource_name:
         value: policy-version
@@ -33,6 +33,16 @@ resources:
         parent_path: Arn
       version_id:
         path: VersionId
+    invert: true
+  - relation: default-version
+    path: DefaultVersionId
+    uri:
+      policy_arn:
+        parent_path: Arn
+      version_id:
+        path: ''
+      resource_name:
+        value: policy-version
 subresources:
 - type: policy-version
   key: Versions

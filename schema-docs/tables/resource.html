@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>resource</h1><p><span id="recordNumber">294</span> rows</p><br />
+                    <h1>resource</h1><p><span id="recordNumber">210</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -127,6 +127,10 @@
                                             <tr>
                                                 <td title="resource_attribute.resource_id references resource.id via resource_attribute_resource_id_fkey"><a href='resource_attribute.html'>resource_attribute</a><span class='relatedKey'>.resource_id</span></td>
                                                 <td class="constraint detail">resource_attribute_resource_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="resource_raw.resource_id references resource.id via resource_raw_resource_id_fkey"><a href='resource_raw.html'>resource_raw</a><span class='relatedKey'>.resource_id</span></td>
+                                                <td class="constraint detail">resource_raw_resource_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="resource_relation.resource_id references resource.id via resource_relation_resource_id_fkey"><a href='resource_relation.html'>resource_relation</a><span class='relatedKey'>.resource_id</span></td>
@@ -267,23 +271,6 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr>
-                                    <td><span id="raw">raw</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -369,22 +356,24 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="resource.html" target="_top" title="resource" alt="" coords="253,196,676,529">
-<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,316,209,433">
+<area shape="rect" id="node1" href="resource.html" target="_top" title="resource" alt="" coords="253,308,676,612">
+<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,428,209,545">
 <area shape="rect" id="node3" href="resource_attribute.html" target="_top" title="resource_attribute" alt="" coords="720,5,936,152">
-<area shape="rect" id="node4" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,169,931,375">
+<area shape="rect" id="node4" href="resource_raw.html" target="_top" title="resource_raw" alt="" coords="740,169,916,345">
+<area shape="rect" id="node5" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,363,931,568">
 </map>
                                         <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/resource.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="import_job.html" target="_top" title="import_job" alt="" coords="386,5,543,93">
-<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,108,209,225">
-<area shape="rect" id="node3" href="provider_credential.html" target="_top" title="provider_credential" alt="" coords="356,111,573,199">
-<area shape="rect" id="node4" href="resource.html" target="_top" title="resource" alt="" coords="253,216,676,549">
-<area shape="rect" id="node5" href="resource_attribute.html" target="_top" title="resource_attribute" alt="" coords="720,25,936,172">
-<area shape="rect" id="node6" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,189,931,395">
-<area shape="rect" id="node7" href="resource_relation_attribute.html" target="_top" title="resource_relation_attribute" alt="" coords="980,192,1251,280">
+<area shape="rect" id="node1" href="import_job.html" target="_top" title="import_job" alt="" coords="386,97,543,185">
+<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,200,209,317">
+<area shape="rect" id="node3" href="provider_credential.html" target="_top" title="provider_credential" alt="" coords="356,203,573,291">
+<area shape="rect" id="node4" href="resource.html" target="_top" title="resource" alt="" coords="253,308,676,612">
+<area shape="rect" id="node5" href="resource_attribute.html" target="_top" title="resource_attribute" alt="" coords="720,5,936,152">
+<area shape="rect" id="node6" href="resource_raw.html" target="_top" title="resource_raw" alt="" coords="740,169,916,345">
+<area shape="rect" id="node7" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,363,931,568">
+<area shape="rect" id="node8" href="resource_relation_attribute.html" target="_top" title="resource_relation_attribute" alt="" coords="980,365,1251,453">
 </map>
                                         <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/resource.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>

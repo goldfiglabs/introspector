@@ -26,6 +26,7 @@ jsonschema = "*"
 click = "*"
 flask = "*"
 requests = "*"
+colr = "*"
 
 [requires]
 python_version = "3.7"

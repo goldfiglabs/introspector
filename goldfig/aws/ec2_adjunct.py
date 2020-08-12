@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, List
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -47,7 +48,7 @@ def _find_missing_amis(db: Session, provider_account_id: int):
       AND COALESCE((ImagePublic.attr_value#>>'{}')::bool, true)
   ''')
   results = db.execute(stmt, {'provider_account_id': provider_account_id})
-  regional_amis = {}
+  regional_amis: Dict[str, List[str]] = {}
   for result in results:
     region = result['region']
     ami = result['ami']

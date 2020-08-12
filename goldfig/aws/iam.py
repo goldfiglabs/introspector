@@ -1,25 +1,42 @@
 import concurrent.futures as f
-from typing import Callable, Dict, List, Optional, Tuple
+import csv
+from functools import partial
+from io import StringIO
+import time
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
+from botocore.exceptions import ClientError
 from sqlalchemy.orm import Session
 
 from goldfig import ImportWriter, db_import_writer, PathStack
 from goldfig.aws import load_boto_session, load_boto_session_from_config, account_paths_for_import, ProxyBuilder, make_proxy_builder, walk_graph
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.bootstrap_db import import_session
-from goldfig.error import GFInternal
+from goldfig.delta.resource import apply_mapped_attrs
+from goldfig.error import GFError, GFInternal
 from goldfig.models import ImportJob, ProviderCredential
 
 _USER_ATTRS = {
     'AttachedPolicies': 'list_attached_user_policies',
     #  'Tags': 'list_user_tags', # Duplicate
-    'AccessKeyMetadata': 'list_access_keys',
+    'AccessKeys': {
+        'op': 'list_access_keys',
+        'key': 'AccessKeyMetadata'
+    },
     'Groups': 'list_groups_for_user',
     'MFADevices': 'list_mfa_devices',
     'SSHPublicKeys': 'list_ssh_public_keys',
     'ServiceSpecificCredentials': 'list_service_specific_credentials',
     'Certificates': 'list_signing_certificates'
 }
+
+
+def _import_password_policy(proxy: ServiceProxy, ps: PathStack,
+                            writer: ImportWriter, account_id: str):
+  result = proxy.get('get_account_password_policy')
+  if result is not None:
+    writer(ps, 'PasswordPolicy', result['PasswordPolicy'],
+           {'account_id': account_id})
 
 
 def _unpack(tup: Optional[Tuple[str, Dict]]) -> Dict:
@@ -29,16 +46,68 @@ def _unpack(tup: Optional[Tuple[str, Dict]]) -> Dict:
     return tup[1]
 
 
+def _post_process_report_row(row: Dict[str, str]) -> Dict[str, Any]:
+  result = {}
+  for key, value in row.items():
+    if value == 'true' or value == 'True':
+      result[key] = True
+    elif value == 'false' or value == 'False':
+      result[key] = False
+    elif value == 'N/A' or value.lower() == 'no_information':
+      result[key] = None
+    else:
+      result[key] = value
+  return result
+
+
+def _import_credential_report(proxy: ServiceProxy, ps: PathStack,
+                              writer: ImportWriter):
+  writer = writer.for_source('credentialreport')
+  # Kick off the report
+  try:
+    proxy.get('generate_credential_report')
+  except ClientError as e:
+    is_throttled = e.response.get('Error', {}).get('Code') == 'Throttling'
+    # If we're throttled, we've at least kicked it off already
+    if not is_throttled:
+      raise
+  attempts = 0
+  report = None
+  while attempts < 20 and report is None:
+    try:
+      report = proxy.get('get_credential_report')
+    except:
+      attempts += 1
+      time.sleep(0.05)
+  if report is None:
+    raise GFError('Failed to fetch credential report')
+  decoded = report['Content'].decode('utf-8')
+  reader = csv.DictReader(StringIO(decoded))
+  for row in reader:
+    processed = _post_process_report_row(row)
+    writer(ps, 'CredentialReport', processed)
+
+
 def _import_users(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
   users = _unpack(proxy.list('list_users'))
   for user in users['Users']:
     user_data = user.copy()
     name = user_data['UserName']
-    for attr, op in _USER_ATTRS.items():
+    for attr, op_desc in _USER_ATTRS.items():
+      if isinstance(op_desc, str):
+        op = op_desc
+        field = attr
+      else:
+        op = op_desc['op']
+        field = op_desc['key']
       op_result = proxy.list(op, UserName=name)
       if op_result is not None:
-        user_data[attr] = op_result[1][attr]
+        user_data[attr] = op_result[1][field]
     user_data['PolicyList'] = _fetch_inline_policies(proxy, 'user', name)
+    login_profile = proxy.get('get_login_profile', UserName=name)
+    if login_profile is not None:
+      login_profile = login_profile['LoginProfile']
+    user_data['LoginProfile'] = login_profile
     writer(ps, 'user', user_data)
 
 
@@ -153,7 +222,6 @@ _ACCOUNT_ATTRS: Dict[str, str] = {
     # 'SAMLProviderList': 'list_saml_providers',
     # 'ServerCertificateMetadataList': 'list_server_certificates',
     # 'VirtualMFADevices': 'list_virtual_mfa_devices',
-    # 'PasswordPolicy': 'get_account_password_policy'
 }
 
 
@@ -281,12 +349,15 @@ def _import_graph(
   return results
 
 
-def _import_iam(iam: ServiceProxy, writer: ImportWriter, ps: PathStack):
+def _import_iam(iam: ServiceProxy, writer: ImportWriter, ps: PathStack,
+                account_id: str):
+  _import_credential_report(iam, ps, writer)
   _import_users(iam, ps, writer)
   _import_groups(iam, ps, writer)
   _import_policies(iam, ps, writer)
   _import_roles(iam, ps, writer)
   _import_instance_profiles(iam, ps, writer)
+  _import_password_policy(iam, ps, writer, account_id)
 
 
 def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
@@ -295,7 +366,7 @@ def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   boto = load_boto_session_from_config(config)
   proxy = proxy_builder(boto)
-  writer = db_import_writer(db, import_job_id, 'iam', phase=0)
+  writer = db_import_writer(db, import_job_id, 'iam', phase=0, source='base')
   service_proxy = proxy.service('iam')
   f(service_proxy, ps, writer)
   db.commit()
@@ -315,8 +386,10 @@ def _import_account_iam_with_pool(ps: PathStack, account: ProviderCredential,
                        f=fn)
 
   results = [
-      queue_job(f) for f in (_import_roles, _import_users, _import_groups,
-                             _import_policies, _import_instance_profiles)
+      queue_job(f)
+      for f in (_import_credential_report, _import_roles, _import_users,
+                _import_groups, _import_policies, _import_instance_profiles,
+                partial(_import_password_policy, account_id=account.scope))
   ]
   return results
 
@@ -330,7 +403,11 @@ def import_account_iam_with_pool(
 
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   db = import_session()
-  writer = db_import_writer(db, import_job_id, 'organizations', phase=0)
+  writer = db_import_writer(db,
+                            import_job_id,
+                            'organizations',
+                            phase=0,
+                            source='base')
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   accounts = list(map(lambda i: i[1], account_paths))
   results = _import_graph(proxy_builder, import_job, writer, accounts,
@@ -345,13 +422,39 @@ def import_account_iam_to_db(db: Session, import_job_id: int,
   account_paths = account_paths_for_import(db, job)
   # drop the paths, we don't need them here
   accounts = list(map(lambda i: i[1], account_paths))
-  writer = db_import_writer(db, job.id, 'organizations', phase=0)
+  writer = db_import_writer(db,
+                            job.id,
+                            'organizations',
+                            phase=0,
+                            source='base')
 
   def import_iam_fn(ps: PathStack, credential: ProviderCredential):
     boto = load_boto_session(credential)
     proxy = proxy_builder(boto)
     iam = proxy.service('iam')
-    _import_iam(iam, writer, ps)
+    _import_iam(iam, writer, ps, credential.scope)
     return []
 
   _import_graph(proxy_builder, job, writer, accounts, import_iam_fn)
+
+
+def synthesize_account_root(db: Session, import_job: ImportJob, path: str,
+                            account_id: str):
+  arn = f'arn:aws:iam::{account_id}:root'
+  mapped = {
+      'name': '<root account>',
+      'uri': arn,
+      'provider_type': 'RootAccount',
+      'raw': {
+          'Arn': arn
+      },
+      'service': 'iam'
+  }
+  attrs = [{'type': 'provider', 'name': 'Arn', 'value': arn}]
+  apply_mapped_attrs(db,
+                     import_job,
+                     path,
+                     mapped,
+                     attrs,
+                     source='base',
+                     raw_import_id=None)

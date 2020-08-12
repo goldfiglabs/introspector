@@ -42,8 +42,9 @@ SELECT
   sriovnetsupport.attr_value #>> '{}' AS sriovnetsupport,
   statereason.attr_value::jsonb AS statereason,
   tags.attr_value::jsonb AS tags,
-  virtualizationtype.attr_value #>> '{}' AS virtualizationtype
+  virtualizationtype.attr_value #>> '{}' AS virtualizationtype,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -126,6 +127,19 @@ FROM
   LEFT JOIN attrs AS virtualizationtype
     ON virtualizationtype.id = R.id
     AND virtualizationtype.attr_name = 'virtualizationtype'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'image'
@@ -134,3 +148,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_ec2_image;
 
 COMMENT ON MATERIALIZED VIEW aws_ec2_image IS 'ec2 image resources and their associated attributes.';
+

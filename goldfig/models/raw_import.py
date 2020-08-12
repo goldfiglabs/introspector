@@ -1,4 +1,6 @@
 import logging
+from typing import Any, List
+
 from sqlalchemy import Boolean, Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
@@ -15,6 +17,9 @@ class RawImport(Base):
   import_job_id = Column(Integer,
                          ForeignKey('import_job.id'),
                          comment='Import job id.')
+  source = Column(String(256),
+                  nullable=False,
+                  comment='Source of the data that produced this payload')
   service = Column(String(256), nullable=False)
   path = Column(String(1024), comment='Path for raw import.')
   resource_name = Column(String(256), comment='Resource name.')
@@ -31,7 +36,7 @@ class RawImport(Base):
                   comment='Has this import job been mapped?')
 
   # TODO: this is pretty ugly
-  def raw_resources(self):
+  def raw_resources(self) -> List[Any]:
     if isinstance(self.raw, list):
       return self.raw
     else:
@@ -59,6 +64,7 @@ class MappedURI(Base):
   __tablename__ = 'mapped_uri'
   __table_args__ = {'comment': '(Internal) Mapped URIs.'}
   uri = Column(String, nullable=False, primary_key=True, comment='Mapped URI.')
+  source = Column(String(256), nullable=False, primary_key=True)
   import_job_id = Column(Integer,
                          ForeignKey('import_job.id'),
                          primary_key=True,

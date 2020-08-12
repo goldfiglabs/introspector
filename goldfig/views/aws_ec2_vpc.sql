@@ -26,8 +26,9 @@ SELECT
   ipv6cidrblockassociationset.attr_value::jsonb AS ipv6cidrblockassociationset,
   cidrblockassociationset.attr_value::jsonb AS cidrblockassociationset,
   isdefault.attr_value::boolean AS isdefault,
-  tags.attr_value::jsonb AS tags
+  tags.attr_value::jsonb AS tags,
   
+    _aws_organizations_account.id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -62,11 +63,18 @@ FROM
   LEFT JOIN attrs AS tags
     ON tags.id = R.id
     AND tags.attr_name = 'tags'
+  LEFT JOIN resource_relation AS _aws_organizations_account_relation
+    ON _aws_organizations_account_relation.resource_id = R.id
+    AND _aws_organizations_account_relation.relation = 'in'
+  INNER JOIN resource AS _aws_organizations_account
+    ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+    AND _aws_organizations_account.provider_type = 'Account'
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'vpcs'
+  AND LOWER(R.provider_type) = 'vpc'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_vpc;
 
 COMMENT ON MATERIALIZED VIEW aws_ec2_vpc IS 'ec2 vpc resources and their associated attributes.';
+

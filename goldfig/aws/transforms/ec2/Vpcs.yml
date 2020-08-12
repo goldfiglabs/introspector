@@ -1,8 +1,8 @@
 version: 1
 resources:
 - service: ec2
-  provider_type: Vpcs
-  name: VpcId
+  provider_type: Vpc
+  name: Vpc
   uri:
     id: VpcId
   attributes:
@@ -17,5 +17,4 @@ resources:
     - CidrBlockAssociationSet
     - IsDefault
     - Tags
-    custom: {}
   resource_name: vpc

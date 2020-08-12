@@ -26,8 +26,10 @@ SELECT
   joinedtimestamp.attr_value AS joinedtimestamp,
   servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
   tagpolicies.attr_value::jsonb AS tagpolicies,
-  tags.attr_value::jsonb AS tags
+  tags.attr_value::jsonb AS tags,
   
+    _root_id.target_id AS _root_id,
+    _organizational_unit_id.target_id AS _organizational_unit_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -62,6 +64,32 @@ FROM
   LEFT JOIN attrs AS tags
     ON tags.id = R.id
     AND tags.attr_name = 'tags'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_root_relation.resource_id AS resource_id,
+      _aws_organizations_root.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_root_relation
+      INNER JOIN resource AS _aws_organizations_root
+        ON _aws_organizations_root_relation.target_id = _aws_organizations_root.id
+        AND _aws_organizations_root.provider_type = 'Root'
+        AND _aws_organizations_root.service = 'organizations'
+    WHERE
+      _aws_organizations_root_relation.relation = 'in'
+  ) AS _root_id ON _root_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_organizationalunit_relation.resource_id AS resource_id,
+      _aws_organizations_organizationalunit.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_organizationalunit_relation
+      INNER JOIN resource AS _aws_organizations_organizationalunit
+        ON _aws_organizations_organizationalunit_relation.target_id = _aws_organizations_organizationalunit.id
+        AND _aws_organizations_organizationalunit.provider_type = 'OrganizationalUnit'
+        AND _aws_organizations_organizationalunit.service = 'organizations'
+    WHERE
+      _aws_organizations_organizationalunit_relation.relation = 'in'
+  ) AS _organizational_unit_id ON _organizational_unit_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'account'
@@ -70,3 +98,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_organizations_account;
 
 COMMENT ON MATERIALIZED VIEW aws_organizations_account IS 'organizations account resources and their associated attributes.';
+

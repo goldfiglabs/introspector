@@ -36,7 +36,7 @@ def _import_gcp_compute(proxy: Proxy, project: str, segment=None):
 def import_account_compute_to_db(db: Session, import_job_id: int,
                                  proxy_builder: ProxyBuilder):
   job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, 'compute', phase=0)
+  writer = db_import_writer(db, job.id, 'compute', phase=0, source='base')
   creds = credentials_from_config(job.configuration)
   proxy = proxy_builder(creds)
   graph = job.configuration['gcp_graph']
@@ -54,7 +54,11 @@ def import_account_compute_to_db(db: Session, import_job_id: int,
 def _async_proxy(import_job_id: int, config: Dict, proxy_builder_args,
                  ps: PathStack, project_id: str, segment):
   db = import_session()
-  writer = db_import_writer(db, import_job_id, 'compute', phase=0)
+  writer = db_import_writer(db,
+                            import_job_id,
+                            'compute',
+                            phase=0,
+                            source='base')
   creds = credentials_from_config(config)
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   proxy = proxy_builder(creds)

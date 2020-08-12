@@ -71,8 +71,8 @@ resources:
           context: region
   resource_name: cluster
   relations:
-  - path: VpcSecurityGroups
-    relation: in
+  - relation: in
+    path: VpcSecurityGroups
     uri:
       resource_name:
         value: security-group

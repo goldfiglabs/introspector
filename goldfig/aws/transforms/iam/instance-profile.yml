@@ -15,14 +15,14 @@ resources:
     - Roles
   category: Role
   relations:
-  - path: Roles
-    relation: contains
+  - relation: contains
+    path: Roles
     uri:
       uri:
         path: Arn
-  - path: Roles
-    relation: manages
+  - relation: manages
+    path: Roles
+    uri:
+      uri:
+        path: Arn
     invert: true
-    uri:
-      uri:
-        path: Arn

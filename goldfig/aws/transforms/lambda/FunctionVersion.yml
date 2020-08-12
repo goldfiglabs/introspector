@@ -1,0 +1,42 @@
+version: 1
+resources:
+- service: lambda
+  provider_type: FunctionVersion
+  name: Version
+  uri:
+    uri: FunctionArn
+  attributes:
+    provider:
+    - FunctionName
+    - FunctionArn
+    - Runtime
+    - Role
+    - Handler
+    - CodeSize
+    - Description
+    - Timeout
+    - MemorySize
+    - LastModified
+    - CodeSha256
+    - Version
+    - VpcConfig
+    - DeadLetterConfig
+    - Environment
+    - KMSKeyArn
+    - TracingConfig
+    - MasterArn
+    - RevisionId
+    - Layers
+    - State
+    - StateReason
+    - StateReasonCode
+    - LastUpdateStatus
+    - LastUpdateStatusReason
+    - LastUpdateStatusReasonCode
+    - FileSystemConfigs
+  relations:
+  - relation: is-version
+    path: ParentFunctionArn
+    uri:
+      uri:
+        path: ''

@@ -36,8 +36,9 @@ SELECT
   requestpayment.attr_value #>> '{}' AS requestpayment,
   tagging.attr_value::jsonb AS tagging,
   versioning.attr_value::jsonb AS versioning,
-  website.attr_value::jsonb AS website
+  website.attr_value::jsonb AS website,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -102,6 +103,19 @@ FROM
   LEFT JOIN attrs AS website
     ON website.id = R.id
     AND website.attr_name = 'website'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'bucket'
@@ -110,3 +124,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_s3_bucket;
 
 COMMENT ON MATERIALIZED VIEW aws_s3_bucket IS 's3 bucket resources and their associated attributes.';
+

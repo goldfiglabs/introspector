@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>AWS S3 buckets and their associated attributes.</p>
+                            <p>s3 bucket resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,8 +167,93 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="accelerateconfiguration">accelerateconfiguration</span></td>
+                                    <td><span id="name">name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="creationdate">creationdate</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="analyticsconfigurations">analyticsconfigurations</span></td>
                                     <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="inventoryconfigurations">inventoryconfigurations</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="metricsconfigurations">metricsconfigurations</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="accelerateconfiguration">accelerateconfiguration</span></td>
+                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -185,23 +270,6 @@
                                 </tr>
                                 <tr>
                                     <td><span id="acl">acl</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="analyticsconfiguration">analyticsconfiguration</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -252,40 +320,6 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="inventoryconfiguration">inventoryconfiguration</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="lifecycle">lifecycle</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
                                     <td><span id="lifecycleconfiguration">lifecycleconfiguration</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
@@ -304,57 +338,6 @@
                                 </tr>
                                 <tr>
                                     <td><span id="location">location</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="logging">logging</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="metricsconfiguration">metricsconfiguration</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="name">name</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -371,7 +354,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="notification">notification</span></td>
+                                    <td><span id="logging">logging</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -406,7 +389,7 @@
                                 </tr>
                                 <tr>
                                     <td><span id="policy">policy</span></td>
-                                    <td>jsonb</td>
+                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -457,7 +440,7 @@
                                 </tr>
                                 <tr>
                                     <td><span id="requestpayment">requestpayment</span></td>
-                                    <td>jsonb</td>
+                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -523,6 +506,23 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -537,7 +537,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH cte_resourceattrs AS (&#10;         SELECT resource.id,&#10;            resource.uri,&#10;            resource.provider_account_id,&#10;            resource_attribute.resource_id,&#10;            lower((resource_attribute.attr_name)::text) AS attr_name,&#10;            resource_attribute.attr_value&#10;           FROM ((resource&#10;             JOIN provider_account ON ((resource.provider_account_id = provider_account.id)))&#10;             JOIN resource_attribute ON ((resource.id = resource_attribute.resource_id)))&#10;          WHERE ((resource.category = &#39;StorageBucket&#39;::resource_type) AND (provider_account.provider = &#39;aws&#39;::provider) AND ((resource_attribute.type)::text = &#39;provider&#39;::text))&#10;        )&#10; SELECT DISTINCT _key.resource_id,&#10;    _key.uri,&#10;    _key.provider_account_id,&#10;    _clsc_1.attr_value AS accelerateconfiguration,&#10;    _clsc_2.attr_value AS acl,&#10;    _clsc_3.attr_value AS analyticsconfiguration,&#10;    _clsc_4.attr_value AS cors,&#10;    _clsc_5.attr_value AS encryption,&#10;    _clsc_6.attr_value AS inventoryconfiguration,&#10;    _clsc_7.attr_value AS lifecycle,&#10;    _clsc_8.attr_value AS lifecycleconfiguration,&#10;    _clsc_9.attr_value AS location,&#10;    _clsc_10.attr_value AS logging,&#10;    _clsc_11.attr_value AS metricsconfiguration,&#10;    (_clsc_12.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS name,&#10;    _clsc_13.attr_value AS notification,&#10;    _clsc_14.attr_value AS notificationconfiguration,&#10;    _clsc_15.attr_value AS policy,&#10;    _clsc_16.attr_value AS policystatus,&#10;    _clsc_17.attr_value AS replication,&#10;    _clsc_18.attr_value AS requestpayment,&#10;    _clsc_19.attr_value AS tagging,&#10;    _clsc_20.attr_value AS versioning,&#10;    _clsc_21.attr_value AS website&#10;   FROM (((((((((((((((((((((( SELECT DISTINCT cte_resourceattrs.uri,&#10;            cte_resourceattrs.resource_id,&#10;            cte_resourceattrs.id,&#10;            cte_resourceattrs.provider_account_id&#10;           FROM cte_resourceattrs) _key&#10;     LEFT JOIN cte_resourceattrs _clsc_1 ON ((((_clsc_1.uri)::text = (_key.uri)::text) AND (_clsc_1.resource_id = _key.resource_id) AND (_clsc_1.id = _key.id) AND (_clsc_1.attr_name = &#39;accelerateconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_2 ON ((((_clsc_2.uri)::text = (_key.uri)::text) AND (_clsc_2.resource_id = _key.resource_id) AND (_clsc_2.id = _key.id) AND (_clsc_2.attr_name = &#39;acl&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_3 ON ((((_clsc_3.uri)::text = (_key.uri)::text) AND (_clsc_3.resource_id = _key.resource_id) AND (_clsc_3.id = _key.id) AND (_clsc_3.attr_name = &#39;analyticsconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_4 ON ((((_clsc_4.uri)::text = (_key.uri)::text) AND (_clsc_4.resource_id = _key.resource_id) AND (_clsc_4.id = _key.id) AND (_clsc_4.attr_name = &#39;cors&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_5 ON ((((_clsc_5.uri)::text = (_key.uri)::text) AND (_clsc_5.resource_id = _key.resource_id) AND (_clsc_5.id = _key.id) AND (_clsc_5.attr_name = &#39;encryption&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_6 ON ((((_clsc_6.uri)::text = (_key.uri)::text) AND (_clsc_6.resource_id = _key.resource_id) AND (_clsc_6.id = _key.id) AND (_clsc_6.attr_name = &#39;inventoryconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_7 ON ((((_clsc_7.uri)::text = (_key.uri)::text) AND (_clsc_7.resource_id = _key.resource_id) AND (_clsc_7.id = _key.id) AND (_clsc_7.attr_name = &#39;lifecycle&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_8 ON ((((_clsc_8.uri)::text = (_key.uri)::text) AND (_clsc_8.resource_id = _key.resource_id) AND (_clsc_8.id = _key.id) AND (_clsc_8.attr_name = &#39;lifecycleconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_9 ON ((((_clsc_9.uri)::text = (_key.uri)::text) AND (_clsc_9.resource_id = _key.resource_id) AND (_clsc_9.id = _key.id) AND (_clsc_9.attr_name = &#39;location&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_10 ON ((((_clsc_10.uri)::text = (_key.uri)::text) AND (_clsc_10.resource_id = _key.resource_id) AND (_clsc_10.id = _key.id) AND (_clsc_10.attr_name = &#39;logging&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_11 ON ((((_clsc_11.uri)::text = (_key.uri)::text) AND (_clsc_11.resource_id = _key.resource_id) AND (_clsc_11.id = _key.id) AND (_clsc_11.attr_name = &#39;metricsconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_12 ON ((((_clsc_12.uri)::text = (_key.uri)::text) AND (_clsc_12.resource_id = _key.resource_id) AND (_clsc_12.id = _key.id) AND (_clsc_12.attr_name = &#39;name&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_13 ON ((((_clsc_13.uri)::text = (_key.uri)::text) AND (_clsc_13.resource_id = _key.resource_id) AND (_clsc_13.id = _key.id) AND (_clsc_13.attr_name = &#39;notification&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_14 ON ((((_clsc_14.uri)::text = (_key.uri)::text) AND (_clsc_14.resource_id = _key.resource_id) AND (_clsc_14.id = _key.id) AND (_clsc_14.attr_name = &#39;notificationconfiguration&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_15 ON ((((_clsc_15.uri)::text = (_key.uri)::text) AND (_clsc_15.resource_id = _key.resource_id) AND (_clsc_15.id = _key.id) AND (_clsc_15.attr_name = &#39;policy&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_16 ON ((((_clsc_16.uri)::text = (_key.uri)::text) AND (_clsc_16.resource_id = _key.resource_id) AND (_clsc_16.id = _key.id) AND (_clsc_16.attr_name = &#39;policystatus&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_17 ON ((((_clsc_17.uri)::text = (_key.uri)::text) AND (_clsc_17.resource_id = _key.resource_id) AND (_clsc_17.id = _key.id) AND (_clsc_17.attr_name = &#39;replication&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_18 ON ((((_clsc_18.uri)::text = (_key.uri)::text) AND (_clsc_18.resource_id = _key.resource_id) AND (_clsc_18.id = _key.id) AND (_clsc_18.attr_name = &#39;requestpayment&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_19 ON ((((_clsc_19.uri)::text = (_key.uri)::text) AND (_clsc_19.resource_id = _key.resource_id) AND (_clsc_19.id = _key.id) AND (_clsc_19.attr_name = &#39;tagging&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_20 ON ((((_clsc_20.uri)::text = (_key.uri)::text) AND (_clsc_20.resource_id = _key.resource_id) AND (_clsc_20.id = _key.id) AND (_clsc_20.attr_name = &#39;versioning&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_21 ON ((((_clsc_21.uri)::text = (_key.uri)::text) AND (_clsc_21.resource_id = _key.resource_id) AND (_clsc_21.id = _key.id) AND (_clsc_21.attr_name = &#39;website&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (name.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS name,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((creationdate.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS creationdate,&#10;    analyticsconfigurations.attr_value AS analyticsconfigurations,&#10;    inventoryconfigurations.attr_value AS inventoryconfigurations,&#10;    metricsconfigurations.attr_value AS metricsconfigurations,&#10;    (accelerateconfiguration.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS accelerateconfiguration,&#10;    acl.attr_value AS acl,&#10;    cors.attr_value AS cors,&#10;    encryption.attr_value AS encryption,&#10;    lifecycleconfiguration.attr_value AS lifecycleconfiguration,&#10;    (location.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS location,&#10;    logging.attr_value AS logging,&#10;    notificationconfiguration.attr_value AS notificationconfiguration,&#10;    (policy.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS policy,&#10;    policystatus.attr_value AS policystatus,&#10;    replication.attr_value AS replication,&#10;    (requestpayment.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS requestpayment,&#10;    tagging.attr_value AS tagging,&#10;    versioning.attr_value AS versioning,&#10;    website.attr_value AS website,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs name ON (((name.id = r.id) AND (name.attr_name = &#39;name&#39;::text))))&#10;     LEFT JOIN attrs creationdate ON (((creationdate.id = r.id) AND (creationdate.attr_name = &#39;creationdate&#39;::text))))&#10;     LEFT JOIN attrs analyticsconfigurations ON (((analyticsconfigurations.id = r.id) AND (analyticsconfigurations.attr_name = &#39;analyticsconfigurations&#39;::text))))&#10;     LEFT JOIN attrs inventoryconfigurations ON (((inventoryconfigurations.id = r.id) AND (inventoryconfigurations.attr_name = &#39;inventoryconfigurations&#39;::text))))&#10;     LEFT JOIN attrs metricsconfigurations ON (((metricsconfigurations.id = r.id) AND (metricsconfigurations.attr_name = &#39;metricsconfigurations&#39;::text))))&#10;     LEFT JOIN attrs accelerateconfiguration ON (((accelerateconfiguration.id = r.id) AND (accelerateconfiguration.attr_name = &#39;accelerateconfiguration&#39;::text))))&#10;     LEFT JOIN attrs acl ON (((acl.id = r.id) AND (acl.attr_name = &#39;acl&#39;::text))))&#10;     LEFT JOIN attrs cors ON (((cors.id = r.id) AND (cors.attr_name = &#39;cors&#39;::text))))&#10;     LEFT JOIN attrs encryption ON (((encryption.id = r.id) AND (encryption.attr_name = &#39;encryption&#39;::text))))&#10;     LEFT JOIN attrs lifecycleconfiguration ON (((lifecycleconfiguration.id = r.id) AND (lifecycleconfiguration.attr_name = &#39;lifecycleconfiguration&#39;::text))))&#10;     LEFT JOIN attrs location ON (((location.id = r.id) AND (location.attr_name = &#39;location&#39;::text))))&#10;     LEFT JOIN attrs logging ON (((logging.id = r.id) AND (logging.attr_name = &#39;logging&#39;::text))))&#10;     LEFT JOIN attrs notificationconfiguration ON (((notificationconfiguration.id = r.id) AND (notificationconfiguration.attr_name = &#39;notificationconfiguration&#39;::text))))&#10;     LEFT JOIN attrs policy ON (((policy.id = r.id) AND (policy.attr_name = &#39;policy&#39;::text))))&#10;     LEFT JOIN attrs policystatus ON (((policystatus.id = r.id) AND (policystatus.attr_name = &#39;policystatus&#39;::text))))&#10;     LEFT JOIN attrs replication ON (((replication.id = r.id) AND (replication.attr_name = &#39;replication&#39;::text))))&#10;     LEFT JOIN attrs requestpayment ON (((requestpayment.id = r.id) AND (requestpayment.attr_name = &#39;requestpayment&#39;::text))))&#10;     LEFT JOIN attrs tagging ON (((tagging.id = r.id) AND (tagging.attr_name = &#39;tagging&#39;::text))))&#10;     LEFT JOIN attrs versioning ON (((versioning.id = r.id) AND (versioning.attr_name = &#39;versioning&#39;::text))))&#10;     LEFT JOIN attrs website ON (((website.id = r.id) AND (website.attr_name = &#39;website&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;bucket&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -550,6 +550,7 @@
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_attribute.html">resource_attribute</a></li>
                                         <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

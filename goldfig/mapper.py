@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from functools import partial
+from goldfig.delta import attrs
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, Iterator, List, Optional, Union
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 import yaml
 
 import jmespath
@@ -19,12 +20,19 @@ Context = Dict[str, str]
 
 
 @dataclass
+class Partial:
+  target_uri: str
+  raw: Any
+  attrs: List[Dict[str, Any]]
+
+
+@dataclass
 class ResourceSpec:
   resource_name: Optional[str]
   category: Optional[str]
   provider_type: Optional[str]
   uri: Dict
-  name: str
+  name: Union[str, Dict[str, str]]
   attributes: Dict
 
 
@@ -33,6 +41,12 @@ class SubResourceSpec:
   key: str
   typ: str
   parent: Dict[str, Any]
+
+
+@dataclass
+class PartialSpec:
+  uri: Dict
+  attributes: Dict
 
 
 @dataclass
@@ -60,6 +74,11 @@ class Transform:
       yield SubResourceSpec(key=spec['key'],
                             typ=spec['type'],
                             parent=spec.get('parent', {}))
+
+  @property
+  def partials(self) -> Iterator[PartialSpec]:
+    for spec in self.spec.get('partials', []):
+      yield PartialSpec(uri=spec['uri'], attributes=spec['attributes'])
 
 
 Transforms = Dict[str, Dict[str, Transform]]
@@ -237,7 +256,10 @@ class Mapper:
 
   def _map_resource_v1(self, spec: ResourceSpec, service: str,
                        uri_fn: Callable, raw, ctx):
-    name = _find_path(spec.name, raw, require_string_on_empty=True)
+    if isinstance(spec.name, str):
+      name = _find_path(spec.name, raw, require_string_on_empty=True)
+    else:
+      name = spec.name['value']
     uri_args = {key: _find_path(path, raw) for key, path in spec.uri.items()}
     try:
       uri = uri_fn(**uri_args, service=service, context=ctx)
@@ -287,7 +309,7 @@ class Mapper:
                                    resource_name, raw_uri_fn, parent_kwargs)
     for subspec in transform.subresources:
       for parent in raw_list:
-        subresources = parent[subspec.key]
+        subresources = parent.get(subspec.key, [])
         parent_params = {
             k: self.value_from_spec(v, parent, parent=parent_args)
             for k, v in subspec.parent.items()
@@ -300,6 +322,39 @@ class Mapper:
                                                   resource_name=subspec.typ),
                                           parent_args=parent_params)
 
+  def _map_partial_v1(self, partial_spec: PartialSpec, raw_list: List[Any],
+                      ctx: Context, service: str, raw_uri_fn: Callable,
+                      resource_name: str) -> Iterator[Partial]:
+    provider_attr_spec = partial_spec.attributes.get('provider', [])
+    uri_fn = partial(raw_uri_fn, resource_name=resource_name)
+    for raw in raw_list:
+      uri_args = {
+          key: _find_path(path, raw)
+          for key, path in partial_spec.uri.items()
+      }
+      target_uri = uri_fn(**uri_args, service=service, context=ctx)
+      if target_uri is None:
+        raise GFInternal(
+            f'Failed to produce target uri {uri_args} {resource_name} {service} {ctx}'
+        )
+      provider_attrs = self._map_provider_attrs(provider_attr_spec, raw)
+      yield Partial(target_uri=target_uri, raw=raw, attrs=provider_attrs)
+
+  def _map_partials_v1(self, transform: Transform, raw_list: List[Any],
+                       ctx: Context, service: str, raw_uri_fn: Callable,
+                       resource_name: str) -> Iterator[Partial]:
+    for partial in transform.partials:
+      yield from self._map_partial_v1(partial, raw_list, ctx, service,
+                                      raw_uri_fn, resource_name)
+
+  def map_partials(self, raw_list: List[Any], ctx: Context, service: str,
+                   raw_uri_fn: Callable,
+                   resource_name: str) -> Iterator[Partial]:
+    transform = self._find_transform(service, resource_name)
+    if transform.version >= 1:
+      yield from self._map_partials_v1(transform, raw_list, ctx, service,
+                                       raw_uri_fn, resource_name)
+
   def map_resources(self,
                     raw_list: List[Any],
                     ctx: Optional[Context],
@@ -308,8 +363,7 @@ class Mapper:
                     raw_uri_fn: Callable,
                     parent_args: Optional[Dict] = None):
     transform = self._find_transform(service, resource_name)
-    version = transform.spec.get('version', 0)
-    if version >= 1:
+    if transform.version >= 1:
       yield from self._map_resources_v1(raw_list, ctx or {}, service,
                                         resource_name, raw_uri_fn, parent_args)
 
@@ -386,7 +440,7 @@ class Mapper:
       subresource_name = spec.get('type')
       parent_params_spec = spec.get('parent', {})
       for parent in raw_list:
-        subresources = parent[subresource_key]
+        subresources = parent.get(subresource_key, [])
         parent_params = {
             k: self.value_from_spec(v, parent, parent=parent_args)
             for k, v in parent_params_spec.items()
@@ -425,7 +479,11 @@ class Mapper:
       fn = self.fn(fn_name)
     invert = relation_spec.get('invert', False)
     relation = relation_spec.get('relation')
-    targets = jmespath.search(relation_spec['path'], raw) or []
+    path = relation_spec['path']
+    if path == '':
+      targets = [raw]
+    else:
+      targets = jmespath.search(relation_spec['path'], raw) or []
     if not isinstance(targets, list):
       targets = [targets]
     for target in targets:

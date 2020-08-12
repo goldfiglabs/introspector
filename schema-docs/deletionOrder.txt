@@ -2,6 +2,7 @@ schema_version
 mapped_uri
 resource_relation_attribute_delta
 resource_relation_attribute
+resource_raw
 resource_attribute_delta
 resource_attribute
 provider_credential

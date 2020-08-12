@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>AWS IAM signing certificates and their associated attributes.</p>
+                            <p>iam signingcertificate resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,7 +167,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="certificatebody">certificatebody</span></td>
+                                    <td><span id="username">username</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -185,6 +185,23 @@
                                 </tr>
                                 <tr>
                                     <td><span id="certificateid">certificateid</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="certificatebody">certificatebody</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -235,9 +252,26 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="username">username</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
+                                    <td><span id="_user_id">_user_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -265,7 +299,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH cte_resourceattrs AS (&#10;         SELECT resource.id,&#10;            resource.uri,&#10;            resource.provider_account_id,&#10;            resource_attribute.resource_id,&#10;            lower((resource_attribute.attr_name)::text) AS attr_name,&#10;            resource_attribute.attr_value&#10;           FROM ((resource&#10;             JOIN provider_account ON ((resource.provider_account_id = provider_account.id)))&#10;             JOIN resource_attribute ON ((resource.id = resource_attribute.resource_id)))&#10;          WHERE (((resource.provider_type)::text = &#39;SigningCertificate&#39;::text) AND (provider_account.provider = &#39;aws&#39;::provider) AND ((resource_attribute.type)::text = &#39;provider&#39;::text))&#10;        )&#10; SELECT DISTINCT _key.resource_id,&#10;    _key.uri,&#10;    _key.provider_account_id,&#10;    (_clsc_1.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS certificatebody,&#10;    (_clsc_2.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS certificateid,&#10;    (_clsc_3.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS status,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((_clsc_4.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS uploaddate,&#10;    (_clsc_5.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS username&#10;   FROM (((((( SELECT DISTINCT cte_resourceattrs.uri,&#10;            cte_resourceattrs.resource_id,&#10;            cte_resourceattrs.id,&#10;            cte_resourceattrs.provider_account_id&#10;           FROM cte_resourceattrs) _key&#10;     LEFT JOIN cte_resourceattrs _clsc_1 ON ((((_clsc_1.uri)::text = (_key.uri)::text) AND (_clsc_1.resource_id = _key.resource_id) AND (_clsc_1.id = _key.id) AND (_clsc_1.attr_name = &#39;certificatebody&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_2 ON ((((_clsc_2.uri)::text = (_key.uri)::text) AND (_clsc_2.resource_id = _key.resource_id) AND (_clsc_2.id = _key.id) AND (_clsc_2.attr_name = &#39;certificateid&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_3 ON ((((_clsc_3.uri)::text = (_key.uri)::text) AND (_clsc_3.resource_id = _key.resource_id) AND (_clsc_3.id = _key.id) AND (_clsc_3.attr_name = &#39;status&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_4 ON ((((_clsc_4.uri)::text = (_key.uri)::text) AND (_clsc_4.resource_id = _key.resource_id) AND (_clsc_4.id = _key.id) AND (_clsc_4.attr_name = &#39;uploaddate&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_5 ON ((((_clsc_5.uri)::text = (_key.uri)::text) AND (_clsc_5.resource_id = _key.resource_id) AND (_clsc_5.id = _key.id) AND (_clsc_5.attr_name = &#39;username&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (username.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS username,&#10;    (certificateid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS certificateid,&#10;    (certificatebody.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS certificatebody,&#10;    (status.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS status,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((uploaddate.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS uploaddate,&#10;    _user_id.target_id AS _user_id,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs username ON (((username.id = r.id) AND (username.attr_name = &#39;username&#39;::text))))&#10;     LEFT JOIN attrs certificateid ON (((certificateid.id = r.id) AND (certificateid.attr_name = &#39;certificateid&#39;::text))))&#10;     LEFT JOIN attrs certificatebody ON (((certificatebody.id = r.id) AND (certificatebody.attr_name = &#39;certificatebody&#39;::text))))&#10;     LEFT JOIN attrs status ON (((status.id = r.id) AND (status.attr_name = &#39;status&#39;::text))))&#10;     LEFT JOIN attrs uploaddate ON (((uploaddate.id = r.id) AND (uploaddate.attr_name = &#39;uploaddate&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_iam_user_relation.resource_id,&#10;            _aws_iam_user.id AS target_id&#10;           FROM (resource_relation _aws_iam_user_relation&#10;             JOIN resource _aws_iam_user ON (((_aws_iam_user_relation.target_id = _aws_iam_user.id) AND ((_aws_iam_user.provider_type)::text = &#39;User&#39;::text) AND ((_aws_iam_user.service)::text = &#39;iam&#39;::text))))&#10;          WHERE ((_aws_iam_user_relation.relation)::text = &#39;owns&#39;::text)) _user_id ON ((_user_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;signingcertificate&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -278,6 +312,7 @@
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_attribute.html">resource_attribute</a></li>
                                         <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

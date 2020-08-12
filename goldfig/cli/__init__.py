@@ -4,7 +4,7 @@ from typing import List
 
 import click
 
-from goldfig.cli.account import cmd as account  #build_account_parser
+from goldfig.cli.account import cmd as account
 from goldfig.cli.cis import cmd as cis
 from goldfig.cli.debug import cmd as debug
 from goldfig.cli.init import cmd as init

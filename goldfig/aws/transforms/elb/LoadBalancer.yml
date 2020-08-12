@@ -25,7 +25,6 @@ resources:
     - Scheme
     - Tags
     - Attributes
-    - Policies
     custom:
       Metadata:
         Tags:
@@ -36,9 +35,8 @@ resources:
   resource_name: loadbalancer
   category: LoadBalancer
   relations:
-  - path: ListenerDescriptions
-    relation: forwards-to
-    invert: true
+  - relation: forwards-to
+    path: ListenerDescriptions
     uri:
       listener_id:
         path: Listener.LoadBalancerPort
@@ -46,6 +44,7 @@ resources:
         parent_path: LoadBalancerName
       resource_name:
         value: Listener
+    invert: true
 subresources:
 - type: Listener
   key: ListenerDescriptions

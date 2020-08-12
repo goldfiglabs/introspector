@@ -34,3 +34,11 @@ Bootstrap in to correct environment. Also be sure to rerun these any time your p
 pipenv install
 pipenv shell
 ```
+
+## Short-circuit imports to reset or remap
+
+```
+$ ./goldfig.py account aws remap -i <import_job_id>
+$ ./goldfig.py debug reset -p <account_provider_id>
+```
+

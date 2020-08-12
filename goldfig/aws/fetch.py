@@ -371,6 +371,14 @@ class LambdaClientProxy(ClientProxy):
     return key.startswith('list_') and key not in self.SKIPLIST
 
 
+class CloudtrailClientProxy(ClientProxy):
+
+  SKIPLIST: List[str] = []
+
+  def _should_import(self, key: str) -> bool:
+    return key.startswith('describe_') and key not in self.SKIPLIST
+
+
 class RDSClientProxy(ClientProxy):
 
   SKIPLIST = [
@@ -418,7 +426,8 @@ class AWSFetch(object):
       'elb': ELBClientProxy,
       'iam': IAMClientProxy,
       'rds': RDSClientProxy,
-      'lambda': LambdaClientProxy
+      'lambda': LambdaClientProxy,
+      'cloudtrail': CloudtrailClientProxy
   }
 
   def __init__(self, boto: Boto):

@@ -1,7 +1,7 @@
 version: 1
 resources:
 - service: ec2
-  provider_type: KeyPairInfo
+  provider_type: KeyPair
   name: KeyPairId
   uri:
     id: KeyPairId

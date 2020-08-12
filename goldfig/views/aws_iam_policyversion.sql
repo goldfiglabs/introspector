@@ -20,8 +20,10 @@ SELECT
   document.attr_value #>> '{}' AS document,
   versionid.attr_value #>> '{}' AS versionid,
   isdefaultversion.attr_value::boolean AS isdefaultversion,
-  (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate
+  (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate,
   
+    _policy_id.target_id AS _policy_id,
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -38,6 +40,32 @@ FROM
   LEFT JOIN attrs AS createdate
     ON createdate.id = R.id
     AND createdate.attr_name = 'createdate'
+  LEFT JOIN (
+    SELECT
+      _aws_iam_policy_relation.resource_id AS resource_id,
+      _aws_iam_policy.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_policy_relation
+      INNER JOIN resource AS _aws_iam_policy
+        ON _aws_iam_policy_relation.target_id = _aws_iam_policy.id
+        AND _aws_iam_policy.provider_type = 'Policy'
+        AND _aws_iam_policy.service = 'iam'
+    WHERE
+      _aws_iam_policy_relation.relation = 'contains-version'
+  ) AS _policy_id ON _policy_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'policyversion'
@@ -46,3 +74,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_iam_policyversion;
 
 COMMENT ON MATERIALIZED VIEW aws_iam_policyversion IS 'iam policyversion resources and their associated attributes.';
+

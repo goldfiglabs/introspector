@@ -1,43 +1,40 @@
 version: 1
 resources:
-  - service: iam
-    provider_type: Group
-    name: GroupName
+- service: iam
+  provider_type: Group
+  name: GroupName
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Path
+    - GroupName
+    - GroupId
+    - Arn
+    - CreateDate
+    - PolicyList
+    - AttachedPolicies
+  category: Group
+  relations:
+  - relation: manages
+    path: PolicyList
     uri:
-      uri: Arn
-    attributes:
-      provider:
-        - Path
-        - GroupName
-        - GroupId
-        - Arn
-        - CreateDate
-        - PolicyList
-        - AttachedPolicies
-    category: Group
-    relations:
-      - path: PolicyList
-        relation: manages
-        invert: true
-        uri:
-          resource_name:
-            value: GroupPolicy
-          arn:
-            parent_path: Arn
-          policy_name:
-            path: PolicyName
-      - path: AttachedPolicies
-        relation: manages
-        invert: true
-        uri:
-          uri:
-            path: PolicyArn
-        attributes:
-          PolicyName:
-            path: PolicyName
-subresources:
-  - type: GroupPolicy
-    key: PolicyList
-    parent:
+      resource_name:
+        value: GroupPolicy
       arn:
-        path: Arn
+        parent_path: Arn
+      policy_name:
+        path: PolicyName
+    invert: true
+  - relation: manages
+    path: AttachedPolicies
+    uri:
+      uri:
+        path: PolicyArn
+    invert: true
+subresources:
+- type: GroupPolicy
+  key: PolicyList
+  parent:
+    arn:
+      path: Arn

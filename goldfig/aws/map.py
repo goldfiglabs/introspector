@@ -1,3 +1,4 @@
+from goldfig.aws.iam import synthesize_account_root
 from goldfig.error import GFInternal
 import os
 from typing import Dict, List, Optional
@@ -8,8 +9,8 @@ from goldfig import PathStack, db_import_writer
 from goldfig.aws import account_paths_for_import, ProxyBuilder, load_boto_session
 from goldfig.aws.ec2_adjunct import find_adjunct_data
 from goldfig.aws.elb_adjunct import synthesize_endpoints
-from goldfig.aws.fetch import Proxy
 from goldfig.aws.uri import get_arn_fn
+from goldfig.delta.partial import map_partial_deletes, map_partial_prefix
 from goldfig.delta.resource import map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
 from goldfig.mapper import DivisionURI, load_transforms, Mapper
 from goldfig.models import ImportJob
@@ -26,9 +27,37 @@ def _tag_list_to_object(tags: Optional[List[Dict[str, str]]],
   return {item['Key']: item['Value'] for item in tags}
 
 
+def _lambda_alias_relations(parent_uri, target_raw, **kwargs):
+  initial_version = target_raw['FunctionVersion']
+  fn_arn = target_raw['FunctionArn']
+
+  def version_arn(v: str) -> str:
+    return f'{fn_arn}:{v}'
+
+  version_total = 0
+  weights = target_raw.get('RoutingConfig', {}).get('AdditionalVersionWeights',
+                                                    {})
+  for version, weight in weights.items():
+    version_total += weight
+    target_uri = version_arn(version)
+    yield parent_uri, 'forwards-to', version_arn(version), [{
+        'name': 'weight',
+        'value': weight
+    }]
+  remaining = 1.0 - version_total
+  target_uri = version_arn(initial_version)
+  yield parent_uri, 'forwards-to', version_arn(initial_version), [{
+      'name':
+      'weight',
+      'value':
+      remaining
+  }]
+
+
 AWS_TRANSFORMS = {
     'aws_zone_to_region': _zone_to_region,
-    'aws_tags': _tag_list_to_object
+    'aws_tags': _tag_list_to_object,
+    'aws_lambda_alias': _lambda_alias_relations
 }
 
 
@@ -106,16 +135,28 @@ def _get_mapper(db: Session,
                 extra_attrs=extra_attrs)
 
 
-def map_import(db: Session, import_job: ImportJob,
-               proxy_builder: ProxyBuilder):
+# Everything has a 'base' source, these are extra
+AWS_SOURCES = ['credentialreport']
+
+
+def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
+  import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
   mapper = _get_mapper(db, import_job)
-  adjunct_writer = db_import_writer(db, import_job.id, 'ec2', phase=1)
+  adjunct_writer = db_import_writer(db,
+                                    import_job.id,
+                                    'ec2',
+                                    phase=1,
+                                    source='base')
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope)
-    # TODO: use path for 'in' relation?
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
+    synthesize_account_root(db, import_job, path, account.scope)
+    for source in AWS_SOURCES:
+      map_partial_prefix(db, mapper, import_job, source,
+                         import_job.path_prefix, uri_fn)
+      map_partial_deletes(db, import_job, source)
     boto = load_boto_session(account)
     proxy = proxy_builder(boto)
     # Additional ec2 work

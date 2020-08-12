@@ -1,15 +1,9 @@
-import concurrent.futures as f
 import logging
-import os
-from typing import Any, Callable, Dict, Generator, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
-from botocore.loaders import create_loader
-from botocore.regions import EndpointResolver
-from botocore.exceptions import ClientError
 import botocore.session as boto
 from sqlalchemy.orm import Session
 
-from goldfig import collect_exceptions, PathStack
 from goldfig.aws.fetch import Proxy
 from goldfig.error import GFInternal
 from goldfig.models import ImportJob, ProviderAccount, ProviderCredential
@@ -75,14 +69,18 @@ def walk_graph(org, graph) -> Generator[Tuple[str, str, Dict], None, None]:
         yield f'{entry_path}/{account["Id"]}', 'Account', account
 
 
-def build_aws_import_job(db: Session, proxy_builder: ProxyBuilder,
-                         provider: ProviderAccount) -> Dict:
+def load_boto_for_provider(db: Session,
+                           provider: ProviderAccount) -> boto.Session:
   accounts = ProviderCredential.for_provider(db, provider.id)
   if len(accounts) != 1:
     raise NotImplementedError(
         'Currently only one AWS account per org is supported')
   account = accounts[0]
-  session = load_boto_session(account)
+  return load_boto_session(account)
+
+
+def build_aws_import_job(session: boto.Session,
+                         proxy_builder: ProxyBuilder) -> Dict:
   proxy = proxy_builder(session)
   org, graph = _build_org_graph(proxy)
   sts = session.create_client('sts')
@@ -154,111 +152,6 @@ def load_boto_session_from_config(config: Dict[str, Any]) -> boto.Session:
 def load_boto_session(provider_credential: ProviderCredential) -> boto.Session:
   config = provider_credential.config
   return load_boto_session_from_config(config)
-
-
-def region_is_available(region):
-  # https://www.cloudar.be/awsblog/checking-if-a-region-is-enabled-using-the-aws-api/
-  # https://stackoverflow.com/a/56184952
-  regional_sts = get_boto_session().create_client('sts', region_name=region)
-  try:
-    regional_sts.get_caller_identity()
-    return True
-  except ClientError:
-    return False
-
-
-def get_region_fn() -> Callable[[str], Iterator[str]]:
-  data_dir = os.path.join(os.path.dirname(boto.__file__), 'data')
-  loader = create_loader(data_dir)
-  endpoint_data = loader.load_data('endpoints')
-  endpoints = EndpointResolver(endpoint_data)
-
-  def get_regions_for_service(service: str) -> Iterator[str]:
-    sm = loader.load_service_model(service, type_name='service-2')
-    prefix = sm['metadata'].get('endpointPrefix', service)
-    return filter(
-        lambda region: region_is_available(region),
-        endpoints.get_available_endpoints(prefix, partition_name='aws'))
-
-  return get_regions_for_service
-
-
-def run_parallel_session(accounts: List[Tuple[str, ProviderCredential]],
-                         import_job: ImportJob,
-                         proxy_builder_args) -> List[str]:
-  from goldfig.aws.iam import import_account_iam_with_pool
-  from goldfig.aws.ec2 import import_account_ec2_region_with_pool
-  from goldfig.aws.elb import import_account_elb_region_with_pool
-  from goldfig.aws.rds import import_account_rds_region_with_pool
-  from goldfig.aws.s3 import import_account_s3_with_pool
-  from goldfig.aws.lambdax import import_account_lambda_region_with_pool
-
-  cpu_count = os.cpu_count()
-  if cpu_count is not None:
-    workers = max(1, cpu_count - 1)
-  else:
-    workers = 1
-  ps = PathStack.from_import_job(import_job)
-  get_region_for_service = get_region_fn()
-  with f.ProcessPoolExecutor(max_workers=workers) as pool:
-    results = import_account_iam_with_pool(pool, proxy_builder_args,
-                                           import_job.id, ps, accounts)
-    for region in get_region_for_service('ec2'):
-      results += import_account_ec2_region_with_pool(pool, proxy_builder_args,
-                                                     import_job.id, region, ps,
-                                                     accounts)
-    for region in get_region_for_service('elb'):
-      results += import_account_elb_region_with_pool(pool, proxy_builder_args,
-                                                     import_job.id, region, ps,
-                                                     accounts)
-    results += import_account_s3_with_pool(pool, proxy_builder_args,
-                                           import_job.id, ps, accounts)
-    for region in get_region_for_service('rds'):
-      results += import_account_rds_region_with_pool(pool, proxy_builder_args,
-                                                     import_job.id, region, ps,
-                                                     accounts)
-    for region in get_region_for_service('lambda'):
-      results += import_account_lambda_region_with_pool(
-          pool, proxy_builder_args, import_job.id, region, ps, accounts)
-    f.wait(results)
-    # raise any exceptions
-    return collect_exceptions(results)
-
-
-def run_single_session(db: Session, import_job_id: int,
-                       proxy_builder: ProxyBuilder):
-  from goldfig.aws.iam import import_account_iam_to_db
-  from goldfig.aws.ec2 import import_account_ec2_region_to_db
-  from goldfig.aws.elb import import_account_elb_region_to_db
-  from goldfig.aws.s3 import import_account_s3_to_db
-  from goldfig.aws.lambdax import import_account_lambda_region_to_db
-  from goldfig.aws.rds import import_account_rds_region_to_db
-
-  import_account_iam_to_db(db, import_job_id, proxy_builder)
-  db.flush()
-  get_region_for_service = get_region_fn()
-  for region in get_region_for_service('ec2'):
-    import_account_ec2_region_to_db(db, import_job_id, region, proxy_builder)
-    db.flush()
-  for region in get_region_for_service('elb'):
-    import_account_elb_region_to_db(db, import_job_id, region, proxy_builder)
-    db.flush()
-  for region in get_region_for_service('lambda'):
-    import_account_lambda_region_to_db(db, import_job_id, region,
-                                       proxy_builder)
-    db.flush()
-  for region in get_region_for_service('rds'):
-    import_account_rds_region_to_db(db, import_job_id, region, proxy_builder)
-    db.flush()
-
-  import_account_s3_to_db(db, import_job_id, proxy_builder)
-
-
-def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
-  from goldfig.aws.map import map_import as library_map_import
-  import_job: ImportJob = db.query(ImportJob).get(import_job_id)
-
-  library_map_import(db, import_job, proxy_builder)
 
 
 def account_paths_for_import(

@@ -9,6 +9,9 @@ def _iam_uri_fn(resource_name, **kwargs):
     return f'{kwargs["policy_arn"]}:{kwargs["version_id"]}'
   elif resource_name in ('RolePolicy', 'UserPolicy', 'GroupPolicy'):
     return f'{kwargs["arn"]}:{kwargs["policy_name"]}'
+  elif resource_name == 'PasswordPolicy':
+    account_id = _get_with_parent('account_id', kwargs)
+    return f'{account_id}/PasswordPolicy'
   raise GFInternal(f'Failed IAM ARN ({resource_name}) {kwargs}')
 
 

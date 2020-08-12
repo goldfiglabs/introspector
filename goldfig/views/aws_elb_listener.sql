@@ -22,8 +22,9 @@ SELECT
   instanceprotocol.attr_value #>> '{}' AS instanceprotocol,
   instanceport.attr_value::integer AS instanceport,
   sslcertificateid.attr_value #>> '{}' AS sslcertificateid,
-  policynames.attr_value::jsonb AS policynames
+  policynames.attr_value::jsonb AS policynames,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -46,6 +47,19 @@ FROM
   LEFT JOIN attrs AS policynames
     ON policynames.id = R.id
     AND policynames.attr_name = 'policynames'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'listener'
@@ -54,3 +68,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_elb_listener;
 
 COMMENT ON MATERIALIZED VIEW aws_elb_listener IS 'elb listener resources and their associated attributes.';
+

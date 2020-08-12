@@ -1,0 +1,23 @@
+version: 1
+resources:
+- service: lambda
+  provider_type: Alias
+  name: Name
+  uri:
+    uri: AliasArn
+  attributes:
+    provider:
+    - AliasArn
+    - Name
+    - FunctionVersion
+    - Description
+    - RoutingConfig
+    - RevisionId
+  relations:
+  - path: ''
+    fn: aws_lambda_alias
+  - relation: aliases
+    path: FunctionArn
+    uri:
+      uri:
+        path: ''

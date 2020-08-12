@@ -64,7 +64,11 @@ def _find_adjunct_data(db: Session, proxy: Proxy, writer: ImportWriter,
 def import_adjunct_data(db: Session, import_job: ImportJob, proxy: Proxy):
   provider_account_id = import_job.provider_account_id
 
-  writer = db_import_writer(db, import_job.id, 'compute', phase=1)
+  writer = db_import_writer(db,
+                            import_job.id,
+                            'compute',
+                            phase=1,
+                            source='base')
   ps = PathStack.from_import_job(import_job)
   _find_adjunct_data(db, proxy, writer, ps, provider_account_id)
 
@@ -158,7 +162,13 @@ def _find_endpoints(
 def synthesize_endpoints(db: Session, import_job: ImportJob):
   for path, mapped, attrs in _find_endpoints(db,
                                              import_job.provider_account_id):
-    apply_mapped_attrs(db, import_job, path, mapped, attrs, raw_import_id=None)
+    apply_mapped_attrs(db,
+                       import_job,
+                       path,
+                       mapped,
+                       attrs,
+                       source='base',
+                       raw_import_id=None)
 
 
 def synthesize_resources(db: Session, import_job_id: int):

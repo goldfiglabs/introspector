@@ -75,8 +75,8 @@ resources:
           context: region
   resource_name: db
   relations:
-  - path: VpcSecurityGroups
-    relation: in
+  - relation: in
+    path: VpcSecurityGroups
     uri:
       resource_name:
         value: security-group
@@ -84,8 +84,8 @@ resources:
         path: VpcSecurityGroupId
       service:
         value: ec2
-  - path: DBClusterIdentifier
-    relation: in
+  - relation: in
+    path: DBClusterIdentifier
     uri:
       resource_name:
         value: cluster

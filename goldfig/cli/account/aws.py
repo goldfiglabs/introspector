@@ -7,10 +7,13 @@ from sqlalchemy.orm import Session
 from tabulate import tabulate
 
 from goldfig.account import delete_account
-from goldfig.aws import (build_aws_import_job, make_proxy_builder, map_import,
-                         ProxyBuilder, run_single_session,
-                         create_provider_and_credential, run_parallel_session,
+from goldfig.aws import (build_aws_import_job, load_boto_for_provider,
+                         make_proxy_builder, ProxyBuilder,
+                         create_provider_and_credential,
                          account_paths_for_import, get_boto_session)
+from goldfig.aws.importer import run_single_session, run_parallel_session
+from goldfig.aws.map import map_import
+from goldfig.aws.region import RegionCache
 from goldfig.bootstrap_db import import_session, refresh_views
 from goldfig.cli.util import print_report, query_yes_no
 from goldfig.delta.report import report_for_import
@@ -114,12 +117,14 @@ def import_aws_cmd(account: Optional[str], debug: bool,
   proxy_builder_args = (use_cache, patch_id)
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   provider = _find_provider(db, proxy_builder, account, force=force)
-  import_desc = build_aws_import_job(db, proxy_builder, provider)
+  boto = load_boto_for_provider(db, provider)
+  import_desc = build_aws_import_job(boto, proxy_builder)
   import_job = ImportJob.create(provider, import_desc)
   db.add(import_job)
   db.flush()
+  region_cache = RegionCache(boto)
   if debug:
-    run_single_session(db, import_job.id, proxy_builder)
+    run_single_session(db, import_job.id, proxy_builder, region_cache)
     db.flush()
     map_import(db, import_job.id, proxy_builder)
     refresh_views(db)
@@ -130,7 +135,8 @@ def import_aws_cmd(account: Optional[str], debug: bool,
     accounts = account_paths_for_import(db, import_job)
     db.commit()
     # No db required for parallel invocation
-    exceptions = run_parallel_session(accounts, import_job, proxy_builder_args)
+    exceptions = run_parallel_session(region_cache, accounts, import_job,
+                                      proxy_builder_args)
     # Make certain we're using the current db session
     import_job = db.query(ImportJob).get(import_job.id)
     if len(exceptions) == 0:

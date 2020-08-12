@@ -68,8 +68,8 @@ resources:
   resource_name: instance
   category: VMInstance
   relations:
-  - path: BlockDeviceMappings
-    relation: attached
+  - relation: attached
+    path: BlockDeviceMappings
     uri:
       resource_name:
         value: volume
@@ -86,8 +86,8 @@ resources:
         path: Ebs.Status
       DeviceName:
         path: DeviceName
-  - path: ImageId
-    relation: imaged
+  - relation: imaged
+    path: ImageId
     uri:
       resource_name:
         value: image
@@ -95,15 +95,22 @@ resources:
         path: ''
       zone:
         parent_path: Placement.AvailabilityZone
-  - path: IamInstanceProfile
-    relation: acts-as
+  - relation: acts-as
+    path: IamInstanceProfile
     uri:
       uri:
         path: Arn
-  - path: SecurityGroups
-    relation: in
+  - relation: in
+    path: SecurityGroups
     uri:
       resource_name:
         value: security-group
       id:
         path: GroupId
+  - relation: in
+    path: VpcId
+    uri:
+      resource_name:
+        value: vpc
+      id:
+        path: ''

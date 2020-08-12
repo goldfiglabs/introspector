@@ -1,7 +1,7 @@
 version: 1
 resources:
 - service: elb
-  provider_type: ListenerDescription
+  provider_type: Listener
   name: Listener.LoadBalancerPort
   uri:
     listener_id: Listener.LoadBalancerPort

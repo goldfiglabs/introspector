@@ -8,6 +8,7 @@ resource_relation
 provider_credential
 resource_attribute
 resource_attribute_delta
+resource_raw
 resource_relation_attribute
 resource_relation_attribute_delta
 mapped_uri

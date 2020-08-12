@@ -1,19 +1,20 @@
 import logging
-from typing import Dict, Iterator, List, Set, Optional
+from typing import Any, Dict, Iterator, List, Set, Optional
 
 from sqlalchemy import or_, inspect
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from goldfig.delta import json_diff
-from goldfig.error import GFInternal
+from goldfig.delta.attrs import diff_attrs
+from goldfig.delta.types import Raw
 from goldfig.mapper import Mapper
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
                             ResourceAttribute, ResourceDelta,
                             ResourceAttributeDelta, ResourceRelation,
                             ResourceRelationAttribute,
                             ResourceRelationAttributeDelta,
-                            ResourceRelationDelta)
+                            ResourceRelationDelta, ResourceRaw)
 
 _log = logging.getLogger(__name__)
 
@@ -189,7 +190,8 @@ def _apply_relation(db: Session, import_job: ImportJob,
                   ResourceRelationAttribute.relation_id == previous.id)]
           })
       db.add(delta)
-      existing_attributes = set(previous.attributes)
+      existing_attributes: Set[ResourceRelationAttribute] = set(
+          previous.attributes)
       for attr in relation_attrs:
         existing_attr = _find_existing_relation_attr(existing_attributes, attr)
         if existing_attr is None:
@@ -258,10 +260,12 @@ def map_resource_prefix(db: Session,
                         mapper: Mapper,
                         uri_fn,
                         resource_name: str = None):
-  _log.info(f'Mapping prefix {path_prefix}')
+  _log.info(f'Mapping base - prefix {path_prefix}')
+  source = 'base'
   imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
-      RawImport.path.like(f'{path_prefix}%'), RawImport.mapped == False)
+      RawImport.path.like(f'{path_prefix}%'), RawImport.mapped == False,
+      RawImport.source == source)
   for raw_import in imports:
     import_resource_name = resource_name \
       if resource_name is not None \
@@ -275,41 +279,47 @@ def map_resource_prefix(db: Session,
                          raw_import.path,
                          mapped,
                          attrs,
+                         source,
                          raw_import_id=raw_import.id)
     raw_import.mapped = True
     db.add(raw_import)
 
 
 def apply_mapped_attrs(db: Session, import_job: ImportJob, path: str,
-                       mapped: Dict, attrs: List[Dict],
+                       mapped: Dict, attrs: List[Dict], source: str,
                        raw_import_id: Optional[int]):
-  resource = Resource(provider_account_id=import_job.provider_account_id,
-                      name=mapped['name'],
-                      path=path,
-                      category=mapped['category'],
-                      provider_type=mapped['provider_type'],
-                      raw=mapped['raw'],
-                      uri=mapped['uri'],
-                      service=mapped.get('service'))
+  resource = Resource(
+      provider_account_id=import_job.provider_account_id,
+      name=mapped['name'],
+      path=path,
+      category=mapped.get('category'),
+      provider_type=mapped.get('provider_type'),
+      # raw=mapped['raw'],
+      uri=mapped['uri'],
+      service=mapped.get('service'))
   # TODO: possibly a big perf hit?
   # Consider using a different API
   db.merge(
       MappedURI(uri=resource.uri,
+                source=source,
                 import_job_id=import_job.id,
                 raw_import_id=raw_import_id))
   resource_attrs = [
       ResourceAttribute(resource=resource,
+                        source=source,
                         attr_type=attr['type'],
                         name=attr['name'],
                         value=attr['value']) for attr in attrs
   ]
-  apply_resource(db, import_job, resource, resource_attrs)
+  apply_resource(db, import_job, source, resource, mapped['raw'],
+                 resource_attrs)
 
 
 def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
                          service: Optional[str]):
-  uris = db.query(
-      MappedURI.uri).filter(MappedURI.import_job_id == import_job.id)
+  # TODO: rewrite this into one query
+  uris = db.query(MappedURI.uri).filter(
+      MappedURI.import_job_id == import_job.id, MappedURI.source == 'base')
   deletes = db.query(Resource).filter(
       Resource.provider_account_id == import_job.provider_account_id,
       ~Resource.uri.in_(uris),
@@ -350,11 +360,15 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
     _log.info(f'delete resource {deleted.uri}')
 
 
-def apply_resource(db: Session, import_job: ImportJob, resource: Resource,
+def apply_resource(db: Session, import_job: ImportJob, source: str,
+                   resource: Resource, raw: Raw,
                    attrs: List[ResourceAttribute]):
-  previous = db.query(Resource).filter(
-      Resource.uri == resource.uri, Resource.provider_account_id ==
-      import_job.provider_account_id).one_or_none()
+  previous: Optional[ResourceRaw] = db.query(ResourceRaw).filter(
+      ResourceRaw.source == source).join(
+          Resource, Resource.id == ResourceRaw.resource_id,
+          aliased=True).filter(
+              Resource.uri == resource.uri, Resource.provider_account_id ==
+              import_job.provider_account_id).one_or_none()
   if previous is None:
     _log.info(f'path %s, uri %s', resource.path, resource.uri)
     db.add(resource)
@@ -370,10 +384,11 @@ def apply_resource(db: Session, import_job: ImportJob, resource: Resource,
           import_job.provider_account_id).one_or_none()
       _log.debug(f'existing {existing.path}')
       raise e
+    db.add(ResourceRaw(resource_id=resource.id, source=source, raw=raw))
     delta = ResourceDelta(import_job=import_job,
                           resource_id=resource.id,
                           change_type='add',
-                          change_details=resource.raw)
+                          change_details=raw)
     db.add(delta)
     for attr in attrs:
       attr_delta = ResourceAttributeDelta(resource_delta=delta,
@@ -386,85 +401,7 @@ def apply_resource(db: Session, import_job: ImportJob, resource: Resource,
                                           })
       db.add(attr_delta)
   else:
-    stanzas = json_diff(previous.raw, resource.raw)
-    if len(stanzas) == 0:
-      _log.info(f'no change {resource.uri}')
-      if previous.path != resource.path:
-        raise GFInternal(
-            f'path mismatch on existing resource. Old {previous.path} vs new {resource.path}'
-        )
-    else:
-      _log.info(f'delta found for {resource.uri}')
-      delta = ResourceDelta(import_job=import_job,
-                            resource_id=previous.id,
-                            change_type='update',
-                            change_details=stanzas)
-      db.add(delta)
-      existing_attributes = set(previous.attributes)
-      for attr in attrs:
-        existing_attr = _find_existing_attr(existing_attributes, attr)
-        if existing_attr is None:
-          _log.info(f'new attribute {attr}')
-          # Otherwise it auto-inserts the new one.
-          # Note to self: ORM bad
-          attr.resource = previous
-          db.add(attr)
-          db.flush()
-          attr_delta = ResourceAttributeDelta(resource_delta=delta,
-                                              resource_attribute_id=attr.id,
-                                              change_type='add',
-                                              change_details={
-                                                  'type': attr.attr_type,
-                                                  'name': attr.name,
-                                                  'value': attr.value
-                                              })
-          db.add(attr_delta)
-        else:
-          value_delta = json_diff(existing_attr.value, attr.value)
-          if len(value_delta) != 0:
-            old_value = existing_attr.value
-            existing_attr.value = attr.value
-            db.add(existing_attr)
-            attr_delta = ResourceAttributeDelta(
-                resource_delta=delta,
-                resource_attribute_id=existing_attr.id,
-                change_type='update',
-                change_details={
-                    'type': existing_attr.attr_type,
-                    'name': existing_attr.name,
-                    'old_value': old_value,
-                    'new_value': attr.value,
-                    'delta': value_delta
-                })
-            db.add(attr_delta)
-          else:
-            # No change ignore
-            pass
-          # No longer eligible for matching
-          # although this shouldn't be a problem unless we have
-          # dupes in the future
-          existing_attributes.remove(existing_attr)
-      for existing_attr in existing_attributes:
-        db.delete(existing_attr)
-        attr_delta = ResourceAttributeDelta(
-            resource_delta=delta,
-            # Should we include this?
-            resource_attribute_id=existing_attr.id,
-            change_type='delete',
-            change_details={
-                'type': existing_attr.attr_type,
-                'name': existing_attr.name,
-                'value': existing_attr.value
-            })
-        db.add(attr_delta)
-      previous.raw = resource.raw
+    if diff_attrs(db, previous.resource_id, source, import_job.id,
+                  resource.uri, previous.raw, raw, attrs):
+      previous.raw = raw
       db.add(previous)
-
-
-def _find_existing_attr(attrs: Set[ResourceAttribute],
-                        new_attr: ResourceAttribute):
-  for attr in attrs:
-    if attr.name == new_attr.name and \
-        attr.attr_type == new_attr.attr_type:
-      return attr
-  return None

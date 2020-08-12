@@ -83,7 +83,7 @@ def _async_proxy(import_job_id: int, proxy_builder_args, ps: PathStack,
                  config: Dict, typ: str, name: str, entry_path: str):
   assert len(ps._tokens) == 0
   db = import_session()
-  writer = db_import_writer(db, import_job_id, 'iam', phase=0)
+  writer = db_import_writer(db, import_job_id, 'iam', phase=0, source='base')
   creds = credentials_from_config(config)
   proxy_builder = make_proxy_builder(*proxy_builder_args)
   proxy = proxy_builder(creds)
@@ -133,7 +133,7 @@ def import_account_iam_with_pool(pool: f.ProcessPoolExecutor,
 def import_account_iam_to_db(db: Session, import_job_id: int,
                              proxy_builder: ProxyBuilder):
   import_job = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, import_job.id, 'iam', phase=0)
+  writer = db_import_writer(db, import_job.id, 'iam', phase=0, source='base')
   creds = credentials_from_config(import_job.configuration)
   proxy = proxy_builder(creds)
   _import_iam_graph(proxy, writer, PathStack.from_import_job(import_job),

@@ -159,6 +159,7 @@ def _map_principals(db: Session, import_job: ImportJob):
                            'name': 'Scoped',
                            'value': True
                        }],
+                       source='base',
                        raw_import_id=None)
 
 
@@ -222,11 +223,16 @@ def map_import(db: Session, import_job: ImportJob, proxy: Proxy):
                   import_job.provider_account_id,
                   division_uri,
                   extra_fns=extra_fns)
-  map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
+  map_resource_prefix(db, import_job, 'base', import_job.path_prefix, mapper,
+                      uri_fn)
 
   # IAM additional work
   _map_principals(db, import_job)
-  iam_writer = db_import_writer(db, import_job.id, 'iam', phase=1)
+  iam_writer = db_import_writer(db,
+                                import_job.id,
+                                'iam',
+                                phase=1,
+                                source='base')
   find_and_import_roles(db, proxy, iam_writer, import_job)
 
   # Compute additional work
@@ -234,7 +240,8 @@ def map_import(db: Session, import_job: ImportJob, proxy: Proxy):
   import_adjunct_data(db, import_job, proxy)
   synthesize_endpoints(db, import_job)
   # map agin, to get anything we added
-  map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
+  map_resource_prefix(db, import_job, 'base', import_job.path_prefix, mapper,
+                      uri_fn)
 
   # Now map deletes
   map_resource_deletes(db, import_job.path_prefix, import_job, service=None)

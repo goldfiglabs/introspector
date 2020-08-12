@@ -34,8 +34,9 @@ SELECT
   (TO_TIMESTAMP(createdtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdtime,
   scheme.attr_value #>> '{}' AS scheme,
   tags.attr_value::jsonb AS tags,
-  attributes.attr_value::jsonb AS attributes
+  attributes.attr_value::jsonb AS attributes,
   
+    _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
@@ -94,6 +95,19 @@ FROM
   LEFT JOIN attrs AS attributes
     ON attributes.id = R.id
     AND attributes.attr_name = 'attributes'
+  LEFT JOIN (
+    SELECT
+      _aws_organizations_account_relation.resource_id AS resource_id,
+      _aws_organizations_account.id AS target_id
+    FROM
+      resource_relation AS _aws_organizations_account_relation
+      INNER JOIN resource AS _aws_organizations_account
+        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        AND _aws_organizations_account.provider_type = 'Account'
+        AND _aws_organizations_account.service = 'organizations'
+    WHERE
+      _aws_organizations_account_relation.relation = 'in'
+  ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'loadbalancer'
@@ -102,3 +116,4 @@ WITH NO DATA;
 REFRESH MATERIALIZED VIEW aws_elb_loadbalancer;
 
 COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'elb loadbalancer resources and their associated attributes.';
+

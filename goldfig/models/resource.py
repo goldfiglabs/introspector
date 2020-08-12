@@ -84,7 +84,6 @@ class Resource(Base):
                          'Division',
                          name='resource_type'),
                     nullable=True)
-  raw = Column(JSONB)
 
   attributes = relationship('ResourceAttribute', cascade='delete')
   children = relationship(
@@ -102,11 +101,26 @@ class Resource(Base):
         Resource.uri == uri).one_or_none()
 
 
+class ResourceRaw(Base):
+  __tablename__ = 'resource_raw'
+  __table_args__ = (UniqueConstraint(
+      'source', 'resource_id', name='payload_source'
+  ), {
+      'comment':
+      'Holds the JSON representation of a resource from a particular source',
+  })
+  id = Column(Integer, primary_key=True)
+  source = Column(String(256), nullable=False)
+  resource_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
+  raw = Column(JSONB)
+
+
 class ResourceAttribute(Base):
   __tablename__ = 'resource_attribute'
   __table_args__ = {'comment': 'Attributes of resources.'}
   id = Column(Integer, primary_key=True)
   resource_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
+  source = Column(String(256), nullable=False)
   attr_type = Column('type', String(256))
   name = Column('attr_name', String(256))
   value = Column('attr_value', JSONB)

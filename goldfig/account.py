@@ -85,6 +85,16 @@ def _delete_resources(db: Session, provider_account_id: int, report):
       AND R.provider_account_id = :provider_account_id
   ''', {'provider_account_id': provider_account_id})
   report['resource_attribute'] = result.rowcount
+  result = db.execute(
+      '''
+    DELETE FROM resource_raw
+    USING
+      resource AS R
+    WHERE
+      resource_id = R.id
+      AND R.provider_account_id = :provider_account_id
+  ''', {'provider_account_id': provider_account_id})
+  report['resource_raw'] = result.rowcount
   db.flush()
   db.execute(
       '''

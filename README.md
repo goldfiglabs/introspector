@@ -15,6 +15,7 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 ## Pre-requisites
 
 - [Docker](https://docs.docker.com/get-docker/)
+
   ```
   $ docker --version
   Docker version 19.03.8, build afacb8b
@@ -22,7 +23,8 @@ We were inspired by `osquery` to bring the same level of structure and consisten
   docker-compose version 1.25.5, build 8a1c60f6
   ```
 
-- [AWS command line interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) 
+- [AWS command line interface](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
+
   ```
   aws configure list
   ```
@@ -31,10 +33,11 @@ We were inspired by `osquery` to bring the same level of structure and consisten
   ```
   gcloud auth application-default login
   ```
- 
+
 ## Getting started
 
 1. Download the latest Gold Fig [release](https://github.com/goldfiglabs/goldfig/releases):
+
    ```
     curl -LO https://github.com/goldfiglabs/goldfig/releases/latest/download/goldfig_osx.zip
 
@@ -49,11 +52,13 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 ## Usage
 
 Initialize Gold Fig system and schemas:
+
 ```
 ./gf init
 ```
 
 Import data from provider:
+
 ```
 ./gf account aws import
 ./gf account gcp import
@@ -81,11 +86,13 @@ Get a report on all tags used across every resource:
 ./gf tags report
 ```
 
-Run several queries demonstrating a sample of the [CIS](https://www.cisecurity.org/) 3-Tier Web Application Benchmark:
+Run several queries demonstrating a sample of the [CIS](https://www.cisecurity.org/)
+
+3-Tier Web Application Benchmark:
 Note that the `TAG_SPEC` below is used to identify infrastructure that is part of a specific tier. So it may look like `role=web,role=app` or `tier=frontend,tier=backend` or however you have tagged your resources.
 
 ```
-./gf cis --tags=<TAG_SPEC>
+./gf cis 3-tier --tags=<TAG_SPEC>
 ```
 
 Run an arbitrary SQL query against your data:
@@ -164,6 +171,17 @@ After running an import job multiple times, you can also query for resource that
    - AWS: the available credentials when running the import must have at least permissions in the following policies:
      - arn:aws:iam::aws:policy/SecurityAudit
      - arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+
+     The following commands can create the read-only account credentials which should be saved to ~/.aws/credentials:
+    ```
+    aws iam create-group --group-name Goldfig
+    aws iam attach-group-policy --group-name Goldfig --policy-arn arn:aws:iam::aws:policy/SecurityAudit
+    aws iam attach-group-policy --group-name Goldfig --policy-arn arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+    aws iam create-user --user-name goldfig
+    aws iam add-user-to-group --user-name goldfig --group-name Goldfig
+    aws iam create-access-key --user-name goldfig
+    ```
+
    - GCP: the credentials available via `gcloud` must have at least the permissions covered by the following roles, with bindings at the organization level\*:
 
      - roles/Browser
@@ -183,9 +201,15 @@ After running an import job multiple times, you can also query for resource that
 
 ## Schema Documentation
 
-Schema documentation can be found [here](./schema-docs)
+Schema documentation can be found online:
+ - [https://www.goldfiglabs.com/goldfig/](https://www.goldfiglabs.com/goldfig/)
+
+ Alternatively, your running Docker instance will have the docs for your build:
+ - [http://localhost:5000/](http://localhost:5000/)
+
 
 ## License
+
 Copyright (c) 2019-2020 Gold Fig Labs Inc.
 
 This Source Code Form is subject to the terms of the Mozilla Public License, v.2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
