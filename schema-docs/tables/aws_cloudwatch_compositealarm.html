@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>resource - goldfig Database</title>
+        <title>aws_cloudwatch_compositealarm - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>resource</h1><p><span id="recordNumber">273</span> rows</p><br />
+                    <h1>aws_cloudwatch_compositealarm</h1><p><span id="recordNumber">0</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Table of all imported resources across every provider.</p>
+                            <p>cloudwatch compositealarm resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -116,91 +116,7 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="id">id</span></td>
-                                    <td>serial</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title='Automatically updated by the database'>√</td>
-                                    <td>nextval(&#39;resource_id_seq&#39;::regclass)</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="resource_attribute.resource_id references resource.id via resource_attribute_resource_id_fkey"><a href='resource_attribute.html'>resource_attribute</a><span class='relatedKey'>.resource_id</span></td>
-                                                <td class="constraint detail">resource_attribute_resource_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="resource_raw.resource_id references resource.id via resource_raw_resource_id_fkey"><a href='resource_raw.html'>resource_raw</a><span class='relatedKey'>.resource_id</span></td>
-                                                <td class="constraint detail">resource_raw_resource_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="resource_relation.resource_id references resource.id via resource_relation_resource_id_fkey"><a href='resource_relation.html'>resource_relation</a><span class='relatedKey'>.resource_id</span></td>
-                                                <td class="constraint detail">resource_relation_resource_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="resource_relation.target_id references resource.id via resource_relation_target_id_fkey"><a href='resource_relation.html'>resource_relation</a><span class='relatedKey'>.target_id</span></td>
-                                                <td class="constraint detail">resource_relation_target_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="path">path</span></td>
-                                    <td>varchar</td>
-                                    <td>1024</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="uri">uri</span></td>
-                                    <td>varchar</td>
-                                    <td>1024</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="name">name</span></td>
-                                    <td>varchar</td>
-                                    <td>256</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="provider_account_id">provider_account_id</span></td>
+                                    <td><span id="resource_id">resource_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -212,16 +128,12 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="resource.provider_account_id references provider_account.id via resource_provider_account_id_fkey"><a href='provider_account.html'>provider_account</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">resource_provider_account_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
                                         </table>
                                     </td>
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="provider_type">provider_type</span></td>
+                                    <td><span id="uri">uri</span></td>
                                     <td>varchar</td>
                                     <td>1024</td>
                                     <td title='nullable'>√</td>
@@ -238,9 +150,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="service">service</span></td>
-                                    <td>varchar</td>
-                                    <td>256</td>
+                                    <td><span id="provider_account_id">provider_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -255,8 +167,25 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="category">category</span></td>
-                                    <td>resource_type</td>
+                                    <td><span id="actionsenabled">actionsenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="alarmactions">alarmactions</span></td>
+                                    <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -271,113 +200,257 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="alarmarn">alarmarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="alarmconfigurationupdatedtimestamp">alarmconfigurationupdatedtimestamp</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="alarmdescription">alarmdescription</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="alarmname">alarmname</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="alarmrule">alarmrule</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="insufficientdataactions">insufficientdataactions</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="okactions">okactions</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="statereason">statereason</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="statereasondata">statereasondata</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="stateupdatedtimestamp">stateupdatedtimestamp</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="statevalue">statevalue</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="tags">tags</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     <div class="box box-primary">
                         <div class="box-header with-border">
-                            <i class="fa fa-sitemap"></i>
-                            <h3 id="Indexes" class="box-title">Indexes</h3>
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
                             </div>
                         </div>
                         <div class="box-body">
-                            <table id="indexes_table" class="table table-bordered table-striped dataTable" role="grid">
-                                <thead>
-                                <tr>
-                                    <th>Constraint Name</th>
-                                    <th>Type</th>
-                                    <th>Sort</th>
-                                    <th>Column(s)</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> resource_pkey</td>
-                                    <td>Primary key</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>id</td>
-                                </tr>
-                                <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> provider_uri</td>
-                                    <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>provider_account_id + uri</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div><!-- /.box-body -->
-                    </div>
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <i class="fa fa-sitemap"></i>
-                            <h3 class="box-title">Check Constraints</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                        <div class="box-body">
-                            <table id="check_table" class="table table-bordered table-striped dataTable" role="grid">
-                                <thead align='left'>
-                                <tr>
-                                    <th>Constraint Name</th>
-                                    <th>Constraint</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>type_exists</td>
-                                    <td>(((NOT (category IS NULL)) OR (NOT (provider_type IS NULL))))</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <i class="fa fa-code-fork"></i>
-                            <h3 id="Relationships" class="box-title">Relationships</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div>
-                        <div class="box-body">
-                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
-                                <h5>Close relationships within degrees of separation</h5>
-                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
-                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
-                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
-                                </ul>
-                                <div class="tab-content no-padding">
-                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="resource.html" target="_top" title="resource" alt="" coords="253,308,676,612">
-<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,428,209,545">
-<area shape="rect" id="node3" href="resource_attribute.html" target="_top" title="resource_attribute" alt="" coords="720,5,936,152">
-<area shape="rect" id="node4" href="resource_raw.html" target="_top" title="resource_raw" alt="" coords="740,169,916,345">
-<area shape="rect" id="node5" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,363,931,568">
-</map>
-                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/resource.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
-                                    </div>
-                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
-                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="import_job.html" target="_top" title="import_job" alt="" coords="386,97,543,185">
-<area shape="rect" id="node2" href="provider_account.html" target="_top" title="provider_account" alt="" coords="5,200,209,317">
-<area shape="rect" id="node3" href="provider_credential.html" target="_top" title="provider_credential" alt="" coords="356,203,573,291">
-<area shape="rect" id="node4" href="resource.html" target="_top" title="resource" alt="" coords="253,308,676,612">
-<area shape="rect" id="node5" href="resource_attribute.html" target="_top" title="resource_attribute" alt="" coords="720,5,936,152">
-<area shape="rect" id="node6" href="resource_raw.html" target="_top" title="resource_raw" alt="" coords="740,169,916,345">
-<area shape="rect" id="node7" href="resource_relation.html" target="_top" title="resource_relation" alt="" coords="725,363,931,568">
-<area shape="rect" id="node8" href="resource_relation_attribute.html" target="_top" title="resource_relation_attribute" alt="" coords="980,365,1251,453">
-</map>
-                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/resource.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
-                                    </div>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (actionsenabled.attr_value)::boolean AS actionsenabled,&#10;    alarmactions.attr_value AS alarmactions,&#10;    (alarmarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmarn,&#10;    alarmconfigurationupdatedtimestamp.attr_value AS alarmconfigurationupdatedtimestamp,&#10;    (alarmdescription.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmdescription,&#10;    (alarmname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmname,&#10;    (alarmrule.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmrule,&#10;    insufficientdataactions.attr_value AS insufficientdataactions,&#10;    okactions.attr_value AS okactions,&#10;    (statereason.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereason,&#10;    (statereasondata.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereasondata,&#10;    stateupdatedtimestamp.attr_value AS stateupdatedtimestamp,&#10;    (statevalue.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statevalue,&#10;    tags.attr_value AS tags,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs actionsenabled ON (((actionsenabled.id = r.id) AND (actionsenabled.attr_name = &#39;actionsenabled&#39;::text))))&#10;     LEFT JOIN attrs alarmactions ON (((alarmactions.id = r.id) AND (alarmactions.attr_name = &#39;alarmactions&#39;::text))))&#10;     LEFT JOIN attrs alarmarn ON (((alarmarn.id = r.id) AND (alarmarn.attr_name = &#39;alarmarn&#39;::text))))&#10;     LEFT JOIN attrs alarmconfigurationupdatedtimestamp ON (((alarmconfigurationupdatedtimestamp.id = r.id) AND (alarmconfigurationupdatedtimestamp.attr_name = &#39;alarmconfigurationupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN attrs alarmdescription ON (((alarmdescription.id = r.id) AND (alarmdescription.attr_name = &#39;alarmdescription&#39;::text))))&#10;     LEFT JOIN attrs alarmname ON (((alarmname.id = r.id) AND (alarmname.attr_name = &#39;alarmname&#39;::text))))&#10;     LEFT JOIN attrs alarmrule ON (((alarmrule.id = r.id) AND (alarmrule.attr_name = &#39;alarmrule&#39;::text))))&#10;     LEFT JOIN attrs insufficientdataactions ON (((insufficientdataactions.id = r.id) AND (insufficientdataactions.attr_name = &#39;insufficientdataactions&#39;::text))))&#10;     LEFT JOIN attrs okactions ON (((okactions.id = r.id) AND (okactions.attr_name = &#39;okactions&#39;::text))))&#10;     LEFT JOIN attrs statereason ON (((statereason.id = r.id) AND (statereason.attr_name = &#39;statereason&#39;::text))))&#10;     LEFT JOIN attrs statereasondata ON (((statereasondata.id = r.id) AND (statereasondata.attr_name = &#39;statereasondata&#39;::text))))&#10;     LEFT JOIN attrs stateupdatedtimestamp ON (((stateupdatedtimestamp.id = r.id) AND (stateupdatedtimestamp.attr_name = &#39;stateupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN attrs statevalue ON (((statevalue.id = r.id) AND (statevalue.attr_name = &#39;statevalue&#39;::text))))&#10;     LEFT JOIN attrs tags ON (((tags.id = r.id) AND (tags.attr_name = &#39;tags&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;compositealarm&#39;::text));</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
                                 </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="resource.html">resource</a></li>
+                                        <li><a href="resource_attribute.html">resource_attribute</a></li>
+                                        <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
                             </div>
                         </div><!-- /.box-body -->
                     </div>

@@ -49,7 +49,7 @@ def three_tier(provider_spec: Optional[str], tag_spec: str):
       print(results)
 
 
-@cmd.command('foundation', hidden=True)
+@cmd.command('foundation')
 @click.option(
     '-p',
     '--provider',

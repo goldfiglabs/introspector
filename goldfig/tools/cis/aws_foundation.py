@@ -569,6 +569,157 @@ class NoAdminAccess(Foundation):
         entities)
 
 
+class CloudtrailEnabledEverywhere(Foundation):
+  '''Benchmark 2.1'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        True
+      FROM
+        (
+          SELECT
+            COUNT(*) AS cnt
+          FROM
+            aws_cloudtrail_trail
+          WHERE
+            ismultiregiontrail = True
+            AND provider_account_id = :provider_account_id
+        ) AS multi_region_trails
+      WHERE
+        multi_region_trails.cnt = 0
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'No multi-region cloudtrail instance found'
+
+
+class CloudtrailLogFileValidationEnabled(Foundation):
+  '''Benchmark 2.2'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        uri
+      FROM
+        aws_cloudtrail_trail
+      WHERE
+        logfilevalidationenabled = False
+        AND provider_account_id = :provider_account_id
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    return f'Cloudtrail {uri} does not have log file validation enabled'
+
+
+class CloudtrailBucketIsPrivate(Foundation):
+  '''Benchmark 2.3'''
+  def _sql(self) -> str:
+    return '''
+      WITH acl_public AS (
+        SELECT
+          B.uri
+        FROM
+          aws_s3_bucket AS B
+          CROSS JOIN LATERAL jsonb_array_elements(B.acl->'Grants') AS G
+        WHERE
+          G.value->'Grantee'->>'Type' = 'Group'
+          AND G.value->'Grantee'->>'URI' IN ('http://acs.amazonaws.com/groups/global/AuthenticatedUsers', 'http://acs.amazonaws.com/groups/global/AllUsers')
+      ), policy_public AS (
+        SELECT
+          B.uri
+        FROM
+          aws_s3_bucket AS B
+          CROSS JOIN LATERAL jsonb_array_elements(B.policy::jsonb->'Statement') AS S
+        WHERE
+          S.value->>'Effect' = 'Allow'
+          AND S.value->'Principal' IN ('"*"'::jsonb, '{"AWS": "*"}'::jsonb)
+      )
+      SELECT
+        T.uri AS trail,
+        B.uri AS bucket
+      FROM
+        aws_cloudtrail_trail AS T
+        INNER JOIN aws_s3_bucket AS B
+          ON T._s3_bucket_id = B.resource_id
+      WHERE
+        T.provider_account_id = :provider_account_id
+        AND (
+          EXISTS (SELECT uri FROM policy_public AS PP WHERE PP.uri = B.uri)
+          OR EXISTS (SELECT uri FROM acl_public AS PP WHERE PP.uri = B.uri)
+        )
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    trail = row['trail']
+    bucket = row['bucket']
+    return f'Cloudtrail {trail} writes to public bucket {bucket}'
+
+
+class CloudwatchLogsUpToDate(Foundation):
+  '''Benchmark 2.4'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        uri,
+        COALESCE(
+          age(
+            TO_TIMESTAMP(
+              latestcloudwatchlogsdeliverytime #>> '{}',
+              'YYYY-MM-DD"T"HH24:MI:SS'
+            )::timestamp at time zone '00:00'
+          ) > interval '1 day',
+          True
+        ) AS stale_logs,
+        cloudwatchlogsloggrouparn IS NULL AS no_log_group
+      FROM
+        aws_cloudtrail_trail
+      WHERE
+        provider_account_id = :provider_account_id
+        AND (
+          cloudwatchlogsloggrouparn IS NULL
+          OR
+          COALESCE(
+            age(
+              TO_TIMESTAMP(
+                latestcloudwatchlogsdeliverytime #>> '{}',
+                'YYYY-MM-DD"T"HH24:MI:SS'
+              )::timestamp at time zone '00:00'
+            ) > interval '1 day',
+            True
+          )
+        )
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    if row['no_log_group']:
+      return f'Cloudtrail {uri} has no associated cloudwatch logs'
+    else:
+      return f'Cloudtrail {uri} has not received cloudwatch logs in over a day'
+
+
+class CloudtrailBucketLoggingIsEnable(Foundation):
+  '''Benchmark 2.6'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        T.uri AS trail,
+        B.uri AS bucket
+      FROM
+        aws_cloudtrail_trail AS T
+        INNER JOIN aws_s3_bucket AS B
+          ON T._s3_bucket_id = B.resource_id
+      WHERE
+        B.logging -> 'LoggingEnabled' IS NULL
+        AND T.provider_account_id = :provider_account_id
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    trail = row['trail']
+    bucket = row['bucket']
+    return f'Cloudtrail {trail} writes to bucket {bucket} which does not have access logging enabled'
+
+
 class NoSSHFromEverywhere(Foundation):
   '''Benchmark 4.1'''
   def _sql(self) -> str:
@@ -655,6 +806,12 @@ def run(db: Session, provider_account: ProviderAccount):
   SupportPolicyExists().run(db, provider_account.id)
   NoAutoCreatedAccessKeys().run(db, provider_account.id)
   NoAdminAccess().run(db, provider_account.id)
+  # 2
+  CloudtrailEnabledEverywhere().run(db, provider_account.id)
+  CloudtrailLogFileValidationEnabled().run(db, provider_account.id)
+  CloudtrailBucketIsPrivate().run(db, provider_account.id)
+  CloudwatchLogsUpToDate().run(db, provider_account.id)
+  CloudtrailBucketLoggingIsEnable().run(db, provider_account.id)
   # 4
   NoSSHFromEverywhere().run(db, provider_account.id)
   NoRDPFromEverywhere().run(db, provider_account.id)

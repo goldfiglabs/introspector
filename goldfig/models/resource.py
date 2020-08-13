@@ -125,7 +125,7 @@ class ResourceAttribute(Base):
   name = Column('attr_name', String(256))
   value = Column('attr_value', JSONB)
 
-  resource = relationship('Resource', back_populates='attributes')
+  resource = relationship('Resource')
 
   def __repr__(self) -> str:
     return f'<ResourceAttribute type={self.attr_type} name={self.name} value={self.value}>'

@@ -9,6 +9,7 @@ Sec/compliance scanners:
   https://github.com/nccgroup/ScoutSuite
   https://github.com/dowjones/hammer 
   https://github.com/prezi/reddalert - AWS risky security change detector built atop EDDA.
+  https://docs.chef.io/inspec/ 
 
 Service specific tools:
   Instacart - S3 - https://github.com/ankane/s3tk

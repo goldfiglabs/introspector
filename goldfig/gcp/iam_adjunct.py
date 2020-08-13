@@ -16,8 +16,10 @@ def _find_global_roles(db: Session, provider_account_id: int) -> List[str]:
     SELECT
         DISTINCT(Bindings.raw->'role') AS role
     FROM
-      resource AS R,
-      LATERAL (SELECT jsonb_array_elements(R.raw->'bindings') AS raw) AS Bindings
+      resource AS R
+      INNER JOIN resource_raw AS RR
+        ON R.id = RR.resource_id,
+      LATERAL (SELECT jsonb_array_elements(RR.raw->'bindings') AS raw) AS Bindings
     WHERE
       R.provider_account_id = :provider_account_id
       AND R.category in ('Division', 'Organization')

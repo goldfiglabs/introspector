@@ -304,15 +304,14 @@ def apply_mapped_attrs(db: Session, import_job: ImportJob, path: str,
                 source=source,
                 import_job_id=import_job.id,
                 raw_import_id=raw_import_id))
-  resource_attrs = [
-      ResourceAttribute(resource=resource,
-                        source=source,
-                        attr_type=attr['type'],
-                        name=attr['name'],
-                        value=attr['value']) for attr in attrs
-  ]
-  apply_resource(db, import_job, source, resource, mapped['raw'],
-                 resource_attrs)
+  # resource_attrs = [
+  #     ResourceAttribute(resource=resource,
+  #                       source=source,
+  #                       attr_type=attr['type'],
+  #                       name=attr['name'],
+  #                       value=attr['value']) for attr in attrs
+  # ]
+  apply_resource(db, import_job, source, resource, mapped['raw'], attrs)
 
 
 def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
@@ -361,8 +360,7 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
 
 
 def apply_resource(db: Session, import_job: ImportJob, source: str,
-                   resource: Resource, raw: Raw,
-                   attrs: List[ResourceAttribute]):
+                   resource: Resource, raw: Raw, attrs: List[Dict]):
   previous: Optional[ResourceRaw] = db.query(ResourceRaw).filter(
       ResourceRaw.source == source).join(
           Resource, Resource.id == ResourceRaw.resource_id,
@@ -372,18 +370,7 @@ def apply_resource(db: Session, import_job: ImportJob, source: str,
   if previous is None:
     _log.info(f'path %s, uri %s', resource.path, resource.uri)
     db.add(resource)
-    for attr in attrs:
-      db.add(attr)
-    # Need resource id
-    try:
-      db.flush()
-    except IntegrityError as e:
-      _log.debug(f'new {resource.path}')
-      existing = db.query(Resource).filter(
-          Resource.uri == resource.uri, Resource.provider_account_id ==
-          import_job.provider_account_id).one_or_none()
-      _log.debug(f'existing {existing.path}')
-      raise e
+    db.flush()
     db.add(ResourceRaw(resource_id=resource.id, source=source, raw=raw))
     delta = ResourceDelta(import_job=import_job,
                           resource_id=resource.id,
@@ -391,17 +378,29 @@ def apply_resource(db: Session, import_job: ImportJob, source: str,
                           change_details=raw)
     db.add(delta)
     for attr in attrs:
-      attr_delta = ResourceAttributeDelta(resource_delta=delta,
-                                          resource_attribute_id=attr.id,
-                                          change_type='add',
-                                          change_details={
-                                              'type': attr.attr_type,
-                                              'name': attr.name,
-                                              'value': attr.value
-                                          })
+
+      resource_attr = ResourceAttribute(resource=resource,
+                                        source=source,
+                                        attr_type=attr['type'],
+                                        name=attr['name'],
+                                        value=attr['value'])
+      db.add(resource_attr)
+      db.flush()
+      attr_delta = ResourceAttributeDelta(
+          resource_delta=delta,
+          resource_attribute_id=resource_attr.id,
+          change_type='add',
+          change_details=attr)
       db.add(attr_delta)
   else:
+    resource_attrs = [
+        ResourceAttribute(resource_id=previous.resource_id,
+                          source=source,
+                          attr_type=attr['type'],
+                          name=attr['name'],
+                          value=attr['value']) for attr in attrs
+    ]
     if diff_attrs(db, previous.resource_id, source, import_job.id,
-                  resource.uri, previous.raw, raw, attrs):
+                  resource.uri, previous.raw, raw, resource_attrs):
       previous.raw = raw
       db.add(previous)

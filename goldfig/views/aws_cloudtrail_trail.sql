@@ -33,7 +33,27 @@ SELECT
   hascustomeventselectors.attr_value::boolean AS hascustomeventselectors,
   hasinsightselectors.attr_value::boolean AS hasinsightselectors,
   isorganizationtrail.attr_value::boolean AS isorganizationtrail,
+  islogging.attr_value::boolean AS islogging,
+  latestdeliveryerror.attr_value #>> '{}' AS latestdeliveryerror,
+  latestnotificationerror.attr_value #>> '{}' AS latestnotificationerror,
+  latestdeliverytime.attr_value AS latestdeliverytime,
+  latestnotificationtime.attr_value AS latestnotificationtime,
+  startloggingtime.attr_value AS startloggingtime,
+  stoploggingtime.attr_value AS stoploggingtime,
+  latestcloudwatchlogsdeliveryerror.attr_value #>> '{}' AS latestcloudwatchlogsdeliveryerror,
+  latestcloudwatchlogsdeliverytime.attr_value AS latestcloudwatchlogsdeliverytime,
+  latestdigestdeliverytime.attr_value AS latestdigestdeliverytime,
+  latestdigestdeliveryerror.attr_value #>> '{}' AS latestdigestdeliveryerror,
+  latestdeliveryattempttime.attr_value #>> '{}' AS latestdeliveryattempttime,
+  latestnotificationattempttime.attr_value #>> '{}' AS latestnotificationattempttime,
+  latestnotificationattemptsucceeded.attr_value #>> '{}' AS latestnotificationattemptsucceeded,
+  latestdeliveryattemptsucceeded.attr_value #>> '{}' AS latestdeliveryattemptsucceeded,
+  timeloggingstarted.attr_value #>> '{}' AS timeloggingstarted,
+  timeloggingstopped.attr_value #>> '{}' AS timeloggingstopped,
+  tags.attr_value::jsonb AS tags,
+  eventselectors.attr_value::jsonb AS eventselectors,
   
+    _s3_bucket_id.target_id AS _s3_bucket_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -87,6 +107,76 @@ FROM
   LEFT JOIN attrs AS isorganizationtrail
     ON isorganizationtrail.id = R.id
     AND isorganizationtrail.attr_name = 'isorganizationtrail'
+  LEFT JOIN attrs AS islogging
+    ON islogging.id = R.id
+    AND islogging.attr_name = 'islogging'
+  LEFT JOIN attrs AS latestdeliveryerror
+    ON latestdeliveryerror.id = R.id
+    AND latestdeliveryerror.attr_name = 'latestdeliveryerror'
+  LEFT JOIN attrs AS latestnotificationerror
+    ON latestnotificationerror.id = R.id
+    AND latestnotificationerror.attr_name = 'latestnotificationerror'
+  LEFT JOIN attrs AS latestdeliverytime
+    ON latestdeliverytime.id = R.id
+    AND latestdeliverytime.attr_name = 'latestdeliverytime'
+  LEFT JOIN attrs AS latestnotificationtime
+    ON latestnotificationtime.id = R.id
+    AND latestnotificationtime.attr_name = 'latestnotificationtime'
+  LEFT JOIN attrs AS startloggingtime
+    ON startloggingtime.id = R.id
+    AND startloggingtime.attr_name = 'startloggingtime'
+  LEFT JOIN attrs AS stoploggingtime
+    ON stoploggingtime.id = R.id
+    AND stoploggingtime.attr_name = 'stoploggingtime'
+  LEFT JOIN attrs AS latestcloudwatchlogsdeliveryerror
+    ON latestcloudwatchlogsdeliveryerror.id = R.id
+    AND latestcloudwatchlogsdeliveryerror.attr_name = 'latestcloudwatchlogsdeliveryerror'
+  LEFT JOIN attrs AS latestcloudwatchlogsdeliverytime
+    ON latestcloudwatchlogsdeliverytime.id = R.id
+    AND latestcloudwatchlogsdeliverytime.attr_name = 'latestcloudwatchlogsdeliverytime'
+  LEFT JOIN attrs AS latestdigestdeliverytime
+    ON latestdigestdeliverytime.id = R.id
+    AND latestdigestdeliverytime.attr_name = 'latestdigestdeliverytime'
+  LEFT JOIN attrs AS latestdigestdeliveryerror
+    ON latestdigestdeliveryerror.id = R.id
+    AND latestdigestdeliveryerror.attr_name = 'latestdigestdeliveryerror'
+  LEFT JOIN attrs AS latestdeliveryattempttime
+    ON latestdeliveryattempttime.id = R.id
+    AND latestdeliveryattempttime.attr_name = 'latestdeliveryattempttime'
+  LEFT JOIN attrs AS latestnotificationattempttime
+    ON latestnotificationattempttime.id = R.id
+    AND latestnotificationattempttime.attr_name = 'latestnotificationattempttime'
+  LEFT JOIN attrs AS latestnotificationattemptsucceeded
+    ON latestnotificationattemptsucceeded.id = R.id
+    AND latestnotificationattemptsucceeded.attr_name = 'latestnotificationattemptsucceeded'
+  LEFT JOIN attrs AS latestdeliveryattemptsucceeded
+    ON latestdeliveryattemptsucceeded.id = R.id
+    AND latestdeliveryattemptsucceeded.attr_name = 'latestdeliveryattemptsucceeded'
+  LEFT JOIN attrs AS timeloggingstarted
+    ON timeloggingstarted.id = R.id
+    AND timeloggingstarted.attr_name = 'timeloggingstarted'
+  LEFT JOIN attrs AS timeloggingstopped
+    ON timeloggingstopped.id = R.id
+    AND timeloggingstopped.attr_name = 'timeloggingstopped'
+  LEFT JOIN attrs AS tags
+    ON tags.id = R.id
+    AND tags.attr_name = 'tags'
+  LEFT JOIN attrs AS eventselectors
+    ON eventselectors.id = R.id
+    AND eventselectors.attr_name = 'eventselectors'
+  LEFT JOIN (
+    SELECT
+      _aws_s3_bucket_relation.resource_id AS resource_id,
+      _aws_s3_bucket.id AS target_id
+    FROM
+      resource_relation AS _aws_s3_bucket_relation
+      INNER JOIN resource AS _aws_s3_bucket
+        ON _aws_s3_bucket_relation.target_id = _aws_s3_bucket.id
+        AND _aws_s3_bucket.provider_type = 'Bucket'
+        AND _aws_s3_bucket.service = 's3'
+    WHERE
+      _aws_s3_bucket_relation.relation = 'forwards-to'
+  ) AS _s3_bucket_id ON _s3_bucket_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

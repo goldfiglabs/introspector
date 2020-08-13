@@ -29,7 +29,13 @@ def import_bucket(proxy: ServiceProxy, bucket_metadata):
     attr_result = proxy.get(op_name, Bucket=bucket_metadata['Name'])
     if attr_result is not None:
       key = canonical_name[len('GetBucket'):]
-      result[key] = attr_result
+      # TODO: enumerate these methods
+      if key in attr_result:
+        result[key] = attr_result[key]
+      else:
+        result[key] = attr_result
+    elif op_name == 'get_bucket_location':
+      result['Location'] = {'LocationConstraint': 'us-east-1'}
   return result
 
 

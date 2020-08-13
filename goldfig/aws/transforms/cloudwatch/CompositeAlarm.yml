@@ -1,0 +1,24 @@
+version: 1
+resources:
+- service: cloudwatch
+  provider_type: CompositeAlarm
+  name: AlarmName
+  uri:
+    uri: AlarmName
+  attributes:
+    provider:
+    - ActionsEnabled
+    - AlarmActions
+    - AlarmArn
+    - AlarmConfigurationUpdatedTimestamp
+    - AlarmDescription
+    - AlarmName
+    - AlarmRule
+    - InsufficientDataActions
+    - OKActions
+    - StateReason
+    - StateReasonData
+    - StateUpdatedTimestamp
+    - StateValue
+    - Tags
+  resource_name: alarm

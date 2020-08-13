@@ -36,6 +36,21 @@ def _import_cloudtrail_region_to_db(proxy: Proxy, writer: ImportWriter,
     writer(ps, resource_name, raw_resources, {'region': region})
 
 
+def _import_trail(proxy: ServiceProxy, trail_data: Dict):
+  name = trail_data['Name']
+  arn = trail_data['TrailARN']
+  status = proxy.get('get_trail_status', Name=name)
+  trail_data.update(status)
+  tags_result = proxy.list('list_tags', ResourceIdList=[arn])
+  if tags_result is not None:
+    tag_list = tags_result[1]['ResourceTagList']
+    if len(tag_list) > 0:
+      trail_data['Tags'] = tag_list[0]['TagsList']
+  event_selectors = proxy.get('get_event_selectors', TrailName=name)
+  trail_data['EventSelectors'] = event_selectors['EventSelectors']
+  return trail_data
+
+
 def _import_trails(proxy: ServiceProxy, region: str):
   trails_resp = proxy.list('describe_trails')
   if trails_resp is not None:
@@ -48,7 +63,7 @@ def _import_trails(proxy: ServiceProxy, region: str):
           # return an object with the same ARN in every region. This is to squash that down to one.
           if (trail['IsMultiRegionTrail'] is False) or (
               trail['IsMultiRegionTrail'] and trail['HomeRegion'] == region):
-            yield 'Trail', trail
+            yield 'Trail', _import_trail(proxy, trail)
 
 
 def _import_cloudtrail_region(

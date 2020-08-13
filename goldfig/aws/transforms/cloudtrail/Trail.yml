@@ -23,4 +23,38 @@ resources:
     - HasCustomEventSelectors
     - HasInsightSelectors
     - IsOrganizationTrail
+    - IsLogging
+    - LatestDeliveryError
+    - LatestNotificationError
+    - LatestDeliveryTime
+    - LatestNotificationTime
+    - StartLoggingTime
+    - StopLoggingTime
+    - LatestCloudWatchLogsDeliveryError
+    - LatestCloudWatchLogsDeliveryTime
+    - LatestDigestDeliveryTime
+    - LatestDigestDeliveryError
+    - LatestDeliveryAttemptTime
+    - LatestNotificationAttemptTime
+    - LatestNotificationAttemptSucceeded
+    - LatestDeliveryAttemptSucceeded
+    - TimeLoggingStarted
+    - TimeLoggingStopped
+    - Tags
+    - EventSelectors
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
   resource_name: trail
+  relations:
+  - relation: forwards-to
+    path: S3BucketName
+    uri:
+      resource_name:
+        value: Bucket
+      service:
+        value: s3
+      name:
+        path: ''
