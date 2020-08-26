@@ -1,7 +1,9 @@
 import logging
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
+from botocore.parsers import parse_timestamp
 import botocore.session as boto
+from dateutil.tz import tzutc
 from sqlalchemy.orm import Session
 
 from goldfig.aws.fetch import Proxy
@@ -23,9 +25,14 @@ def make_proxy_builder(use_cache: bool = False,
   return _fn
 
 
+def _parse_timestamp(value) -> str:
+  d = parse_timestamp(value).astimezone(tzutc())
+  return d.isoformat()
+
+
 def _patch_boto(session: boto.Session):
   parser_factory = session.get_component('response_parser_factory')
-  parser_factory.set_parser_defaults(timestamp_parser=lambda x: x)
+  parser_factory.set_parser_defaults(timestamp_parser=_parse_timestamp)
 
 
 def get_boto_session() -> boto.Session:

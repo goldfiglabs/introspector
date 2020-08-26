@@ -34,9 +34,15 @@ resources:
     - LastUpdateStatusReason
     - LastUpdateStatusReasonCode
     - FileSystemConfigs
+    - Policy
   relations:
   - relation: is-version
     path: ParentFunctionArn
+    uri:
+      uri:
+        path: ''
+  - relation: acts-as
+    path: Role
     uri:
       uri:
         path: ''

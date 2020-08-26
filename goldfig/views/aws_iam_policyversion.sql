@@ -19,7 +19,7 @@ SELECT
   R.provider_account_id,
   document.attr_value #>> '{}' AS document,
   versionid.attr_value #>> '{}' AS versionid,
-  isdefaultversion.attr_value::boolean AS isdefaultversion,
+  (isdefaultversion.attr_value #>> '{}')::boolean AS isdefaultversion,
   (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate,
   
     _policy_id.target_id AS _policy_id,

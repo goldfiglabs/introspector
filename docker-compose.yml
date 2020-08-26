@@ -12,7 +12,7 @@ services:
     ports:
       - "5000:5000"
   db:
-    image: postgres
+    image: supabase/postgres:0.13.0
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres

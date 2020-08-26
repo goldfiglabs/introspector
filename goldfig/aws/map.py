@@ -152,13 +152,13 @@ def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope)
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
-    synthesize_account_root(db, import_job, path, account.scope)
+    boto = load_boto_session(account)
+    proxy = proxy_builder(boto)
+    synthesize_account_root(proxy, db, import_job, path, account.scope)
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source,
                          import_job.path_prefix, uri_fn)
       map_partial_deletes(db, import_job, source)
-    boto = load_boto_session(account)
-    proxy = proxy_builder(boto)
     # Additional ec2 work
     find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
                       import_job)
@@ -169,7 +169,7 @@ def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
 
     # Handle deletes
-    map_resource_deletes(db, import_job.path_prefix, import_job, service=None)
+    map_resource_deletes(db, ps.scope(path).path(), import_job, service=None)
 
     found_relations = map_resource_relations(db, import_job,
                                              import_job.path_prefix, mapper,

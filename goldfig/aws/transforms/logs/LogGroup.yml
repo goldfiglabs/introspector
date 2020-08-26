@@ -1,0 +1,40 @@
+version: 1
+resources:
+- service: logs
+  provider_type: LogGroup
+  name: logGroupName
+  uri:
+    uri: arn
+  attributes:
+    provider:
+    - logGroupName
+    - creationTime
+    - retentionInDays
+    - metricFilterCount
+    - arn
+    - storedBytes
+    - kmsKeyId
+    - Tags
+    - MetricFilters
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  resource_name: log-group
+  relations:
+  - relation: filters-group
+    path: MetricFilters
+    uri:
+      arn:
+        parent_path: arn
+      resource_name:
+        value: metric-filter
+      filter_name:
+        path: filterName
+    invert: true
+subresources:
+- type: MetricFilter
+  key: MetricFilters
+  parent:
+    arn:
+      path: arn

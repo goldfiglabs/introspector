@@ -13,6 +13,25 @@ class Foundation:
                          {'provider_account_id': provider_account_id})
     return results.fetchall()
 
+  def _sql(self) -> str:
+    raise NotImplementedError('Base class')
+
+
+class Info(Foundation):
+  def run(self, db: Session, provider_account_id: int):
+    sys.stdout.write(color(self.__doc__, fore='cyan', style='bright') + '... ')
+    results = self.run_query(db, provider_account_id)
+    sys.stdout.write(color('INFO\n', fore='yellow', style='bright'))
+    print('\t' + self._contextualize_results(results))
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    return '\n\t'.join([self._contextualize_result(row) for row in rows])
+
+  def _contextualize_result(self, row: Any) -> str:
+    raise NotImplementedError('Base class')
+
+
+class Check(Foundation):
   def run(self, db: Session, provider_account_id: int) -> bool:
     sys.stdout.write(color(self.__doc__, fore='cyan', style='bright') + '... ')
     results = self.run_query(db, provider_account_id)
@@ -25,14 +44,30 @@ class Foundation:
       print('\t' + self._contextualize_failure(row))
     return False
 
-  def _sql(self) -> str:
-    raise NotImplementedError('Base class')
-
   def _contextualize_failure(self, row: Any) -> str:
     raise NotImplementedError('Base class')
 
 
-class MFAForConsoleUser(Foundation):
+class RootAccountUsage(Info):
+  '''Benchmark 1.1'''
+  def _sql(self) -> str:
+    return f'''
+      SELECT
+        uri,
+        age(password_last_used) AS last_login
+      FROM
+        aws_iam_rootaccount
+      WHERE
+        provider_account_id = :provider_account_id
+    '''
+
+  def _contextualize_result(self, row: Any) -> str:
+    last_login = row['last_login']
+    uri = row['uri']
+    return f'Last login for {uri} was {last_login} ago'
+
+
+class MFAForConsoleUser(Check):
   '''Benchmark 1.2'''
   def _sql(self) -> str:
     return '''
@@ -53,7 +88,7 @@ class MFAForConsoleUser(Foundation):
     return f'User {username} ({uri}) does not have multi-factor auth enabled'
 
 
-class RotatePasswordsAfter90Days(Foundation):
+class RotatePasswordsAfter90Days(Check):
   '''Benchmark 1.3'''
   def _sql(self):
     return '''
@@ -107,7 +142,7 @@ class RotatePasswordsAfter90Days(Foundation):
     return f'Credentials for {uri}: ' + ', '.join(lines)
 
 
-class RotateAccessKeysAfter90Days(Foundation):
+class RotateAccessKeysAfter90Days(Check):
   '''Benchmark 1.4'''
   def _sql(self) -> str:
     return '''
@@ -148,7 +183,7 @@ class RotateAccessKeysAfter90Days(Foundation):
     return f'Access keys for {uri}: ' + ', '.join(lines)
 
 
-class RequireUpperCaseInPassword(Foundation):
+class RequireUpperCaseInPassword(Check):
   '''Benchmark 1.5'''
   def _sql(self) -> str:
     return '''
@@ -170,7 +205,7 @@ class RequireUpperCaseInPassword(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring an upper case character in passwords'
 
 
-class RequireLowerCaseInPassword(Foundation):
+class RequireLowerCaseInPassword(Check):
   '''Benchmark 1.6'''
   def _sql(self) -> str:
     return '''
@@ -192,7 +227,7 @@ class RequireLowerCaseInPassword(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring a lower case character in passwords'
 
 
-class RequireSymbolInPassword(Foundation):
+class RequireSymbolInPassword(Check):
   '''Benchmark 1.7'''
   def _sql(self) -> str:
     return '''
@@ -214,7 +249,7 @@ class RequireSymbolInPassword(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring a symbol character in passwords'
 
 
-class RequireNumberInPassword(Foundation):
+class RequireNumberInPassword(Check):
   '''Benchmark 1.8'''
   def _sql(self) -> str:
     return '''
@@ -236,7 +271,7 @@ class RequireNumberInPassword(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring a number in passwords'
 
 
-class RequireMinimumLengthPasssword(Foundation):
+class RequireMinimumLengthPasssword(Check):
   '''Benchmark 1.9'''
   def _sql(self) -> str:
     return '''
@@ -258,7 +293,7 @@ class RequireMinimumLengthPasssword(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring a minimum password length of at least 14'
 
 
-class RequireNewPassswords(Foundation):
+class RequireNewPassswords(Check):
   '''Benchmark 1.10'''
   def _sql(self) -> str:
     return '''
@@ -280,7 +315,7 @@ class RequireNewPassswords(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring passwords the most recent 24 passwords not be reused'
 
 
-class RequireMaximumAgePassswords(Foundation):
+class RequireMaximumAgePassswords(Check):
   '''Benchmark 1.11'''
   def _sql(self) -> str:
     return '''
@@ -302,7 +337,7 @@ class RequireMaximumAgePassswords(Foundation):
     return f'Account {account_id} ({uri}) does not have a policy requiring passwords be changed every 90 days'
 
 
-class NoRootAccessKeys(Foundation):
+class NoRootAccessKeys(Check):
   '''Benchmark 1.12'''
   def _sql(self) -> str:
     return '''
@@ -323,7 +358,7 @@ class NoRootAccessKeys(Foundation):
     return f'Root Account {uri} has an active access key'
 
 
-class RootAccountHasMFA(Foundation):
+class RootAccountHasMFA(Check):
   '''Benchmark 1.13'''
   def _sql(self) -> str:
     return '''
@@ -341,7 +376,35 @@ class RootAccountHasMFA(Foundation):
     return f'Root Account {uri} does not have multi factor auth enabled'
 
 
-class NoPoliciesAttachedToUsers(Foundation):
+class RootAccountHasHardwareMFA(Check):
+  '''Benchmark 1.14'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        uri
+      FROM
+        aws_iam_rootaccount
+      WHERE
+        provider_account_id = :provider_account_id
+        AND mfa_active = True
+        AND has_virtual_mfa = True
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    return f'Root account {uri} has MFA enabled, but is using a virtual device instead of a hardware token'
+
+
+class SecurityQuestionsRegistered(Info):
+  '''Benchmark 1.15'''
+  def _sql(self) -> str:
+    return '''SELECT 1'''
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    return 'Ensure that security questions are registered for the root account in the AWS Console under "My Account"'
+
+
+class NoPoliciesAttachedToUsers(Check):
   '''Benchmark 1.16'''
   def _sql(self) -> str:
     return '''
@@ -402,7 +465,34 @@ class NoPoliciesAttachedToUsers(Foundation):
         lines)
 
 
-class SupportPolicyExists(Foundation):
+class ContactInfoUpToDate(Info):
+  '''Benchmark 1.17'''
+  def _sql(self) -> str:
+    return '''SELECT 1'''
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    return 'Ensure that contact information for the root account in the AWS Console under "My Account" is up-to-date'
+
+
+class SecurityContactInfoUpToDate(Info):
+  '''Benchmark 1.18'''
+  def _sql(self) -> str:
+    return '''SELECT 1'''
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    return 'Ensure that security contact information for the root account in the AWS Console under "My Account / Alternate Contacts / Security" is up-to-date'
+
+
+class InstancesUseInstanceProfiles(Info):
+  '''Benchmark 1.19'''
+  def _sql(self) -> str:
+    return '''SELECT 1'''
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    return 'Verify that applications are not embedding AWS credentials and are instead making use of InstanceProfiles'
+
+
+class SupportPolicyExists(Check):
   '''Benchmark 1.20'''
   def _sql(self) -> str:
     return '''
@@ -478,7 +568,7 @@ class SupportPolicyExists(Foundation):
     return 'Account is missing a user, role, or group with the AWSSupportAccess role'
 
 
-class NoAutoCreatedAccessKeys(Foundation):
+class NoAutoCreatedAccessKeys(Check):
   '''Benchmark 1.21'''
   def _sql(self) -> str:
     return '''
@@ -512,7 +602,7 @@ class NoAutoCreatedAccessKeys(Foundation):
     return f'User {uri} has an auto-creaded access key {key_id}'
 
 
-class NoAdminAccess(Foundation):
+class NoAdminAccess(Check):
   '''Benchmark 1.22'''
   def _sql(self) -> str:
     return '''
@@ -569,7 +659,7 @@ class NoAdminAccess(Foundation):
         entities)
 
 
-class CloudtrailEnabledEverywhere(Foundation):
+class CloudtrailEnabledEverywhere(Check):
   '''Benchmark 2.1'''
   def _sql(self) -> str:
     return '''
@@ -593,7 +683,7 @@ class CloudtrailEnabledEverywhere(Foundation):
     return 'No multi-region cloudtrail instance found'
 
 
-class CloudtrailLogFileValidationEnabled(Foundation):
+class CloudtrailLogFileValidationEnabled(Check):
   '''Benchmark 2.2'''
   def _sql(self) -> str:
     return '''
@@ -611,7 +701,7 @@ class CloudtrailLogFileValidationEnabled(Foundation):
     return f'Cloudtrail {uri} does not have log file validation enabled'
 
 
-class CloudtrailBucketIsPrivate(Foundation):
+class CloudtrailBucketIsPrivate(Check):
   '''Benchmark 2.3'''
   def _sql(self) -> str:
     return '''
@@ -655,19 +745,14 @@ class CloudtrailBucketIsPrivate(Foundation):
     return f'Cloudtrail {trail} writes to public bucket {bucket}'
 
 
-class CloudwatchLogsUpToDate(Foundation):
+class CloudwatchLogsUpToDate(Check):
   '''Benchmark 2.4'''
   def _sql(self) -> str:
     return '''
       SELECT
         uri,
         COALESCE(
-          age(
-            TO_TIMESTAMP(
-              latestcloudwatchlogsdeliverytime #>> '{}',
-              'YYYY-MM-DD"T"HH24:MI:SS'
-            )::timestamp at time zone '00:00'
-          ) > interval '1 day',
+          age(latestcloudwatchlogsdeliverytime) > interval '1 day',
           True
         ) AS stale_logs,
         cloudwatchlogsloggrouparn IS NULL AS no_log_group
@@ -679,12 +764,7 @@ class CloudwatchLogsUpToDate(Foundation):
           cloudwatchlogsloggrouparn IS NULL
           OR
           COALESCE(
-            age(
-              TO_TIMESTAMP(
-                latestcloudwatchlogsdeliverytime #>> '{}',
-                'YYYY-MM-DD"T"HH24:MI:SS'
-              )::timestamp at time zone '00:00'
-            ) > interval '1 day',
+            age(latestcloudwatchlogsdeliverytime) > interval '1 day',
             True
           )
         )
@@ -698,7 +778,31 @@ class CloudwatchLogsUpToDate(Foundation):
       return f'Cloudtrail {uri} has not received cloudwatch logs in over a day'
 
 
-class CloudtrailBucketLoggingIsEnable(Foundation):
+class ConfigEnabledInAllRegions(Check):
+  '''Benchmark 2.5'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        1
+      FROM
+        (SELECT
+          COUNT(*) AS global_recorders_count
+        FROM
+          aws_config_configurationrecorder
+        WHERE
+          provider_account_id = :provider_account_id
+          AND allsupported = True
+          AND includeglobalresourcetypes = True
+        ) AS recorders_count
+      WHERE
+        recorders_count.global_recorders_count = 0
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a ConfigurationRecorder configured to record from all regions, including global events'
+
+
+class CloudtrailBucketLoggingIsEnable(Check):
   '''Benchmark 2.6'''
   def _sql(self) -> str:
     return '''
@@ -720,7 +824,872 @@ class CloudtrailBucketLoggingIsEnable(Foundation):
     return f'Cloudtrail {trail} writes to bucket {bucket} which does not have access logging enabled'
 
 
-class NoSSHFromEverywhere(Foundation):
+class CloudtrailEncryptedAtRestWithCMK(Check):
+  '''Benchmark 2.7'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        uri
+      FROM
+        aws_cloudtrail_trail
+      WHERE
+        kmskeyid IS NULL
+        AND provider_account_id = :provider_account_id
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    return f'CloudTrail {uri} is not set to encrypt log files with a CMK'
+
+
+class CustomerKeysHaveRotationEnabled(Check):
+  '''Benchmark 2.8'''
+  def _sql(self) -> str:
+    return '''
+    SELECT
+      uri
+    FROM
+      aws_kms_key
+    WHERE
+      provider_account_id = :provider_account_id
+      AND keyrotationenabled = False
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    return f'KMS Key {uri} does not have key rotation enabled'
+
+
+class VPCsHaveFlowLogs(Check):
+  '''Benchmark 2.9'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        VPC.uri
+      FROM
+        aws_ec2_vpc AS VPC
+      WHERE
+        VPC.provider_account_id = :provider_account_id
+        AND VPC.resource_id NOT IN (
+          SELECT
+            _vpc_id
+          FROM
+            aws_ec2_flowlog
+          WHERE
+            provider_account_id = :provider_account_id
+            AND flowlogstatus = 'ACTIVE'
+            AND (traffictype = 'ALL' OR traffictype = 'REJECT')
+        )
+    '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    uri = row['uri']
+    return f'VPC {uri} has no flow log. A log at least captuing rejected traffic is recommended'
+
+
+class AlertOnUnauthorizedAPICalls(Check):
+  '''Benchmark 3.1'''
+  def _sql(self) -> str:
+    return '''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{IncludeManagementEvents}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{ ($.errorCode = "*UnauthorizedOperation") || ($.errorCode = "AccessDenied*") }',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for unauthorized AWS API calls'
+
+
+class AlertOnNoMFAConsoleSignin(Check):
+  '''Benchmark 3.2'''
+  def _sql(self) -> str:
+    return '''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{IncludeManagementEvents}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{ ($.eventName = "ConsoleLogin") && ($.additionalEventData.MFAUsed != "Yes") }',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for AWS console signins without multi-factor auth'
+
+
+class AlertOnRootAccountUsage(Check):
+  '''Benchmark 3.3'''
+  def _sql(self) -> str:
+    return '''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{IncludeManagementEvents}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{ $.userIdentity.type = "Root" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != "AwsServiceEvent" }',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for usage of the root account'
+
+
+class AlertOnIAMPolicyChanges(Check):
+  '''Benchmark 3.4'''
+  def _sql(self) -> str:
+    filter_terms = [
+        '($.eventName=DeleteGroupPolicy)', '($.eventName=DeleteRolePolicy)',
+        '($.eventName=DeleteUserPolicy)', '($.eventName=PutGroupPolicy)',
+        '($.eventName=PutRolePolicy)', '($.eventName=PutUserPolicy)',
+        '($.eventName=CreatePolicy)', '($.eventName=DeletePolicy)',
+        '($.eventName=CreatePolicyVersion)',
+        '($.eventName=DeletePolicyVersion)', '($.eventName=AttachRolePolicy)',
+        '($.eventName=DetachRolePolicy)', '($.eventName=AttachUserPolicy)',
+        '($.eventName=DetachUserPolicy)', '($.eventName=AttachGroupPolicy)',
+        '($.eventName=DetachGroupPolicy)'
+    ]
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{{ {"||".join(filter_terms)} }}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for changes to IAM Policies'
+
+
+class AlertOnCloudTrailConfigurationChanges(Check):
+  '''Benchmark 3.5'''
+  def _sql(self) -> str:
+    filter_terms = [
+        '($.eventName = CreateTrail)', '($.eventName = UpdateTrail)',
+        '($.eventName = DeleteTrail)', '($.eventName = StartLogging)',
+        '($.eventName = StopLogging)'
+    ]
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{{ {"||".join(filter_terms)} }}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for changes to Cloudtrail Configuration'
+
+
+class AlertOnFailedConsoleAuthentication(Check):
+  '''Benchmark 3.6'''
+  def _sql(self) -> str:
+    return '''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{IncludeManagementEvents}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{ ($.eventName = ConsoleLogin) && ($.errorMessage = "Failed authentication") }',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for failed console logins'
+
+
+class AlertOnCMKDisablingOrScheduledDeletion(Check):
+  '''Benchmark 3.7'''
+  def _sql(self) -> str:
+    return '''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{IncludeManagementEvents}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{($.eventSource = kms.amazonaws.com) && (($.eventName=DisableKey)||($.eventName=ScheduleKeyDeletion)) }',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for disabling or scheduled deletion of customer-created CMKs'
+
+
+class AlertOnS3BucketPolicyChanges(Check):
+  '''Benchmark 3.8'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = PutBucketAcl)', '($.eventName = PutBucketPolicy)',
+        '($.eventName = PutBucketCors)', '($.eventName = PutBucketLifecycle)',
+        '($.eventName = PutBucketReplication)',
+        '($.eventName = DeleteBucketPolicy)',
+        '($.eventName = DeleteBucketCors)',
+        '($.eventName = DeleteBucketLifecycle)',
+        '($.eventName = DeleteBucketReplication)'
+    ]
+
+    policy_filter = f'{{ ($.eventSource = s3.amazonaws.com) && ({" || ".join(or_filters)}) }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for S3 bucket policy changes'
+
+
+class AlertOnConfigConfigurationChanges(Check):
+  '''Benchmark 3.9'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName=StopConfigurationRecorder)',
+        '($.eventName=DeleteDeliveryChannel)',
+        '($.eventName=PutDeliveryChannel)',
+        '($.eventName=PutConfigurationRecorder)'
+    ]
+
+    policy_filter = f'{{ ($.eventSource = config.amazonaws.com) && ({" || ".join(or_filters)}) }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for AWS Config configuration changes'
+
+
+class AlertOnSecurityGroupChanges(Check):
+  '''Benchmark 3.10'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = AuthorizeSecurityGroupIngress)',
+        '($.eventName = AuthorizeSecurityGroupEgress)',
+        '($.eventName = RevokeSecurityGroupIngress)',
+        '($.eventName = RevokeSecurityGroupEgress)',
+        '($.eventName = CreateSecurityGroup)',
+        '($.eventName = DeleteSecurityGroup)'
+    ]
+
+    policy_filter = f'{{ {" || ".join(or_filters)} }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for Security Group changes'
+
+
+class AlertOnNetworkACLChanges(Check):
+  '''Benchmark 3.11'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = CreateNetworkAcl)',
+        '($.eventName = CreateNetworkAclEntry)',
+        '($.eventName = DeleteNetworkAcl)',
+        '($.eventName = DeleteNetworkAclEntry)',
+        '($.eventName = ReplaceNetworkAclEntry)',
+        '($.eventName = ReplaceNetworkAclAssociation)'
+    ]
+
+    policy_filter = f'{{ {" || ".join(or_filters)} }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for Network ACL changes'
+
+
+class AlertOnNetworkGatewayChanges(Check):
+  '''Benchmark 3.12'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = CreateCustomerGateway)',
+        '($.eventName = DeleteCustomerGateway)',
+        '($.eventName = AttachInternetGateway)',
+        '($.eventName = CreateInternetGateway)',
+        '($.eventName = DeleteInternetGateway)',
+        '($.eventName = DetachInternetGateway)'
+    ]
+
+    policy_filter = f'{{ {" || ".join(or_filters)} }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for Network Gateway changes'
+
+
+class AlertOnRouteTableChanges(Check):
+  '''Benchmark 3.13'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = CreateRoute)', '($.eventName = CreateRouteTable)',
+        '($.eventName = ReplaceRoute)',
+        '($.eventName = ReplaceRouteTableAssociation)',
+        '($.eventName = DeleteRouteTable)', '($.eventName = DeleteRoute)',
+        '($.eventName = DisassociateRouteTable)'
+    ]
+
+    policy_filter = f'{{ {" || ".join(or_filters)} }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for Route Table changes'
+
+
+class AlertOnVPCChanges(Check):
+  '''Benchmark 3.14'''
+  def _sql(self) -> str:
+    or_filters = [
+        '($.eventName = CreateVpc)', '($.eventName = DeleteVpc)',
+        '($.eventName = ModifyVpcAttribute)',
+        '($.eventName = AcceptVpcPeeringConnection)',
+        '($.eventName = CreateVpcPeeringConnection)',
+        '($.eventName = DeleteVpcPeeringConnection)',
+        '($.eventName = RejectVpcPeeringConnection)',
+        '($.eventName = AttachClassicLinkVpc)',
+        '($.eventName = DetachClassicLinkVpc)',
+        '($.eventName = DisableVpcClassicLink)',
+        '($.eventName = EnableVpcClassicLink)'
+    ]
+
+    policy_filter = f'{{ {" || ".join(or_filters)} }}'
+    return f'''
+      SELECT 1 FROM (
+        SELECT
+          COUNT(*) AS count
+        FROM (
+          SELECT
+            Trail.uri,
+            Metric.uri,
+            Alarm.uri,
+            Topic.subscriptionsconfirmed
+          FROM
+            aws_cloudtrail_trail AS Trail
+            LEFT JOIN aws_logs_loggroup AS LogGroup
+              ON LogGroup.resource_id = Trail._logs_loggroup_id
+            LEFT JOIN aws_logs_metricfilter AS MetricFilter
+              ON MetricFilter._loggroup_id = LogGroup.resource_id
+            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+            LEFT JOIN aws_logs_metric AS Metric
+              ON filter2metric.metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
+              ON Alarm._logs_metric_id = Metric.resource_id
+            LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
+              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+            LEFT JOIN aws_sns_topic AS Topic
+              ON Alarm2Topic.topic_id = Topic.resource_id,
+            LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
+          WHERE
+            Trail.provider_account_id = :provider_account_id
+            AND Trail.ismultiregiontrail = True
+            AND Trail.islogging = True
+            AND (Selector.value #>> '{{IncludeManagementEvents}}')::bool = True
+            AND Selector.value ->> 'ReadWriteType' = 'All'
+            AND Alarm.actionsenabled = True
+            AND aws_logs_metricfilter_pattern_matches(
+              '{policy_filter}',
+              MetricFilter.filterpattern
+            )
+          ) AS unauthorized_api_alerts
+        ) AS unauthorized_api_alert_count
+      WHERE
+        count = 0
+      '''
+
+  def _contextualize_failure(self, row: Any) -> str:
+    return 'Could not find a live alert for VPC changes'
+
+
+class NoSSHFromEverywhere(Check):
   '''Benchmark 4.1'''
   def _sql(self) -> str:
     return '''
@@ -741,7 +1710,7 @@ class NoSSHFromEverywhere(Foundation):
     return f'Security Group {uri} allows SSH access from anywhere'
 
 
-class NoRDPFromEverywhere(Foundation):
+class NoRDPFromEverywhere(Check):
   '''Benchmark 4.2'''
   def _sql(self) -> str:
     return '''
@@ -762,7 +1731,7 @@ class NoRDPFromEverywhere(Foundation):
     return f'Security Group {uri} allows Remote Desktop access from anywhere'
 
 
-class DefaultSecurityGroupAllowsNothing(Foundation):
+class DefaultSecurityGroupAllowsNothing(Check):
   '''Benchmark 4.3'''
   def _sql(self) -> str:
     return '''
@@ -788,8 +1757,40 @@ class DefaultSecurityGroupAllowsNothing(Foundation):
     return f'Default Security Group ({sg}) for VPC {vpc} allows connections from {ip_ranges}'
 
 
+# TODO: consider mapping between vpcs with a join table
+class ReviewPeeringConnections(Info):
+  '''Benchmark 4.4'''
+  def _sql(self) -> str:
+    return '''
+      SELECT
+        RT.uri,
+        (Route.value ->> 'DestinationCidrBlock')::inet AS destination,
+        Route.value ->> 'GatewayId' AS gateway
+      FROM
+        aws_ec2_routetable AS RT
+        CROSS JOIN LATERAL jsonb_array_elements(RT.routes) AS Route
+      WHERE
+        RT.provider_account_id = :provider_account_id
+        AND Route.value->> 'State' = 'active'
+        AND Route.value ->> 'GatewayId' LIKE 'pcx-%'
+    '''
+
+  def _contextualize_results(self, rows: List[Any]) -> str:
+    if len(rows) == 0:
+      return 'No peering connections found'
+    else:
+      return super()._contextualize_results(rows)
+
+  def _contextualize_result(self, row: Any) -> str:
+    uri = row['uri']
+    destination = row['destination']
+    gateway = row['gateway']
+    return f'Verify that route table {uri} is scoped as narrowly as possible. It currently routes via {gateway} to {destination}'
+
+
 def run(db: Session, provider_account: ProviderAccount):
   # 1
+  RootAccountUsage().run(db, provider_account.id)
   MFAForConsoleUser().run(db, provider_account.id)
   RotatePasswordsAfter90Days().run(db, provider_account.id)
   RotateAccessKeysAfter90Days().run(db, provider_account.id)
@@ -802,7 +1803,12 @@ def run(db: Session, provider_account: ProviderAccount):
   RequireMaximumAgePassswords().run(db, provider_account.id)
   NoRootAccessKeys().run(db, provider_account.id)
   RootAccountHasMFA().run(db, provider_account.id)
+  RootAccountHasHardwareMFA().run(db, provider_account.id)
+  SecurityQuestionsRegistered().run(db, provider_account.id)
   NoPoliciesAttachedToUsers().run(db, provider_account.id)
+  ContactInfoUpToDate().run(db, provider_account.id)
+  SecurityContactInfoUpToDate().run(db, provider_account.id)
+  InstancesUseInstanceProfiles().run(db, provider_account.id)
   SupportPolicyExists().run(db, provider_account.id)
   NoAutoCreatedAccessKeys().run(db, provider_account.id)
   NoAdminAccess().run(db, provider_account.id)
@@ -811,8 +1817,28 @@ def run(db: Session, provider_account: ProviderAccount):
   CloudtrailLogFileValidationEnabled().run(db, provider_account.id)
   CloudtrailBucketIsPrivate().run(db, provider_account.id)
   CloudwatchLogsUpToDate().run(db, provider_account.id)
+  ConfigEnabledInAllRegions().run(db, provider_account.id)
   CloudtrailBucketLoggingIsEnable().run(db, provider_account.id)
+  CloudtrailEncryptedAtRestWithCMK().run(db, provider_account.id)
+  CustomerKeysHaveRotationEnabled().run(db, provider_account.id)
+  VPCsHaveFlowLogs().run(db, provider_account.id)
+  # 3 - Complete
+  AlertOnUnauthorizedAPICalls().run(db, provider_account.id)
+  AlertOnNoMFAConsoleSignin().run(db, provider_account.id)
+  AlertOnRootAccountUsage().run(db, provider_account.id)
+  AlertOnIAMPolicyChanges().run(db, provider_account.id)
+  AlertOnCloudTrailConfigurationChanges().run(db, provider_account.id)
+  AlertOnFailedConsoleAuthentication().run(db, provider_account.id)
+  AlertOnCMKDisablingOrScheduledDeletion().run(db, provider_account.id)
+  AlertOnS3BucketPolicyChanges().run(db, provider_account.id)
+  AlertOnConfigConfigurationChanges().run(db, provider_account.id)
+  AlertOnSecurityGroupChanges().run(db, provider_account.id)
+  AlertOnNetworkACLChanges().run(db, provider_account.id)
+  AlertOnNetworkGatewayChanges().run(db, provider_account.id)
+  AlertOnRouteTableChanges().run(db, provider_account.id)
+  AlertOnVPCChanges().run(db, provider_account.id)
   # 4
   NoSSHFromEverywhere().run(db, provider_account.id)
   NoRDPFromEverywhere().run(db, provider_account.id)
   DefaultSecurityGroupAllowsNothing().run(db, provider_account.id)
+  ReviewPeeringConnections().run(db, provider_account.id)

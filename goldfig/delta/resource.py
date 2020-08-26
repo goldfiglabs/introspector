@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from goldfig.delta import json_diff
 from goldfig.delta.attrs import diff_attrs
 from goldfig.delta.types import Raw
+from goldfig.error import GFInternal
 from goldfig.mapper import Mapper
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
                             ResourceAttribute, ResourceDelta,
@@ -94,31 +95,37 @@ def map_relation_deletes(db: Session, import_job: ImportJob, path_prefix: str,
     parent_uri = parent.uri
     target = db.query(Resource).get(deleted.target_id)
     target_uri = target.uri
-    delta = ResourceRelationDelta(import_job=import_job,
-                                  resource_relation_id=deleted.id,
-                                  change_type='delete',
-                                  change_details={
-                                      'relation': deleted.relation,
-                                      'resource': parent_uri,
-                                      'target': target_uri,
-                                      'raw': deleted.raw
-                                  })
-    db.add(delta)
-    for existing_attr in deleted.attributes:
-      attr_delta = ResourceRelationAttributeDelta(
-          resource_relation_delta=delta,
-          resource_relation_attribute_id=existing_attr.id,
-          change_type='delete',
-          change_details={
-              'name': existing_attr.name,
-              'value': existing_attr.value
-          })
-      db.add(attr_delta)
-      # Don't need to explicitly delete here, deletes will
-      # cascade when we delete the relation
-      #db.delete(existing_attr)
-    _log.info(f'deleted {deleted}')
-    db.delete(deleted)
+    _delete_relation(db, import_job, deleted, parent_uri, target_uri)
+
+
+def _delete_relation(db: Session, import_job: ImportJob,
+                     deleted: ResourceRelation, parent_uri: str,
+                     target_uri: str):
+  delta = ResourceRelationDelta(import_job=import_job,
+                                resource_relation_id=deleted.id,
+                                change_type='delete',
+                                change_details={
+                                    'relation': deleted.relation,
+                                    'resource': parent_uri,
+                                    'target': target_uri,
+                                    'raw': deleted.raw
+                                })
+  db.add(delta)
+  for existing_attr in deleted.attributes:
+    attr_delta = ResourceRelationAttributeDelta(
+        resource_relation_delta=delta,
+        resource_relation_attribute_id=existing_attr.id,
+        change_type='delete',
+        change_details={
+            'name': existing_attr.name,
+            'value': existing_attr.value
+        })
+    db.add(attr_delta)
+    # Don't need to explicitly delete here, deletes will
+    # cascade when we delete the relation
+    #db.delete(existing_attr)
+  _log.info(f'deleted {deleted}')
+  db.delete(deleted)
 
 
 def _apply_relation(db: Session, import_job: ImportJob,
@@ -299,18 +306,13 @@ def apply_mapped_attrs(db: Session, import_job: ImportJob, path: str,
       service=mapped.get('service'))
   # TODO: possibly a big perf hit?
   # Consider using a different API
+  if resource.uri is None:
+    raise GFInternal(f'Missing uri {mapped}')
   db.merge(
       MappedURI(uri=resource.uri,
                 source=source,
                 import_job_id=import_job.id,
                 raw_import_id=raw_import_id))
-  # resource_attrs = [
-  #     ResourceAttribute(resource=resource,
-  #                       source=source,
-  #                       attr_type=attr['type'],
-  #                       name=attr['name'],
-  #                       value=attr['value']) for attr in attrs
-  # ]
   apply_resource(db, import_job, source, resource, mapped['raw'], attrs)
 
 
@@ -330,6 +332,9 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
     deletes = deletes.filter(Resource.service == service)
   for deleted in deletes:
     # TODO: relation deletes
+    raws: List[ResourceRaw] = db.query(ResourceRaw).filter(
+        ResourceRaw.resource_id == deleted.id).all()
+    raw = {raw.source: raw.raw for raw in raws}
     delta = ResourceDelta(import_job=import_job,
                           resource_id=deleted.id,
                           change_type='delete',
@@ -337,7 +342,7 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
                               'path': deleted.path,
                               'uri': deleted.uri,
                               'name': deleted.name,
-                              'raw': deleted.raw
+                              'raw': raw
                           })
     db.add(delta)
     for existing_attr in deleted.attributes:
@@ -355,7 +360,21 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
       # Don't need to explicitly delete here, deletes will
       # cascade when we delete the resource
       #db.delete(existing_attr)
+    for raw in raws:
+      db.delete(raw)
+    deleted_relations = db.query(ResourceRelation).filter(
+        or_(ResourceRelation.target_id == deleted.id,
+            ResourceRelation.resource_id == deleted.id))
+    for relation in deleted_relations:
+      if relation.target_id == deleted.id:
+        target_uri = deleted.uri
+        parent_uri = db.query(Resource).get(relation.resource_id).uri
+      else:
+        parent_uri = deleted.uri
+        target_uri = db.query(Resource).get(relation.target_id).uri
+      _delete_relation(db, import_job, relation, parent_uri, target_uri)
     db.delete(deleted)
+    db.flush()
     _log.info(f'delete resource {deleted.uri}')
 
 

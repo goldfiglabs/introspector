@@ -1,0 +1,41 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Subnet
+  name: SubnetId
+  uri:
+    uri: SubnetArn
+  attributes:
+    provider:
+    - AvailabilityZone
+    - AvailabilityZoneId
+    - AvailableIpAddressCount
+    - CidrBlock
+    - DefaultForAz
+    - MapPublicIpOnLaunch
+    - MapCustomerOwnedIpOnLaunch
+    - CustomerOwnedIpv4Pool
+    - State
+    - SubnetId
+    - VpcId
+    - OwnerId
+    - AssignIpv6AddressOnCreation
+    - Ipv6CidrBlockAssociationSet
+    - Tags
+    - SubnetArn
+    - OutpostArn
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  resource_name: subnet
+  relations:
+  - relation: in
+    path: VpcId
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: vpc
+      service:
+        value: ec2

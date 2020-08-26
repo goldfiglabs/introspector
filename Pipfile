@@ -27,6 +27,7 @@ click = "*"
 flask = "*"
 requests = "*"
 colr = "*"
+python-dateutil = "*"
 
 [requires]
 python_version = "3.7"

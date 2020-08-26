@@ -20,18 +20,18 @@ SELECT
   attachments.attr_value::jsonb AS attachments,
   availabilityzone.attr_value #>> '{}' AS availabilityzone,
   (TO_TIMESTAMP(createtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createtime,
-  encrypted.attr_value::boolean AS encrypted,
+  (encrypted.attr_value #>> '{}')::boolean AS encrypted,
   kmskeyid.attr_value #>> '{}' AS kmskeyid,
   outpostarn.attr_value #>> '{}' AS outpostarn,
-  size.attr_value::integer AS size,
+  (size.attr_value #>> '{}')::integer AS size,
   snapshotid.attr_value #>> '{}' AS snapshotid,
   state.attr_value #>> '{}' AS state,
   volumeid.attr_value #>> '{}' AS volumeid,
-  iops.attr_value::integer AS iops,
+  (iops.attr_value #>> '{}')::integer AS iops,
   tags.attr_value::jsonb AS tags,
   volumetype.attr_value #>> '{}' AS volumetype,
-  fastrestored.attr_value::boolean AS fastrestored,
-  multiattachenabled.attr_value::boolean AS multiattachenabled,
+  (fastrestored.attr_value #>> '{}')::boolean AS fastrestored,
+  (multiattachenabled.attr_value #>> '{}')::boolean AS multiattachenabled,
   
     _account_id.target_id AS _account_id
 FROM

@@ -22,10 +22,10 @@ SELECT
   runtime.attr_value #>> '{}' AS runtime,
   role.attr_value #>> '{}' AS role,
   handler.attr_value #>> '{}' AS handler,
-  codesize.attr_value::bigint AS codesize,
+  (codesize.attr_value #>> '{}')::bigint AS codesize,
   description.attr_value #>> '{}' AS description,
-  timeout.attr_value::integer AS timeout,
-  memorysize.attr_value::integer AS memorysize,
+  (timeout.attr_value #>> '{}')::integer AS timeout,
+  (memorysize.attr_value #>> '{}')::integer AS memorysize,
   lastmodified.attr_value #>> '{}' AS lastmodified,
   codesha256.attr_value #>> '{}' AS codesha256,
   version.attr_value #>> '{}' AS version,
@@ -44,8 +44,10 @@ SELECT
   lastupdatestatusreason.attr_value #>> '{}' AS lastupdatestatusreason,
   lastupdatestatusreasoncode.attr_value #>> '{}' AS lastupdatestatusreasoncode,
   filesystemconfigs.attr_value::jsonb AS filesystemconfigs,
+  Policy.attr_value::jsonb AS policy,
   
     _function_id.target_id AS _function_id,
+    _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -132,6 +134,9 @@ FROM
   LEFT JOIN attrs AS filesystemconfigs
     ON filesystemconfigs.id = R.id
     AND filesystemconfigs.attr_name = 'filesystemconfigs'
+  LEFT JOIN attrs AS Policy
+    ON Policy.id = R.id
+    AND Policy.attr_name = 'policy'
   LEFT JOIN (
     SELECT
       _aws_lambda_function_relation.resource_id AS resource_id,
@@ -145,6 +150,19 @@ FROM
     WHERE
       _aws_lambda_function_relation.relation = 'is-version'
   ) AS _function_id ON _function_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_iam_role_relation.resource_id AS resource_id,
+      _aws_iam_role.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_role_relation
+      INNER JOIN resource AS _aws_iam_role
+        ON _aws_iam_role_relation.target_id = _aws_iam_role.id
+        AND _aws_iam_role.provider_type = 'Role'
+        AND _aws_iam_role.service = 'iam'
+    WHERE
+      _aws_iam_role_relation.relation = 'acts-as'
+  ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

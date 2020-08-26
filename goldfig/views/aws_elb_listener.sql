@@ -18,12 +18,13 @@ SELECT
   R.uri,
   R.provider_account_id,
   protocol.attr_value #>> '{}' AS protocol,
-  loadbalancerport.attr_value::integer AS loadbalancerport,
+  (loadbalancerport.attr_value #>> '{}')::integer AS loadbalancerport,
   instanceprotocol.attr_value #>> '{}' AS instanceprotocol,
-  instanceport.attr_value::integer AS instanceport,
+  (instanceport.attr_value #>> '{}')::integer AS instanceport,
   sslcertificateid.attr_value #>> '{}' AS sslcertificateid,
   policynames.attr_value::jsonb AS policynames,
   
+    _loadbalancer_id.target_id AS _loadbalancer_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -47,6 +48,19 @@ FROM
   LEFT JOIN attrs AS policynames
     ON policynames.id = R.id
     AND policynames.attr_name = 'policynames'
+  LEFT JOIN (
+    SELECT
+      _aws_elb_loadbalancer_relation.resource_id AS resource_id,
+      _aws_elb_loadbalancer.id AS target_id
+    FROM
+      resource_relation AS _aws_elb_loadbalancer_relation
+      INNER JOIN resource AS _aws_elb_loadbalancer
+        ON _aws_elb_loadbalancer_relation.target_id = _aws_elb_loadbalancer.id
+        AND _aws_elb_loadbalancer.provider_type = 'LoadBalancer'
+        AND _aws_elb_loadbalancer.service = 'elb'
+    WHERE
+      _aws_elb_loadbalancer_relation.relation = 'forwards-to'
+  ) AS _loadbalancer_id ON _loadbalancer_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

@@ -1,0 +1,25 @@
+version: 1
+resources:
+- service: sns
+  provider_type: Topic
+  name: DisplayName
+  uri:
+    uri: TopicArn
+  attributes:
+    provider:
+    - TopicArn
+    - Tags
+    - DeliveryPolicy
+    - DisplayName
+    - Owner
+    - Policy
+    - SubscriptionsConfirmed
+    - SubscriptionsDeleted
+    - SubscriptionsPending
+    - EffectiveDeliveryPolicy
+    - KmsMasterKeyId
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags

@@ -86,13 +86,6 @@ class Resource(Base):
                     nullable=True)
 
   attributes = relationship('ResourceAttribute', cascade='delete')
-  children = relationship(
-      'Resource',
-      secondary=ResourceRelation.__table__,
-      primaryjoin='Resource.id==resource_relation.c.resource_id',
-      secondaryjoin='Resource.id==resource_relation.c.target_id',
-      backref='parents',
-      cascade='delete')
 
   @classmethod
   def get_by_uri(cls, session, uri, provider_account_id):

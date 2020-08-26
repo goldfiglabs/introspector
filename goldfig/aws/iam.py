@@ -78,7 +78,7 @@ def _import_credential_report(proxy: ServiceProxy, ps: PathStack,
       report = proxy.get('get_credential_report')
     except:
       attempts += 1
-      time.sleep(0.05)
+      time.sleep(0.1)
   if report is None:
     raise GFError('Failed to fetch credential report')
   decoded = report['Content'].decode('utf-8')
@@ -438,19 +438,39 @@ def import_account_iam_to_db(db: Session, import_job_id: int,
   _import_graph(proxy_builder, job, writer, accounts, import_iam_fn)
 
 
-def synthesize_account_root(db: Session, import_job: ImportJob, path: str,
-                            account_id: str):
+def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,
+                            path: str, account_id: str):
+  service_proxy = proxy.service('iam')
+  mfa_resp = service_proxy.list('list_virtual_mfa_devices')
+  has_virtual_mfa = False
+  if mfa_resp is not None:
+    root_mfa_arn = f'arn:aws:iam::{account_id}:mfa/root-account-mfa-device'
+    mfas = mfa_resp[1]['VirtualMFADevices']
+    for mfa in mfas:
+      if mfa['SerialNumber'] == root_mfa_arn:
+        has_virtual_mfa = True
+        break
+
   arn = f'arn:aws:iam::{account_id}:root'
   mapped = {
       'name': '<root account>',
       'uri': arn,
       'provider_type': 'RootAccount',
       'raw': {
-          'Arn': arn
+          'Arn': arn,
+          'has_virtual_mfa': has_virtual_mfa
       },
       'service': 'iam'
   }
-  attrs = [{'type': 'provider', 'name': 'Arn', 'value': arn}]
+  attrs = [{
+      'type': 'provider',
+      'name': 'Arn',
+      'value': arn
+  }, {
+      'type': 'provider',
+      'name': 'has_virtual_mfa',
+      'value': has_virtual_mfa
+  }]
   apply_mapped_attrs(db,
                      import_job,
                      path,

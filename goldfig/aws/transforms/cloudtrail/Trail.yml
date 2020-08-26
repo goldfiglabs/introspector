@@ -58,3 +58,8 @@ resources:
         value: s3
       name:
         path: ''
+  - relation: uses-group
+    path: CloudWatchLogsLogGroupArn
+    uri:
+      uri:
+        path: ''

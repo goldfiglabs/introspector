@@ -1,40 +1,26 @@
-import concurrent.futures as f
+import json
 import logging
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, Generator, Optional, Tuple
 
-from sqlalchemy.orm import Session
+from botocore.exceptions import ClientError
 
-from goldfig import ImportWriter, db_import_writer, PathStack
-from goldfig.aws import (account_paths_for_import, load_boto_session,
-                         ProxyBuilder, make_proxy_builder,
-                         load_boto_session_from_config)
-from goldfig.aws.fetch import Proxy, ServiceProxy
-from goldfig.bootstrap_db import import_session
-from goldfig.models import ImportJob, ProviderCredential
+from goldfig.aws.fetch import ServiceProxy
+from goldfig.aws.svc import make_import_to_db, make_import_with_pool
 
 _log = logging.getLogger(__name__)
 
 HAS_TAGS = {'list_functions': 'FunctionArn'}
 
 
-def import_account_lambda_region_to_db(db: Session, import_job_id: int,
-                                       region: str,
-                                       proxy_builder: ProxyBuilder):
-  job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, 'lambda', phase=0, source='base')
-  for path, account in account_paths_for_import(db, job):
-    boto = load_boto_session(account)
-    proxy = proxy_builder(boto)
-    ps = PathStack.from_import_job(job).scope(path)
-    _import_lambda_region_to_db(proxy, writer, ps, region)
-
-
-def _import_lambda_region_to_db(proxy: Proxy, writer: ImportWriter,
-                                ps: PathStack, region: str):
-  service_proxy = proxy.service('lambda', region)
-  ps = ps.scope(region)
-  for resource_name, raw_resources in _import_lambda_region(service_proxy):
-    writer(ps, resource_name, raw_resources, {'region': region})
+def _get_policy(proxy: ServiceProxy, arn: str) -> Optional[Dict]:
+  try:
+    policy_resp = proxy.get('get_policy', FunctionName=arn)
+    if policy_resp is not None:
+      return json.loads(policy_resp['Policy'])
+  except ClientError as e:
+    if e.response.get('Error', {}).get('Code') != 'ResourceNotFoundException':
+      raise
+  return None
 
 
 def _import_function(proxy: ServiceProxy, function: Dict):
@@ -45,12 +31,15 @@ def _import_function(proxy: ServiceProxy, function: Dict):
     versions = versions_resp[1]['Versions']
     for version in versions:
       version['ParentFunctionArn'] = arn
+      version['Policy'] = _get_policy(proxy, version['FunctionArn'])
       yield 'FunctionVersion', version
+  function['Policy'] = _get_policy(proxy, arn)
   aliases_resp = proxy.list('list_aliases', FunctionName=name)
   if aliases_resp is not None:
     aliases = aliases_resp[1]['Aliases']
     for alias in aliases:
       alias['FunctionArn'] = arn
+      alias['Policy'] = _get_policy(proxy, alias['AliasArn'])
       yield 'Alias', alias
 
 
@@ -70,40 +59,13 @@ def _import_functions(proxy: ServiceProxy):
 
 
 def _import_lambda_region(
-    proxy: ServiceProxy) -> Generator[Tuple[str, Any], None, None]:
+    proxy: ServiceProxy,
+    region: str) -> Generator[Tuple[str, Any], None, None]:
   yield from _import_functions(proxy)
   # TODO: layers, event sources
 
 
-def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
-                 region: str, config: Dict):
-  db = import_session()
-  proxy_builder = make_proxy_builder(*proxy_builder_args)
-  boto = load_boto_session_from_config(config)
-  proxy = proxy_builder(boto)
-  writer = db_import_writer(db,
-                            import_job_id,
-                            'lambda',
-                            phase=0,
-                            source='base')
-  _import_lambda_region_to_db(proxy, writer, ps, region)
-  db.commit()
-
-
-def import_account_lambda_region_with_pool(
-    pool: f.ProcessPoolExecutor, proxy_builder_args, import_job_id: int,
-    region: str, ps: PathStack,
-    accounts: List[Tuple[str, ProviderCredential]]) -> List[f.Future]:
-  results: List[f.Future] = []
-
-  def queue_job(path: str, account: ProviderCredential) -> f.Future:
-    return pool.submit(_async_proxy,
-                       proxy_builder_args=proxy_builder_args,
-                       import_job_id=import_job_id,
-                       region=region,
-                       ps=ps.scope(path),
-                       config=account.config)
-
-  for path, account in accounts:
-    results.append(queue_job(path, account))
-  return results
+import_account_lambda_region_with_pool = make_import_with_pool(
+    'lambda', _import_lambda_region)
+import_account_lambda_region_to_db = make_import_to_db('lambda',
+                                                       _import_lambda_region)

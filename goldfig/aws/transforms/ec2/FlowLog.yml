@@ -1,0 +1,54 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: FlowLog
+  name: FlowLogId
+  uri:
+    id: FlowLogId
+  attributes:
+    provider:
+    - CreationTime
+    - DeliverLogsErrorMessage
+    - DeliverLogsPermissionArn
+    - DeliverLogsStatus
+    - FlowLogId
+    - FlowLogStatus
+    - LogGroupName
+    - ResourceId
+    - TrafficType
+    - LogDestinationType
+    - LogDestination
+    - LogFormat
+    - Tags
+    - MaxAggregationInterval
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: FlowLog
+  relations:
+  - relation: acts-as
+    path: DeliverLogsPermissionArn
+    uri:
+      uri:
+        path: ''
+  - relation: publishes-to
+    path: LogDestination
+    uri:
+      uri:
+        path: ''
+  - relation: publishes-to
+    path: LogDestination
+    uri:
+      uri:
+        path: ''
+  - relation: logs
+    path: ResourceId
+    uri:
+      id:
+        path: ''
+      service:
+        value: ec2
+      resource_name:
+        value: vpc

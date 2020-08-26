@@ -482,6 +482,12 @@ class Mapper:
     path = relation_spec['path']
     if path == '':
       targets = [raw]
+    elif isinstance(path, dict):
+      target = {
+          key: jmespath.search(value, raw)
+          for key, value in path.items()
+      }
+      targets = [target]
     else:
       targets = jmespath.search(relation_spec['path'], raw) or []
     if not isinstance(targets, list):

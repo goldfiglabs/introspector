@@ -22,10 +22,10 @@ SELECT
   runtime.attr_value #>> '{}' AS runtime,
   role.attr_value #>> '{}' AS role,
   handler.attr_value #>> '{}' AS handler,
-  codesize.attr_value::bigint AS codesize,
+  (codesize.attr_value #>> '{}')::bigint AS codesize,
   description.attr_value #>> '{}' AS description,
-  timeout.attr_value::integer AS timeout,
-  memorysize.attr_value::integer AS memorysize,
+  (timeout.attr_value #>> '{}')::integer AS timeout,
+  (memorysize.attr_value #>> '{}')::integer AS memorysize,
   lastmodified.attr_value #>> '{}' AS lastmodified,
   codesha256.attr_value #>> '{}' AS codesha256,
   version.attr_value #>> '{}' AS version,
@@ -47,7 +47,9 @@ SELECT
   code.attr_value::jsonb AS code,
   tags.attr_value::jsonb AS tags,
   concurrency.attr_value::jsonb AS concurrency,
+  Policy.attr_value::jsonb AS policy,
   
+    _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -143,6 +145,22 @@ FROM
   LEFT JOIN attrs AS concurrency
     ON concurrency.id = R.id
     AND concurrency.attr_name = 'concurrency'
+  LEFT JOIN attrs AS Policy
+    ON Policy.id = R.id
+    AND Policy.attr_name = 'policy'
+  LEFT JOIN (
+    SELECT
+      _aws_iam_role_relation.resource_id AS resource_id,
+      _aws_iam_role.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_role_relation
+      INNER JOIN resource AS _aws_iam_role
+        ON _aws_iam_role_relation.target_id = _aws_iam_role.id
+        AND _aws_iam_role.provider_type = 'Role'
+        AND _aws_iam_role.service = 'iam'
+    WHERE
+      _aws_iam_role_relation.relation = 'acts-as'
+  ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

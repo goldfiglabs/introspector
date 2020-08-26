@@ -35,3 +35,27 @@ resources:
     - Metrics
     - ThresholdMetricId
     - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: fires-on
+    path:
+      metric_name: MetricName
+      metric_namespace: Namespace
+    uri:
+      service:
+        value: logs
+      resource_name:
+        value: metric
+      metric_name:
+        path: metric_name
+      metric_namespace:
+        path: metric_namespace
+  - relation: triggers
+    path: AlarmActions
+    uri:
+      uri:
+        path: ''

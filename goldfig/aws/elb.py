@@ -25,10 +25,14 @@ def import_elb(proxy: ServiceProxy, elb):
     list_result = proxy.list(resource, **kwargs)
     if list_result is not None:
       if is_tags:
-        key = 'Tags'
+        tag_descriptions = list_result[1]['TagDescriptions']
+        if len(tag_descriptions) > 0:
+          result['Tags'] = tag_descriptions[0]['Tags']
+        else:
+          result['Tags'] = []
       else:
         key = canonical_name[len('DescribeLoadBalancer'):]
-      result[key] = list_result[1]
+        result[key] = list_result[1]
   return result
 
 

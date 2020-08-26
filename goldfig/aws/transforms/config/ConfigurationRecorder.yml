@@ -1,0 +1,28 @@
+version: 1
+resources:
+- service: config
+  provider_type: ConfigurationRecorder
+  name: name
+  uri:
+    name: name
+  attributes:
+    provider:
+    - roleARN
+    - recordingGroup:
+      - allSupported
+      - includeGlobalResourceTypes
+      - resourceTypes
+    - name
+    - lastStartTime
+    - lastStopTime
+    - recording
+    - lastStatus
+    - lastErrorCode
+    - lastErrorMessage
+    - lastStatusChangeTime
+  relations:
+  - relation: acts-as
+    path: roleARN
+    uri:
+      uri:
+        path: ''

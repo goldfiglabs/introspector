@@ -174,9 +174,12 @@ After running an import job multiple times, you can also query for resource that
 
      The following commands can create the read-only account credentials which should be saved to ~/.aws/credentials:
     ```
+    export ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account'  | awk -F '"' '{print $2}')
     aws iam create-group --group-name Goldfig
+    aws iam create-policy --policy-name Goldfig-Ro-Additions --policy-document file://$(pwd)/permission-policies/aws-goldfig-ro.json
     aws iam attach-group-policy --group-name Goldfig --policy-arn arn:aws:iam::aws:policy/SecurityAudit
     aws iam attach-group-policy --group-name Goldfig --policy-arn arn:aws:iam::aws:policy/job-function/ViewOnlyAccess
+    aws iam attach-group-policy --group-name Goldfig --policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/Goldfig-Ro-Additions
     aws iam create-user --user-name goldfig
     aws iam add-user-to-group --user-name goldfig --group-name Goldfig
     aws iam create-access-key --user-name goldfig

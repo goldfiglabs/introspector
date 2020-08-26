@@ -10,11 +10,15 @@ from goldfig.aws.iam import import_account_iam_to_db, import_account_iam_with_po
 from goldfig.aws.ec2 import import_account_ec2_region_to_db, import_account_ec2_region_with_pool
 from goldfig.aws.elb import import_account_elb_region_to_db, import_account_elb_region_with_pool
 from goldfig.aws.s3 import import_account_s3_to_db, import_account_s3_with_pool
+from goldfig.aws.kms import import_account_kms_region_to_db, import_account_kms_region_with_pool
 from goldfig.aws.lambdax import import_account_lambda_region_to_db, import_account_lambda_region_with_pool
+from goldfig.aws.logs import import_account_logs_region_to_db, import_account_logs_region_with_pool
 from goldfig.aws.cloudtrail import import_account_cloudtrail_region_to_db, import_account_cloudtrail_region_with_pool
 from goldfig.aws.cloudwatch import import_account_cloudwatch_region_to_db, import_account_cloudwatch_region_with_pool
+from goldfig.aws.config import import_account_config_region_to_db, import_account_config_region_with_pool
 from goldfig.aws.region import RegionCache
 from goldfig.aws.rds import import_account_rds_region_to_db, import_account_rds_region_with_pool
+from goldfig.aws.sns import import_account_sns_region_to_db, import_account_sns_region_with_pool
 from goldfig.models import ImportJob, ProviderCredential
 
 
@@ -23,9 +27,15 @@ def run_single_session(db: Session, import_job_id: int,
 
   import_account_iam_to_db(db, import_job_id, proxy_builder)
   db.flush()
+
   for region in region_cache.regions_for_service('ec2'):
     import_account_ec2_region_to_db(db, import_job_id, region, proxy_builder)
     db.flush()
+
+  for region in region_cache.regions_for_service('kms'):
+    import_account_kms_region_to_db(db, import_job_id, region, proxy_builder)
+    db.flush()
+
   for region in region_cache.regions_for_service('elb'):
     import_account_elb_region_to_db(db, import_job_id, region, proxy_builder)
     db.flush()
@@ -47,6 +57,19 @@ def run_single_session(db: Session, import_job_id: int,
                                            proxy_builder)
     db.flush()
 
+  for region in region_cache.regions_for_service('config'):
+    import_account_config_region_to_db(db, import_job_id, region,
+                                       proxy_builder)
+    db.flush()
+
+  for region in region_cache.regions_for_service('logs'):
+    import_account_logs_region_to_db(db, import_job_id, region, proxy_builder)
+    db.flush()
+
+  for region in region_cache.regions_for_service('sns'):
+    import_account_sns_region_to_db(db, import_job_id, region, proxy_builder)
+    db.flush()
+
   import_account_s3_to_db(db, import_job_id, proxy_builder)
 
 
@@ -63,10 +86,17 @@ def run_parallel_session(region_cache: RegionCache,
   with f.ProcessPoolExecutor(max_workers=workers) as pool:
     results = import_account_iam_with_pool(pool, proxy_builder_args,
                                            import_job.id, ps, accounts)
+
     for region in region_cache.regions_for_service('ec2'):
       results += import_account_ec2_region_with_pool(pool, proxy_builder_args,
                                                      import_job.id, region, ps,
                                                      accounts)
+
+    for region in region_cache.regions_for_service('kms'):
+      results += import_account_kms_region_with_pool(pool, proxy_builder_args,
+                                                     import_job.id, region, ps,
+                                                     accounts)
+
     for region in region_cache.regions_for_service('elb'):
       results += import_account_elb_region_with_pool(pool, proxy_builder_args,
                                                      import_job.id, region, ps,
@@ -88,6 +118,20 @@ def run_parallel_session(region_cache: RegionCache,
     for region in region_cache.regions_for_service('cloudwatch'):
       results += import_account_cloudwatch_region_with_pool(
           pool, proxy_builder_args, import_job.id, region, ps, accounts)
+
+    for region in region_cache.regions_for_service('config'):
+      results += import_account_config_region_with_pool(
+          pool, proxy_builder_args, import_job.id, region, ps, accounts)
+
+    for region in region_cache.regions_for_service('logs'):
+      results += import_account_logs_region_with_pool(pool, proxy_builder_args,
+                                                      import_job.id, region,
+                                                      ps, accounts)
+
+    for region in region_cache.regions_for_service('sns'):
+      results += import_account_sns_region_with_pool(pool, proxy_builder_args,
+                                                     import_job.id, region, ps,
+                                                     accounts)
 
     f.wait(results)
     # raise any exceptions

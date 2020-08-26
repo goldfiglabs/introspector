@@ -1,0 +1,27 @@
+version: 1
+resources:
+- service: sns
+  provider_type: Subscription
+  name: SubscriptionArn
+  uri:
+    uri: SubscriptionArn
+  attributes:
+    provider:
+    - SubscriptionArn
+    - Owner
+    - Protocol
+    - Endpoint
+    - TopicArn
+    - ConfirmationWasAuthenticated
+    - DeliveryPolicy
+    - EffectiveDeliveryPolicy
+    - FilterPolicy
+    - PendingConfirmation
+    - RawMessageDelivery
+    - RedrivePolicy
+  relations:
+  - relation: subscribes-to
+    path: TopicArn
+    uri:
+      uri:
+        path: ''

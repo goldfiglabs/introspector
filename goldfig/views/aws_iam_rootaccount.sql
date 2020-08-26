@@ -18,11 +18,13 @@ SELECT
   R.uri,
   R.provider_account_id,
   Arn.attr_value #>> '{}' AS arn,
-  mfa_active.attr_value::boolean AS mfa_active,
-  access_key_1_active.attr_value::boolean AS access_key_1_active,
-  access_key_2_active.attr_value::boolean AS access_key_2_active,
-  cert_1_active.attr_value::boolean AS cert_1_active,
-  cert_2_active.attr_value::boolean AS cert_2_active,
+  (has_virtual_mfa.attr_value #>> '{}')::boolean AS has_virtual_mfa,
+  (mfa_active.attr_value #>> '{}')::boolean AS mfa_active,
+  (access_key_1_active.attr_value #>> '{}')::boolean AS access_key_1_active,
+  (access_key_2_active.attr_value #>> '{}')::boolean AS access_key_2_active,
+  (cert_1_active.attr_value #>> '{}')::boolean AS cert_1_active,
+  (cert_2_active.attr_value #>> '{}')::boolean AS cert_2_active,
+  (TO_TIMESTAMP(password_last_used.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS password_last_used,
   
     _account_id.target_id AS _account_id
 FROM
@@ -32,6 +34,9 @@ FROM
   LEFT JOIN attrs AS Arn
     ON Arn.id = R.id
     AND Arn.attr_name = 'arn'
+  LEFT JOIN attrs AS has_virtual_mfa
+    ON has_virtual_mfa.id = R.id
+    AND has_virtual_mfa.attr_name = 'has_virtual_mfa'
   LEFT JOIN attrs AS mfa_active
     ON mfa_active.id = R.id
     AND mfa_active.attr_name = 'mfa_active'
@@ -47,6 +52,9 @@ FROM
   LEFT JOIN attrs AS cert_2_active
     ON cert_2_active.id = R.id
     AND cert_2_active.attr_name = 'cert_2_active'
+  LEFT JOIN attrs AS password_last_used
+    ON password_last_used.id = R.id
+    AND password_last_used.attr_name = 'password_last_used'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

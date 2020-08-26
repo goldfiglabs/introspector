@@ -22,27 +22,27 @@ SELECT
   s3keyprefix.attr_value #>> '{}' AS s3keyprefix,
   snstopicname.attr_value #>> '{}' AS snstopicname,
   snstopicarn.attr_value #>> '{}' AS snstopicarn,
-  includeglobalserviceevents.attr_value::boolean AS includeglobalserviceevents,
-  ismultiregiontrail.attr_value::boolean AS ismultiregiontrail,
+  (includeglobalserviceevents.attr_value #>> '{}')::boolean AS includeglobalserviceevents,
+  (ismultiregiontrail.attr_value #>> '{}')::boolean AS ismultiregiontrail,
   homeregion.attr_value #>> '{}' AS homeregion,
   trailarn.attr_value #>> '{}' AS trailarn,
-  logfilevalidationenabled.attr_value::boolean AS logfilevalidationenabled,
+  (logfilevalidationenabled.attr_value #>> '{}')::boolean AS logfilevalidationenabled,
   cloudwatchlogsloggrouparn.attr_value #>> '{}' AS cloudwatchlogsloggrouparn,
   cloudwatchlogsrolearn.attr_value #>> '{}' AS cloudwatchlogsrolearn,
   kmskeyid.attr_value #>> '{}' AS kmskeyid,
-  hascustomeventselectors.attr_value::boolean AS hascustomeventselectors,
-  hasinsightselectors.attr_value::boolean AS hasinsightselectors,
-  isorganizationtrail.attr_value::boolean AS isorganizationtrail,
-  islogging.attr_value::boolean AS islogging,
+  (hascustomeventselectors.attr_value #>> '{}')::boolean AS hascustomeventselectors,
+  (hasinsightselectors.attr_value #>> '{}')::boolean AS hasinsightselectors,
+  (isorganizationtrail.attr_value #>> '{}')::boolean AS isorganizationtrail,
+  (islogging.attr_value #>> '{}')::boolean AS islogging,
   latestdeliveryerror.attr_value #>> '{}' AS latestdeliveryerror,
   latestnotificationerror.attr_value #>> '{}' AS latestnotificationerror,
-  latestdeliverytime.attr_value AS latestdeliverytime,
-  latestnotificationtime.attr_value AS latestnotificationtime,
-  startloggingtime.attr_value AS startloggingtime,
-  stoploggingtime.attr_value AS stoploggingtime,
+  (TO_TIMESTAMP(latestdeliverytime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestdeliverytime,
+  (TO_TIMESTAMP(latestnotificationtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestnotificationtime,
+  (TO_TIMESTAMP(startloggingtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS startloggingtime,
+  (TO_TIMESTAMP(stoploggingtime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS stoploggingtime,
   latestcloudwatchlogsdeliveryerror.attr_value #>> '{}' AS latestcloudwatchlogsdeliveryerror,
-  latestcloudwatchlogsdeliverytime.attr_value AS latestcloudwatchlogsdeliverytime,
-  latestdigestdeliverytime.attr_value AS latestdigestdeliverytime,
+  (TO_TIMESTAMP(latestcloudwatchlogsdeliverytime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestcloudwatchlogsdeliverytime,
+  (TO_TIMESTAMP(latestdigestdeliverytime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS latestdigestdeliverytime,
   latestdigestdeliveryerror.attr_value #>> '{}' AS latestdigestdeliveryerror,
   latestdeliveryattempttime.attr_value #>> '{}' AS latestdeliveryattempttime,
   latestnotificationattempttime.attr_value #>> '{}' AS latestnotificationattempttime,
@@ -54,6 +54,7 @@ SELECT
   eventselectors.attr_value::jsonb AS eventselectors,
   
     _s3_bucket_id.target_id AS _s3_bucket_id,
+    _logs_loggroup_id.target_id AS _logs_loggroup_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -177,6 +178,19 @@ FROM
     WHERE
       _aws_s3_bucket_relation.relation = 'forwards-to'
   ) AS _s3_bucket_id ON _s3_bucket_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_logs_loggroup_relation.resource_id AS resource_id,
+      _aws_logs_loggroup.id AS target_id
+    FROM
+      resource_relation AS _aws_logs_loggroup_relation
+      INNER JOIN resource AS _aws_logs_loggroup
+        ON _aws_logs_loggroup_relation.target_id = _aws_logs_loggroup.id
+        AND _aws_logs_loggroup.provider_type = 'LogGroup'
+        AND _aws_logs_loggroup.service = 'logs'
+    WHERE
+      _aws_logs_loggroup_relation.relation = 'uses-group'
+  ) AS _logs_loggroup_id ON _logs_loggroup_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

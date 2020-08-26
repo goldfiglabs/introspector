@@ -1,0 +1,27 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: RouteTable
+  name: RouteTableId
+  uri:
+    id: RouteTableId
+  attributes:
+    provider:
+    - Associations
+    - PropagatingVgws
+    - RouteTableId
+    - Routes
+    - Tags
+    - VpcId
+    - OwnerId
+  resource_name: route-table
+  relations:
+  - relation: routes
+    path: VpcId
+    uri:
+      resource_name:
+        value: vpc
+      service:
+        value: ec2
+      id:
+        path: ''

@@ -23,7 +23,9 @@ SELECT
   description.attr_value #>> '{}' AS description,
   routingconfig.attr_value::jsonb AS routingconfig,
   revisionid.attr_value #>> '{}' AS revisionid,
+  Policy.attr_value::jsonb AS policy,
   
+    _function_id.target_id AS _function_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -47,6 +49,22 @@ FROM
   LEFT JOIN attrs AS revisionid
     ON revisionid.id = R.id
     AND revisionid.attr_name = 'revisionid'
+  LEFT JOIN attrs AS Policy
+    ON Policy.id = R.id
+    AND Policy.attr_name = 'policy'
+  LEFT JOIN (
+    SELECT
+      _aws_lambda_function_relation.resource_id AS resource_id,
+      _aws_lambda_function.id AS target_id
+    FROM
+      resource_relation AS _aws_lambda_function_relation
+      INNER JOIN resource AS _aws_lambda_function
+        ON _aws_lambda_function_relation.target_id = _aws_lambda_function.id
+        AND _aws_lambda_function.provider_type = 'Function'
+        AND _aws_lambda_function.service = 'lambda'
+    WHERE
+      _aws_lambda_function_relation.relation = 'aliases'
+  ) AS _function_id ON _function_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -77,7 +95,7 @@ CREATE MATERIALIZED VIEW aws_lambda_alias_functionversion AS
 SELECT
   aws_lambda_alias.id AS alias_id,
   aws_lambda_functionversion.id AS functionversion_id,
-  weight.value::double precision   AS weight
+  (weight.value #>> '{}')::double precision AS weight
 FROM
   resource AS aws_lambda_alias
   INNER JOIN resource_relation AS RR

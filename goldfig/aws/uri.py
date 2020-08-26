@@ -70,6 +70,33 @@ def _ec2_arn_fn(resource_name, account, partition, **kwargs) -> str:
   return f'arn:{partition}:ec2:{region}:{account}:{resource_name.lower()}/{id}'
 
 
+def _logs_uri_fn(partition: str, account_id: str, resource_name: str,
+                 **kwargs):
+  if resource_name == 'metric-filter':
+    arn = _get_with_parent('arn', kwargs)
+    name = kwargs['filter_name']
+    return f'{arn}:{resource_name}:{name}'
+  elif resource_name == 'metric':
+    name = kwargs['metric_name']
+    namespace = kwargs['metric_namespace']
+    return f'metrics/{namespace}/{name}'
+  elif resource_name == 'log-group':
+    region = _get_with_parent('region', kwargs)
+    id = kwargs['log_group_id']
+    return f'arn:{partition}:logs:{region}:{account_id}:{resource_name.lower()}:{id}:*'
+  raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
+
+
+def _config_uri_fn(resource_name: str, **kwargs):
+  if resource_name == 'ConfigurationRecorder':
+    name = kwargs['name']
+    region = _get_with_parent('region', kwargs)
+    if region is None:
+      raise GFInternal(f'Missing region in {kwargs}')
+    return f'configurationRecorders/{region}/{name}'
+  raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
+
+
 def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
   if 'uri' in kwargs:
     return kwargs['uri']
@@ -82,6 +109,10 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
     return _elb_arn_fn(resource_name, partition, account_id, **kwargs)
   elif service == 'iam':
     return _iam_uri_fn(resource_name, **kwargs)
+  elif service == 'logs':
+    return _logs_uri_fn(partition, account_id, resource_name, **kwargs)
+  elif service == 'config':
+    return _config_uri_fn(resource_name, **kwargs)
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')

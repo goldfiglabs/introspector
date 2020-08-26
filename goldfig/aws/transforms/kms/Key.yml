@@ -1,0 +1,36 @@
+version: 1
+resources:
+- service: kms
+  provider_type: key
+  name: KeyId
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - AWSAccountId
+    - KeyId
+    - Arn
+    - CreationDate
+    - Enabled
+    - Description
+    - KeyUsage
+    - KeyState
+    - DeletionDate
+    - ValidTo
+    - Origin
+    - CustomKeyStoreId
+    - CloudHsmClusterId
+    - ExpirationModel
+    - KeyManager
+    - CustomerMasterKeySpec
+    - EncryptionAlgorithms
+    - SigningAlgorithms
+    - Tags
+    - KeyRotationEnabled
+    - Policy
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: key

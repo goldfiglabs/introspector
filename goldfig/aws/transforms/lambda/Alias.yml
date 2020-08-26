@@ -13,6 +13,7 @@ resources:
     - Description
     - RoutingConfig
     - RevisionId
+    - Policy
   relations:
   - path: ''
     fn: aws_lambda_alias

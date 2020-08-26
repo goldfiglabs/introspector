@@ -1,0 +1,33 @@
+version: 1
+resources:
+- service: logs
+  provider_type: MetricFilter
+  name: filterName
+  uri:
+    filter_name: filterName
+  attributes:
+    provider:
+    - filterName
+    - filterPattern
+    - metricTransformations
+    - creationTime
+    - logGroupName
+  resource_name: metric-filter
+  relations:
+  - relation: forwards-to
+    path: metricTransformations
+    uri:
+      resource_name:
+        value: metric
+      metric_name:
+        path: metricName
+      metric_namespace:
+        path: metricNamespace
+    attributes:
+      MetricValue:
+        path: metricValue
+      DefaultValue:
+        path: defaultValue
+subresources:
+- key: metricTransformations
+  type: Metric

@@ -1,7 +1,8 @@
 from dataclasses import dataclass
+from goldfig.error import GFError
 import logging
 import os
-from typing import List, Tuple
+from typing import Iterator, List, Tuple
 
 # import psycopg2.errors
 import psycopg2
@@ -44,6 +45,45 @@ _import_engine = None
 _readonly_engine = None
 
 SCHEMA_VERSION = 1
+
+
+def _require_plv8(cursor):
+  cursor.execute('''
+    SELECT
+      installed_version IS NOT NULL AS installed
+    FROM
+      pg_available_extensions WHERE
+      name ='plv8'
+    ''')
+  is_installed = cursor.fetchone()[0]
+  if is_installed is None:
+    raise GFError('plv8 postgresql extension required but not available')
+  elif not is_installed:
+    # It's available, but not installed
+    cursor.execute('CREATE EXTENSION plv8')
+
+
+def _fn_files() -> Tuple[str, List[str]]:
+  path = os.path.realpath(os.path.join(os.path.dirname(__file__), 'fns'))
+  files = [
+      f for f in os.listdir(path)
+      if os.path.isfile(os.path.join(path, f)) and f[-4:] == '.sql'
+  ]
+  files.sort()
+  return path, files
+
+
+def _install_functions(db: Session):
+  path, files = _fn_files()
+  for fname in files:
+    with open(os.path.join(path, fname), 'r') as f:
+      sql = f.read()
+      try:
+        stmt = text(sql)
+        db.execute(stmt)
+      except:
+        _log.error(f'failed adding function from {fname}')
+        raise
 
 
 def _view_files() -> Tuple[str, List[str]]:
@@ -98,6 +138,7 @@ def _install_schema(db: Session) -> None:
   elif version.version != SCHEMA_VERSION:
     raise NotImplementedError('Need schema migration')
   _install_views(db)
+  _install_functions(db)
   db.commit()
 
 
@@ -136,6 +177,7 @@ def _install_db_and_roles():
                              host=cred.host)
   su_conn.autocommit = False
   cursor = su_conn.cursor()
+  _require_plv8(cursor)
   import_user = sql.Identifier(_ImportCredential.user)
   ro_user = sql.Identifier(_ReadonlyCredential.user)
   cursor.execute('revoke create on schema public from public')

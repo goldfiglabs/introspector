@@ -23,7 +23,7 @@ SELECT
   name.attr_value #>> '{}' AS name,
   status.attr_value #>> '{}' AS status,
   joinedmethod.attr_value #>> '{}' AS joinedmethod,
-  joinedtimestamp.attr_value AS joinedtimestamp,
+  (TO_TIMESTAMP(joinedtimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS joinedtimestamp,
   servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
   tagpolicies.attr_value::jsonb AS tagpolicies,
   tags.attr_value::jsonb AS tags,

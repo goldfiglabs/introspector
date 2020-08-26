@@ -20,25 +20,25 @@ SELECT
   alarmname.attr_value #>> '{}' AS alarmname,
   alarmarn.attr_value #>> '{}' AS alarmarn,
   alarmdescription.attr_value #>> '{}' AS alarmdescription,
-  alarmconfigurationupdatedtimestamp.attr_value AS alarmconfigurationupdatedtimestamp,
-  actionsenabled.attr_value::boolean AS actionsenabled,
+  (TO_TIMESTAMP(alarmconfigurationupdatedtimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS alarmconfigurationupdatedtimestamp,
+  (actionsenabled.attr_value #>> '{}')::boolean AS actionsenabled,
   okactions.attr_value::jsonb AS okactions,
   alarmactions.attr_value::jsonb AS alarmactions,
   insufficientdataactions.attr_value::jsonb AS insufficientdataactions,
   statevalue.attr_value #>> '{}' AS statevalue,
   statereason.attr_value #>> '{}' AS statereason,
   statereasondata.attr_value #>> '{}' AS statereasondata,
-  stateupdatedtimestamp.attr_value AS stateupdatedtimestamp,
+  (TO_TIMESTAMP(stateupdatedtimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS stateupdatedtimestamp,
   metricname.attr_value #>> '{}' AS metricname,
   namespace.attr_value #>> '{}' AS namespace,
   statistic.attr_value #>> '{}' AS statistic,
   extendedstatistic.attr_value #>> '{}' AS extendedstatistic,
   dimensions.attr_value::jsonb AS dimensions,
-  period.attr_value::integer AS period,
+  (period.attr_value #>> '{}')::integer AS period,
   unit.attr_value #>> '{}' AS unit,
-  evaluationperiods.attr_value::integer AS evaluationperiods,
-  datapointstoalarm.attr_value::integer AS datapointstoalarm,
-  threshold.attr_value::double precision AS threshold,
+  (evaluationperiods.attr_value #>> '{}')::integer AS evaluationperiods,
+  (datapointstoalarm.attr_value #>> '{}')::integer AS datapointstoalarm,
+  (threshold.attr_value #>> '{}')::double precision AS threshold,
   comparisonoperator.attr_value #>> '{}' AS comparisonoperator,
   treatmissingdata.attr_value #>> '{}' AS treatmissingdata,
   evaluatelowsamplecountpercentile.attr_value #>> '{}' AS evaluatelowsamplecountpercentile,
@@ -46,6 +46,7 @@ SELECT
   thresholdmetricid.attr_value #>> '{}' AS thresholdmetricid,
   tags.attr_value::jsonb AS tags,
   
+    _logs_metric_id.target_id AS _logs_metric_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -137,6 +138,19 @@ FROM
     AND tags.attr_name = 'tags'
   LEFT JOIN (
     SELECT
+      _aws_logs_metric_relation.resource_id AS resource_id,
+      _aws_logs_metric.id AS target_id
+    FROM
+      resource_relation AS _aws_logs_metric_relation
+      INNER JOIN resource AS _aws_logs_metric
+        ON _aws_logs_metric_relation.target_id = _aws_logs_metric.id
+        AND _aws_logs_metric.provider_type = 'Metric'
+        AND _aws_logs_metric.service = 'logs'
+    WHERE
+      _aws_logs_metric_relation.relation = 'fires-on'
+  ) AS _logs_metric_id ON _logs_metric_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
@@ -157,3 +171,22 @@ REFRESH MATERIALIZED VIEW aws_cloudwatch_metricalarm;
 
 COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metricalarm IS 'cloudwatch metricalarm resources and their associated attributes.';
 
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_metricalarm_sns_topic CASCADE;
+
+CREATE MATERIALIZED VIEW aws_cloudwatch_metricalarm_sns_topic AS
+SELECT
+  aws_cloudwatch_metricalarm.id AS metricalarm_id,
+  aws_sns_topic.id AS topic_id
+FROM
+  resource AS aws_cloudwatch_metricalarm
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_cloudwatch_metricalarm.id
+    AND RR.relation = 'triggers'
+  INNER JOIN resource AS aws_sns_topic
+    ON aws_sns_topic.id = RR.target_id
+    AND aws_sns_topic.provider_type = 'Topic'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_cloudwatch_metricalarm_sns_topic;

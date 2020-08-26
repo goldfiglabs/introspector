@@ -35,6 +35,7 @@ resources:
      - LastUpdateStatusReasonCode
      - FileSystemConfigs
      - Tags
+     - Policy
     custom:
       Metadata:
         Tags:

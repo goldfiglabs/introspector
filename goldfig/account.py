@@ -2,6 +2,7 @@ from typing import Dict
 
 from sqlalchemy.orm import Session
 
+from goldfig.bootstrap_db import refresh_views
 from goldfig.models import ProviderAccount
 
 
@@ -194,6 +195,7 @@ def reset_account(db: Session, provider_account_id: int):
   _delete_delta_log(db, provider_account_id, report)
   _delete_resources(db, provider_account_id, report)
   _reset_imports(db, provider_account_id, report)
+  refresh_views(db)
   return report
 
 
@@ -203,4 +205,5 @@ def delete_account(db: Session, account: ProviderAccount):
   _delete_resources(db, account.id, report)
   _delete_imports(db, account.id, report)
   _delete_provider_account(db, account.id, report)
+  refresh_views(db)
   return report

@@ -24,7 +24,7 @@ SELECT
   (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate,
   assumerolepolicydocument.attr_value #>> '{}' AS assumerolepolicydocument,
   description.attr_value #>> '{}' AS description,
-  maxsessionduration.attr_value::integer AS maxsessionduration,
+  (maxsessionduration.attr_value #>> '{}')::integer AS maxsessionduration,
   permissionsboundary.attr_value::jsonb AS permissionsboundary,
   tags.attr_value::jsonb AS tags,
   rolelastused.attr_value::jsonb AS rolelastused,
