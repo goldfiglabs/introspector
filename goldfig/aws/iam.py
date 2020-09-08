@@ -47,7 +47,7 @@ def _unpack(tup: Optional[Tuple[str, Dict]]) -> Dict:
 
 
 def _post_process_report_row(row: Dict[str, str]) -> Dict[str, Any]:
-  result = {}
+  result: Dict[str, Any] = {}
   for key, value in row.items():
     if value == 'true' or value == 'True':
       result[key] = True
@@ -206,7 +206,7 @@ _ROLE_ATTRS = {
 def _import_roles(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
   roles = _unpack(proxy.list('list_roles'))
   for role in roles['Roles']:
-    role_data = role.copy()
+    role_data = proxy.get('get_role', RoleName=role['RoleName'])['Role']
     name = role_data['RoleName']
     for attr, op in _ROLE_ATTRS.items():
       op_result = _unpack(proxy.list(op, RoleName=name))

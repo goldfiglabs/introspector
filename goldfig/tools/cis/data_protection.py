@@ -175,5 +175,5 @@ class HttpsEndpoints(ThreeTierBenchmark):
     if len(results) == 0:
       desc = 'NONE'
     else:
-      '\n\t'.join(lambda row: row['endpoint_uri'], results)
+      desc = '\n\t'.join(map(lambda row: row['endpoint_uri'], results))
     return f'Endpoints tagged {key}: {value} that are missing SSL Certificates{nl}{desc}'

@@ -47,6 +47,7 @@ def _multiple_tiers_service_account(db: Session):
   ra1 = ResourceAttribute(resource=r1,
                           attr_type='Metadata',
                           name='Tags',
+                          source='base',
                           value={
                               'role': 'web',
                               'metadata:foo': 'bar'
@@ -61,6 +62,7 @@ def _multiple_tiers_service_account(db: Session):
   ra2 = ResourceAttribute(resource=r2,
                           attr_type='Metadata',
                           name='Tags',
+                          source='base',
                           value={
                               'role': 'web',
                               'metadata:foo': 'baz'
@@ -76,6 +78,7 @@ def _multiple_tiers_service_account(db: Session):
   ra3 = ResourceAttribute(resource=r3,
                           attr_type='Metadata',
                           name='Tags',
+                          source='base',
                           value={
                               'role': 'app',
                               'metadata:xxx': 'yyy'
@@ -130,6 +133,7 @@ def _multiple_service_accounts(db: Session):
   ra1 = ResourceAttribute(resource=r1,
                           attr_type='Metadata',
                           name='Tags',
+                          source='base',
                           value={
                               'role': 'web',
                               'metadata:foo': 'bar'
@@ -144,6 +148,7 @@ def _multiple_service_accounts(db: Session):
   ra2 = ResourceAttribute(resource=r2,
                           attr_type='Metadata',
                           name='Tags',
+                          source='base',
                           value={
                               'role': 'web',
                               'metadata:foo': 'baz'

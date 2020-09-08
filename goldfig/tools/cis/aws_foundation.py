@@ -593,13 +593,13 @@ class NoAutoCreatedAccessKeys(Check):
       WHERE
         delta < interval '2 minutes'
         AND status = 'Active'
-        AND has_login
+        AND has_login = True
     '''
 
   def _contextualize_failure(self, row: Any) -> str:
     uri = row['uri']
     key_id = row['keyid']
-    return f'User {uri} has an auto-creaded access key {key_id}'
+    return f'User {uri} has an auto-created access key {key_id}'
 
 
 class NoAdminAccess(Check):
@@ -1694,13 +1694,13 @@ class NoSSHFromEverywhere(Check):
   def _sql(self) -> str:
     return '''
       SELECT
-        SG.uri
+        DISTINCT(SG.uri)
       FROM
         aws_ec2_securitygroup AS SG
         CROSS JOIN LATERAL jsonb_array_elements(SG.ippermissions) AS IPP
         CROSS JOIN LATERAL jsonb_array_elements(IPP->'IpRanges') AS R
       WHERE
-        (IPP.value ->> 'ToPort')::integer = 22
+        22 BETWEEN COALESCE((IPP ->> 'FromPort')::integer, 22) AND COALESCE((IPP.value ->> 'ToPort')::integer, 22)
         AND (R.value->>'CidrIp')::inet = inet '0.0.0.0/0'
         AND SG.provider_account_id = :provider_account_id
     '''
@@ -1721,7 +1721,7 @@ class NoRDPFromEverywhere(Check):
         CROSS JOIN LATERAL jsonb_array_elements(SG.ippermissions) AS IPP
         CROSS JOIN LATERAL jsonb_array_elements(IPP->'IpRanges') AS R
       WHERE
-        (IPP.value ->> 'ToPort')::integer = 3389
+        3389 BETWEEN COALESCE((IPP ->> 'FromPort')::integer, 3389) AND COALESCE((IPP.value ->> 'ToPort')::integer, 3389)
         AND (R.value->>'CidrIp')::inet = inet '0.0.0.0/0'
         AND SG.provider_account_id = :provider_account_id
     '''
@@ -1753,7 +1753,7 @@ class DefaultSecurityGroupAllowsNothing(Check):
   def _contextualize_failure(self, row: Any) -> str:
     sg = row['security_group']
     vpc = row['vpc']
-    ip_ranges = row['ip_ranges']
+    ip_ranges = row['allowed_ip_ranges']
     return f'Default Security Group ({sg}) for VPC {vpc} allows connections from {ip_ranges}'
 
 

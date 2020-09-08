@@ -1,5 +1,5 @@
 from goldfig.aws.iam import synthesize_account_root
-from goldfig.error import GFInternal
+from goldfig.error import GFError, GFInternal
 import os
 from typing import Dict, List, Optional
 
@@ -20,11 +20,31 @@ def _zone_to_region(zone: str, **_) -> str:
   return zone[:-1]
 
 
+def _aws_tag_key(item: Dict) -> str:
+  key = item.get('Key')
+  if key is not None:
+    return key
+  key = item.get('TagKey')
+  if key is not None:
+    return key
+  raise GFError(f'Cannot find tag key in {item}')
+
+
+def _aws_tag_value(item: Dict) -> str:
+  value = item.get('Value')
+  if value is not None:
+    return value
+  value = item.get('TagValue')
+  if value is not None:
+    return value
+  raise GFError(f'Cannot find tag value in {item}')
+
+
 def _tag_list_to_object(tags: Optional[List[Dict[str, str]]],
                         **_) -> Dict[str, str]:
   if tags is None or len(tags) == 0:
     return {}
-  return {item['Key']: item['Value'] for item in tags}
+  return {_aws_tag_key(item): _aws_tag_value(item) for item in tags}
 
 
 def _lambda_alias_relations(parent_uri, target_raw, **kwargs):

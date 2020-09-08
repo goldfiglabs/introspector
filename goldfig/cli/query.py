@@ -9,8 +9,8 @@ from goldfig.tools.query import run_query
 
 
 def _directory_queries(dir_path: str) -> Generator[str, None, None]:
-  for f in os.listdir(dir_path):
-    with open(os.path.join(dir_path, f), 'r') as f:
+  for filename in os.listdir(dir_path):
+    with open(os.path.join(dir_path, filename), 'r') as f:
       yield f.read()
 
 

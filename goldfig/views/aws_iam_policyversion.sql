@@ -17,7 +17,7 @@ SELECT
   R.id AS resource_id,
   R.uri,
   R.provider_account_id,
-  document.attr_value #>> '{}' AS document,
+  document.attr_value::jsonb AS document,
   versionid.attr_value #>> '{}' AS versionid,
   (isdefaultversion.attr_value #>> '{}')::boolean AS isdefaultversion,
   (TO_TIMESTAMP(createdate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdate,

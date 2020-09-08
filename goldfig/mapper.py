@@ -173,46 +173,52 @@ class Mapper:
     return self._fns[name]
 
   def value_from_spec(self, spec, raw, parent=None, ctx=None) -> Any:
-    value: Any = None
-    if 'items' in spec:
-      value = []
-      for subspec in spec['items']:
-        sub_result = self.value_from_spec(subspec, raw, parent=parent)
-        value.extend(sub_result)
-    elif 'context' in spec:
-      path = spec['context']
-      if ctx is None:
-        value = None  # error?
-      else:
-        value = jmespath.search(path, ctx)
-    elif 'dict' in spec:
-      value = {}
-      for subspec in spec['dict']:
-        sub_result = self.value_from_spec(subspec, raw, parent=parent)
-        if sub_result is not None:
-          value = {**value, **sub_result}
-    elif 'identity' in spec:
-      path = spec['identity']
-      value = jmespath.search(path, raw)
-    elif 'path' in spec:
-      path = spec['path']
-      if path == '':
-        value = raw
-      else:
+    try:
+      value: Any = None
+      if 'items' in spec:
+        value = []
+        for subspec in spec['items']:
+          sub_result = self.value_from_spec(subspec, raw, parent=parent)
+          value.extend(sub_result)
+      elif 'context' in spec:
+        path = spec['context']
+        if ctx is None:
+          value = None  # error?
+        else:
+          value = jmespath.search(path, ctx)
+      elif 'dict' in spec:
+        value = {}
+        for subspec in spec['dict']:
+          sub_result = self.value_from_spec(subspec, raw, parent=parent)
+          if sub_result is not None:
+            value = {**value, **sub_result}
+      elif 'identity' in spec:
+        path = spec['identity']
         value = jmespath.search(path, raw)
-    elif parent is not None and 'parent_path' in spec:
-      path = spec['parent_path']
-      value = jmespath.search(path, parent)
-    elif 'value' in spec:
-      path = None
-      value = spec['value']
-    if 'transform' in spec:
-      # TODO: check if generator, yield as appropriate?
-      transform = self.fn(spec['transform'])
-      value = transform(value)
-    if value is None and 'default' in spec:
-      value = spec['default']
-    return value
+      elif 'path' in spec:
+        path = spec['path']
+        if path == '':
+          value = raw
+        else:
+          value = jmespath.search(path, raw)
+      elif parent is not None and 'parent_path' in spec:
+        path = spec['parent_path']
+        value = jmespath.search(path, parent)
+      elif 'value' in spec:
+        path = None
+        value = spec['value']
+      if 'transform' in spec:
+        # TODO: check if generator, yield as appropriate?
+        transform = self.fn(spec['transform'])
+        value = transform(value)
+      if value is None and 'default' in spec:
+        value = spec['default']
+      return value
+    except Exception as e:
+      _log.exception(
+          f'Value mapping failed Spec={spec} raw={raw} parent={parent} ctx={ctx}'
+      )
+      raise
 
   def _find_transform(self, service: str, resource_name: str) -> Transform:
     service_transforms = self._transforms.get(service, {})
