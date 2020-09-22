@@ -19,7 +19,7 @@ SELECT
   R.provider_account_id,
   groupname.attr_value #>> '{}' AS groupname,
   policyname.attr_value #>> '{}' AS policyname,
-  policydocument.attr_value #>> '{}' AS policydocument,
+  policydocument.attr_value::jsonb AS policydocument,
   
     _group_id.target_id AS _group_id,
     _account_id.target_id AS _account_id

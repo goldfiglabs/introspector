@@ -97,6 +97,37 @@ def _config_uri_fn(resource_name: str, **kwargs):
   raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
 
 
+def _apigatewayv2_uri_fn(partition: str, account_id: str, resource_name: str,
+                         **kwargs):
+  id = kwargs.get('id')
+  if id is None:
+    raise GFInternal(f'Missing id in {kwargs}')
+  region = _get_with_parent('region', kwargs)
+  if region is None:
+    raise GFInternal(f'Missing region in {kwargs}')
+  if resource_name == 'Api':
+    return f'arn:{partition}:execute-api:{region}:{account_id}:{id}'
+  elif resource_name == 'Stage':
+    api_id = _get_with_parent('apiId', kwargs)
+    if api_id is None:
+      raise GFInternal(f'Missing ApiId in {kwargs}')
+    return f'arn:{partition}:execute-api:{region}:{account_id}:{api_id}/{id}'
+  raise GFInternal(f'Failed apigatewayv2 uri fn {resource_name} {kwargs}')
+
+
+def _redshift_uri_fn(partition: str, account_id: str, resource_name: str,
+                     **kwargs):
+  id = kwargs.get('id')
+  if id is None:
+    raise GFInternal(f'Missing id in {kwargs}')
+  region = _get_with_parent('region', kwargs)
+  if region is None:
+    raise GFInternal(f'Missing region in {kwargs}')
+  if resource_name == 'cluster':
+    return f'arn:{partition}:redshift:{region}:{account_id}:cluster:{id}'
+  raise GFInternal(f'Failed redshift uri fn {resource_name} {kwargs}')
+
+
 def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
   if 'uri' in kwargs:
     return kwargs['uri']
@@ -113,12 +144,18 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
     return _logs_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'config':
     return _config_uri_fn(resource_name, **kwargs)
+  elif service == 'apigatewayv2':
+    return _apigatewayv2_uri_fn(partition, account_id, resource_name, **kwargs)
+  elif service == 'redshift':
+    return _redshift_uri_fn(partition, account_id, resource_name, **kwargs)
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
   region = _get_with_parent('region', kwargs)
   if region is None:
     raise GFInternal(f'Missing region in {kwargs}')
+  if service in ('kms', ):
+    return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}/{id}'
   return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
 
 

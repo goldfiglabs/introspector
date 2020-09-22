@@ -1,0 +1,33 @@
+version: 1
+resources:
+- service: ecs
+  provider_type: TaskDefinition
+  name: taskDefinitionArn
+  uri:
+    uri: taskDefinitionArn
+  attributes:
+    provider:
+    - taskDefinitionArn
+    - containerDefinitions
+    - family
+    - taskRoleArn
+    - executionRoleArn
+    - networkMode
+    - revision
+    - volumes
+    - status
+    - requiresAttributes
+    - placementConstraints
+    - compatibilities
+    - requiresCompatibilities
+    - cpu
+    - memory
+    - inferenceAccelerators
+    - pidMode
+    - ipcMode
+    - proxyConfiguration
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags

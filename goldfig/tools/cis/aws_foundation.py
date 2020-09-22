@@ -1,5 +1,7 @@
+from dataclasses import dataclass
+from enum import Enum, auto
 import sys
-from typing import Any, List
+from typing import Any, Dict, List, Optional
 
 from colr import color
 from sqlalchemy.orm import Session
@@ -7,7 +9,56 @@ from sqlalchemy.orm import Session
 from goldfig.models.provider_account import ProviderAccount
 
 
+class Status(Enum):
+  INFO = auto()
+  PASS = auto()
+  FAIL = auto()
+
+  def color_args(self) -> Dict[str, str]:
+    if self == Status.INFO:
+      fore = 'cyan'
+      style = 'bright'
+    elif self == Status.PASS:
+      fore = 'green'
+      style = 'bright'
+    elif self == Status.FAIL:
+      fore = 'red'
+      style = 'bright'
+    else:
+      raise ValueError(f'Unknown status {self}')
+    return {'fore': fore, 'style': style}
+
+
+@dataclass
+class Result:
+  benchmark: str
+  severity: str
+  status: Status
+  summary: str
+  region: str
+  notes: Optional[str] = None
+
+
+@dataclass
+class QueryResult:
+  status: Status
+  region: str
+  notes: Optional[str] = None
+
+
+def console_writer(result: Result):
+  pass
+
+
+def csv_writer(result: Result):
+  pass
+
+
 class Foundation:
+  benchmark: str
+  severity: str
+  summary: str
+
   def run_query(self, db: Session, provider_account_id: int) -> List[Any]:
     results = db.execute(self._sql(),
                          {'provider_account_id': provider_account_id})
@@ -16,6 +67,19 @@ class Foundation:
   def _sql(self) -> str:
     raise NotImplementedError('Base class')
 
+  def _rows_to_query_result(self, rows: List[Any]) -> QueryResult:
+    raise NotImplementedError('TODO')
+
+  def run_check(self, db: Session, provider_account_id: int) -> Result:
+    rows = self.run_query(db, provider_account_id)
+    query_result = self._rows_to_query_result(rows)
+    return Result(benchmark=self.benchmark,
+                  severity=self.severity,
+                  status=query_result.status,
+                  summary=self.summary,
+                  region=query_result.region,
+                  notes=query_result.notes)
+
 
 class Info(Foundation):
   def run(self, db: Session, provider_account_id: int):
@@ -23,6 +87,19 @@ class Info(Foundation):
     results = self.run_query(db, provider_account_id)
     sys.stdout.write(color('INFO\n', fore='yellow', style='bright'))
     print('\t' + self._contextualize_results(results))
+
+  # def run_check(self, db: Session, provider_account_id: int) -> Result:
+  #   #sys.stdout.write(color(self.__doc__, fore='cyan', style='bright') + '... ')
+  #   results = self.run_query(db, provider_account_id)
+  #   #sys.stdout.write(color('INFO\n', fore='yellow', style='bright'))
+  #   #print('\t' + self._contextualize_results(results))
+  #   return Result(self.benchmark, self.severity, Status.INFO, self.summary,
+  #                 results.region, results.notes)
+
+  def _rows_to_query_result(self, rows: List[Any]) -> QueryResult:
+    return QueryResult(status=Status.INFO,
+                       region='*',
+                       notes=self._contextualize_results(rows))
 
   def _contextualize_results(self, rows: List[Any]) -> str:
     return '\n\t'.join([self._contextualize_result(row) for row in rows])
@@ -50,6 +127,11 @@ class Check(Foundation):
 
 class RootAccountUsage(Info):
   '''Benchmark 1.1'''
+
+  benchmark = '1.1'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self) -> str:
     return f'''
       SELECT
@@ -69,6 +151,10 @@ class RootAccountUsage(Info):
 
 class MFAForConsoleUser(Check):
   '''Benchmark 1.2'''
+  benchmark = '1.2'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -90,6 +176,10 @@ class MFAForConsoleUser(Check):
 
 class RotatePasswordsAfter90Days(Check):
   '''Benchmark 1.3'''
+  benchmark = '1.3'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self):
     return '''
       SELECT
@@ -144,6 +234,10 @@ class RotatePasswordsAfter90Days(Check):
 
 class RotateAccessKeysAfter90Days(Check):
   '''Benchmark 1.4'''
+  benchmark = '1.4'
+  severity = 'medium'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -185,6 +279,10 @@ class RotateAccessKeysAfter90Days(Check):
 
 class RequireUpperCaseInPassword(Check):
   '''Benchmark 1.5'''
+  benchmark = '1.5'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -207,6 +305,10 @@ class RequireUpperCaseInPassword(Check):
 
 class RequireLowerCaseInPassword(Check):
   '''Benchmark 1.6'''
+  benchmark = '1.6'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -229,6 +331,10 @@ class RequireLowerCaseInPassword(Check):
 
 class RequireSymbolInPassword(Check):
   '''Benchmark 1.7'''
+  benchmark = '1.7'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -251,6 +357,10 @@ class RequireSymbolInPassword(Check):
 
 class RequireNumberInPassword(Check):
   '''Benchmark 1.8'''
+  benchmark = '1.8'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -273,6 +383,10 @@ class RequireNumberInPassword(Check):
 
 class RequireMinimumLengthPasssword(Check):
   '''Benchmark 1.9'''
+  benchmark = '1.9'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -295,6 +409,10 @@ class RequireMinimumLengthPasssword(Check):
 
 class RequireNewPassswords(Check):
   '''Benchmark 1.10'''
+  benchmark = '1.10'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -317,6 +435,10 @@ class RequireNewPassswords(Check):
 
 class RequireMaximumAgePassswords(Check):
   '''Benchmark 1.11'''
+  benchmark = '1.11'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -339,6 +461,10 @@ class RequireMaximumAgePassswords(Check):
 
 class NoRootAccessKeys(Check):
   '''Benchmark 1.12'''
+  benchmark = '1.12'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -360,6 +486,10 @@ class NoRootAccessKeys(Check):
 
 class RootAccountHasMFA(Check):
   '''Benchmark 1.13'''
+  benchmark = '1.13'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -378,6 +508,10 @@ class RootAccountHasMFA(Check):
 
 class RootAccountHasHardwareMFA(Check):
   '''Benchmark 1.14'''
+  benchmark = '1.14'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -397,6 +531,10 @@ class RootAccountHasHardwareMFA(Check):
 
 class SecurityQuestionsRegistered(Info):
   '''Benchmark 1.15'''
+  benchmark = '1.15'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''SELECT 1'''
 
@@ -406,6 +544,10 @@ class SecurityQuestionsRegistered(Info):
 
 class NoPoliciesAttachedToUsers(Check):
   '''Benchmark 1.16'''
+  benchmark = '1.16'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       WITH attached_policies AS (
@@ -467,6 +609,10 @@ class NoPoliciesAttachedToUsers(Check):
 
 class ContactInfoUpToDate(Info):
   '''Benchmark 1.17'''
+  benchmark = '1.17'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''SELECT 1'''
 
@@ -476,6 +622,10 @@ class ContactInfoUpToDate(Info):
 
 class SecurityContactInfoUpToDate(Info):
   '''Benchmark 1.18'''
+  benchmark = '1.18'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''SELECT 1'''
 
@@ -485,15 +635,23 @@ class SecurityContactInfoUpToDate(Info):
 
 class InstancesUseInstanceProfiles(Info):
   '''Benchmark 1.19'''
+  benchmark = '1.19'
+  severity = 'low'
+
   def _sql(self) -> str:
     return '''SELECT 1'''
 
+  # TODO: consider listing instances that have no instance profile
   def _contextualize_results(self, rows: List[Any]) -> str:
     return 'Verify that applications are not embedding AWS credentials and are instead making use of InstanceProfiles'
 
 
 class SupportPolicyExists(Check):
   '''Benchmark 1.20'''
+  benchmark = '1.20'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       WITH user_support AS (
@@ -570,6 +728,10 @@ class SupportPolicyExists(Check):
 
 class NoAutoCreatedAccessKeys(Check):
   '''Benchmark 1.21'''
+  benchmark = '1.21'
+  severity = 'medium'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       WITH access_keys AS (
@@ -604,6 +766,10 @@ class NoAutoCreatedAccessKeys(Check):
 
 class NoAdminAccess(Check):
   '''Benchmark 1.22'''
+  benchmark = '1.22'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
     WITH policies AS (
@@ -661,6 +827,10 @@ class NoAdminAccess(Check):
 
 class CloudtrailEnabledEverywhere(Check):
   '''Benchmark 2.1'''
+  benchmark = '2.1'
+  severity = 'medium'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -685,6 +855,11 @@ class CloudtrailEnabledEverywhere(Check):
 
 class CloudtrailLogFileValidationEnabled(Check):
   '''Benchmark 2.2'''
+  # Level 2
+  benchmark = '2.2'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -703,6 +878,10 @@ class CloudtrailLogFileValidationEnabled(Check):
 
 class CloudtrailBucketIsPrivate(Check):
   '''Benchmark 2.3'''
+  benchmark = '2.3'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       WITH acl_public AS (
@@ -747,6 +926,10 @@ class CloudtrailBucketIsPrivate(Check):
 
 class CloudwatchLogsUpToDate(Check):
   '''Benchmark 2.4'''
+  benchmark = '2.4'
+  severity = 'high'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -780,6 +963,10 @@ class CloudwatchLogsUpToDate(Check):
 
 class ConfigEnabledInAllRegions(Check):
   '''Benchmark 2.5'''
+  benchmark = '2.5'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -804,6 +991,10 @@ class ConfigEnabledInAllRegions(Check):
 
 class CloudtrailBucketLoggingIsEnable(Check):
   '''Benchmark 2.6'''
+  benchmark = '2.6'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -826,6 +1017,11 @@ class CloudtrailBucketLoggingIsEnable(Check):
 
 class CloudtrailEncryptedAtRestWithCMK(Check):
   '''Benchmark 2.7'''
+  benchmark = '2.7'
+  severity = 'low'
+  region = 'global'
+
+  # Level 2
   def _sql(self) -> str:
     return '''
       SELECT
@@ -844,6 +1040,10 @@ class CloudtrailEncryptedAtRestWithCMK(Check):
 
 class CustomerKeysHaveRotationEnabled(Check):
   '''Benchmark 2.8'''
+  benchmark = '2.8'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
     SELECT
@@ -862,6 +1062,10 @@ class CustomerKeysHaveRotationEnabled(Check):
 
 class VPCsHaveFlowLogs(Check):
   '''Benchmark 2.9'''
+  benchmark = '2.9'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -889,6 +1093,10 @@ class VPCsHaveFlowLogs(Check):
 
 class AlertOnUnauthorizedAPICalls(Check):
   '''Benchmark 3.1'''
+  benchmark = '3.1'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT 1 FROM (
@@ -940,6 +1148,10 @@ class AlertOnUnauthorizedAPICalls(Check):
 
 class AlertOnNoMFAConsoleSignin(Check):
   '''Benchmark 3.2'''
+  benchmark = '3.2'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT 1 FROM (
@@ -991,6 +1203,10 @@ class AlertOnNoMFAConsoleSignin(Check):
 
 class AlertOnRootAccountUsage(Check):
   '''Benchmark 3.3'''
+  benchmark = '3.3'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT 1 FROM (
@@ -1042,6 +1258,10 @@ class AlertOnRootAccountUsage(Check):
 
 class AlertOnIAMPolicyChanges(Check):
   '''Benchmark 3.4'''
+  benchmark = '3.4'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     filter_terms = [
         '($.eventName=DeleteGroupPolicy)', '($.eventName=DeleteRolePolicy)',
@@ -1104,6 +1324,10 @@ class AlertOnIAMPolicyChanges(Check):
 
 class AlertOnCloudTrailConfigurationChanges(Check):
   '''Benchmark 3.5'''
+  benchmark = '3.5'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     filter_terms = [
         '($.eventName = CreateTrail)', '($.eventName = UpdateTrail)',
@@ -1160,6 +1384,10 @@ class AlertOnCloudTrailConfigurationChanges(Check):
 
 class AlertOnFailedConsoleAuthentication(Check):
   '''Benchmark 3.6'''
+  benchmark = '3.6'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT 1 FROM (
@@ -1211,6 +1439,10 @@ class AlertOnFailedConsoleAuthentication(Check):
 
 class AlertOnCMKDisablingOrScheduledDeletion(Check):
   '''Benchmark 3.7'''
+  benchmark = '3.7'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     return '''
       SELECT 1 FROM (
@@ -1262,6 +1494,10 @@ class AlertOnCMKDisablingOrScheduledDeletion(Check):
 
 class AlertOnS3BucketPolicyChanges(Check):
   '''Benchmark 3.8'''
+  benchmark = '3.8'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = PutBucketAcl)', '($.eventName = PutBucketPolicy)',
@@ -1324,6 +1560,10 @@ class AlertOnS3BucketPolicyChanges(Check):
 
 class AlertOnConfigConfigurationChanges(Check):
   '''Benchmark 3.9'''
+  benchmark = '3.9'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName=StopConfigurationRecorder)',
@@ -1383,6 +1623,10 @@ class AlertOnConfigConfigurationChanges(Check):
 
 class AlertOnSecurityGroupChanges(Check):
   '''Benchmark 3.10'''
+  benchmark = '3.10'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = AuthorizeSecurityGroupIngress)',
@@ -1444,6 +1688,10 @@ class AlertOnSecurityGroupChanges(Check):
 
 class AlertOnNetworkACLChanges(Check):
   '''Benchmark 3.11'''
+  benchmark = '3.11'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = CreateNetworkAcl)',
@@ -1505,6 +1753,10 @@ class AlertOnNetworkACLChanges(Check):
 
 class AlertOnNetworkGatewayChanges(Check):
   '''Benchmark 3.12'''
+  benchmark = '3.12'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = CreateCustomerGateway)',
@@ -1566,6 +1818,10 @@ class AlertOnNetworkGatewayChanges(Check):
 
 class AlertOnRouteTableChanges(Check):
   '''Benchmark 3.13'''
+  benchmark = '3.13'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = CreateRoute)', '($.eventName = CreateRouteTable)',
@@ -1626,6 +1882,10 @@ class AlertOnRouteTableChanges(Check):
 
 class AlertOnVPCChanges(Check):
   '''Benchmark 3.14'''
+  benchmark = '3.14'
+  severity = 'low'
+  region = 'global'
+
   def _sql(self) -> str:
     or_filters = [
         '($.eventName = CreateVpc)', '($.eventName = DeleteVpc)',
@@ -1691,6 +1951,10 @@ class AlertOnVPCChanges(Check):
 
 class NoSSHFromEverywhere(Check):
   '''Benchmark 4.1'''
+  benchmark = '4.1'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -1712,6 +1976,10 @@ class NoSSHFromEverywhere(Check):
 
 class NoRDPFromEverywhere(Check):
   '''Benchmark 4.2'''
+  benchmark = '4.2'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -1733,6 +2001,10 @@ class NoRDPFromEverywhere(Check):
 
 class DefaultSecurityGroupAllowsNothing(Check):
   '''Benchmark 4.3'''
+  benchmark = '4.3'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT
@@ -1760,6 +2032,10 @@ class DefaultSecurityGroupAllowsNothing(Check):
 # TODO: consider mapping between vpcs with a join table
 class ReviewPeeringConnections(Info):
   '''Benchmark 4.4'''
+  benchmark = '4.4'
+  severity = 'low'
+  region = '*'
+
   def _sql(self) -> str:
     return '''
       SELECT

@@ -1,0 +1,49 @@
+version: 1
+resources:
+- service: ecs
+  provider_type: Service
+  name: serviceName
+  uri:
+    uri: serviceArn
+  attributes:
+    provider:
+    - serviceArn
+    - serviceName
+    - clusterArn
+    - loadBalancers
+    - serviceRegistries
+    - status
+    - desiredCount
+    - runningCount
+    - pendingCount
+    - launchType
+    - capacityProviderStrategy
+    - platformVersion
+    - taskDefinition
+    - deploymentConfiguration
+    - taskSets
+    - deployments
+    - roleArn
+    - events
+    - createdAt
+    - placementConstraints
+    - placementStrategy
+    - networkConfiguration
+    - healthCheckGracePeriodSeconds
+    - schedulingStrategy
+    - deploymentController
+    - tags
+    - createdBy
+    - enableECSManagedTags
+    - propagateTags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: belongs-to
+    path: clusterArn
+    uri:
+      uri:
+        path: ''

@@ -1,0 +1,53 @@
+version: 1
+resources:
+- service: ecs
+  provider_type: Task
+  name: taskArn
+  uri:
+    uri: taskArn
+  attributes:
+    provider:
+    - attachments
+    - attributes
+    - availabilityZone
+    - capacityProviderName
+    - clusterArn
+    - connectivity
+    - connectivityAt
+    - containerInstanceArn
+    - containers
+    - cpu
+    - createdAt
+    - desiredStatus
+    - executionStoppedAt
+    - group
+    - healthStatus
+    - inferenceAccelerators
+    - lastStatus
+    - launchType
+    - memory
+    - overrides
+    - platformVersion
+    - pullStartedAt
+    - pullStoppedAt
+    - startedAt
+    - startedBy
+    - stopCode
+    - stoppedAt
+    - stoppedReason
+    - stoppingAt
+    - tags
+    - taskArn
+    - taskDefinitionArn
+    - version
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: belongs-to
+    path: clusterArn
+    uri:
+      uri:
+        path: ''

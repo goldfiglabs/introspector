@@ -1,0 +1,27 @@
+version: 1
+resources:
+- service: apigatewayv2
+  provider_type: Stage
+  name: StageName
+  uri:
+    id: StageName
+  attributes:
+    provider:
+    - AccessLogSettings
+    - ApiGatewayManaged
+    - AutoDeploy
+    - ClientCertificateId
+    - CreatedDate
+    - DefaultRouteSettings
+    - DeploymentId
+    - Description
+    - LastDeploymentStatusMessage
+    - LastUpdatedDate
+    - RouteSettings
+    - StageName
+    - StageVariables
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags

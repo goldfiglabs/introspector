@@ -1,0 +1,45 @@
+version: 1
+resources:
+- service: apigatewayv2
+  provider_type: Api
+  name: Name
+  uri:
+    id: ApiId
+  attributes:
+    provider:
+    - ApiEndpoint
+    - ApiId
+    - ApiKeySelectionExpression
+    - CorsConfiguration
+    - CreatedDate
+    - Description
+    - DisableSchemaValidation
+    - ImportInfo
+    - Name
+    - ProtocolType
+    - RouteSelectionExpression
+    - Tags
+    - Version
+    - Warnings
+    - Stages
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  relations:
+  - relation: belongs-to
+    path: Stages
+    uri:
+      resource_name:
+        value: Stage
+      apiId:
+        parent_path: ApiId
+      id:
+        path: StageName
+    invert: true
+subresources:
+- type: Stage
+  key: Stages
+  parent:
+    apiId:
+      path: ApiId

@@ -314,3 +314,22 @@ FROM
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_instance_volume;
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_securitygroup CASCADE;
+
+CREATE MATERIALIZED VIEW aws_ec2_instance_securitygroup AS
+SELECT
+  aws_ec2_instance.id AS instance_id,
+  aws_ec2_securitygroup.id AS securitygroup_id
+FROM
+  resource AS aws_ec2_instance
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_ec2_instance.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_securitygroup
+    ON aws_ec2_securitygroup.id = RR.target_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_ec2_instance_securitygroup;

@@ -1,0 +1,92 @@
+version: 1
+resources:
+- service: redshift
+  provider_type: Cluster
+  name: ClusterIdentifier
+  uri:
+    id: ClusterIdentifier
+  attributes:
+    provider:
+    - ClusterIdentifier
+    - NodeType
+    - ClusterStatus
+    - ClusterAvailabilityStatus
+    - ModifyStatus
+    - MasterUsername
+    - DBName
+    - Endpoint
+    - ClusterCreateTime
+    - AutomatedSnapshotRetentionPeriod
+    - ManualSnapshotRetentionPeriod
+    - ClusterSecurityGroups
+    - VpcSecurityGroups
+    - ClusterParameterGroups
+    - ClusterSubnetGroupName
+    - VpcId
+    - AvailabilityZone
+    - PreferredMaintenanceWindow
+    - PendingModifiedValues
+    - ClusterVersion
+    - AllowVersionUpgrade
+    - NumberOfNodes
+    - PubliclyAccessible
+    - Encrypted
+    - RestoreStatus
+    - DataTransferProgress
+    - HsmStatus
+    - ClusterSnapshotCopyStatus
+    - ClusterPublicKey
+    - ClusterNodes
+    - ElasticIpStatus
+    - ClusterRevisionNumber
+    - Tags
+    - KmsKeyId
+    - EnhancedVpcRouting
+    - IamRoles
+    - PendingActions
+    - MaintenanceTrackName
+    - ElasticResizeNumberOfNodeOptions
+    - DeferredMaintenanceWindows
+    - SnapshotScheduleIdentifier
+    - SnapshotScheduleState
+    - ExpectedNextSnapshotScheduleTime
+    - ExpectedNextSnapshotScheduleTimeStatus
+    - NextMaintenanceWindowStartTime
+    - ResizeInfo
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: cluster
+  relations:
+  - relation: encrypts
+    path: KmsKeyId
+    uri:
+      uri:
+        path: ''
+      resource_name:
+        value: key
+      service:
+        value: kms
+  - relation: in
+    path: VpcId
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: vpc
+      service:
+        value: ec2
+  - relation: in
+    path: VpcSecurityGroups
+    uri:
+      id:
+        path: VpcSecurityGroupId
+      resource_name:
+        value: security-group
+      service:
+        value: ec2
+    attributes:
+      Status:
+        path: Status

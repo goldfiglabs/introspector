@@ -159,6 +159,7 @@ class ClientProxy(object):
         result = {
             result_key: full_result[result_key]
             for result_key in output.members.keys()
+            if result_key in full_result
         }
       return resource_name, result
     except KeyError as e:

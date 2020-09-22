@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>aws_ecs_task - goldfig Database</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b>goldfig</b> Database</a>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>aws_ecs_task</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-text-o"></i>
+                            <h3 id="Description" class="box-title">Description</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div><!-- /.box-header -->
+                        <div class="box-body clearfix">
+                            <p>ecs task resources and their associated attributes.</p>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td><span id="resource_id">resource_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="uri">uri</span></td>
+                                    <td>varchar</td>
+                                    <td>1024</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="provider_account_id">provider_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="attachments">attachments</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="attributes">attributes</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="availabilityzone">availabilityzone</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="capacityprovidername">capacityprovidername</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="clusterarn">clusterarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="connectivity">connectivity</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="connectivityat">connectivityat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="containerinstancearn">containerinstancearn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="containers">containers</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="cpu">cpu</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="createdat">createdat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="desiredstatus">desiredstatus</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="executionstoppedat">executionstoppedat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="group">group</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="healthstatus">healthstatus</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="inferenceaccelerators">inferenceaccelerators</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="laststatus">laststatus</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="launchtype">launchtype</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="memory">memory</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="overrides">overrides</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="platformversion">platformversion</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="pullstartedat">pullstartedat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="pullstoppedat">pullstoppedat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="startedat">startedat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="startedby">startedby</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="stopcode">stopcode</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="stoppedat">stoppedat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="stoppedreason">stoppedreason</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="stoppingat">stoppingat</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="tags">tags</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="taskarn">taskarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="taskdefinitionarn">taskdefinitionarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="version">version</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_cluster_id">_cluster_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    attachments.attr_value AS attachments,&#10;    attributes.attr_value AS attributes,&#10;    (availabilityzone.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS availabilityzone,&#10;    (capacityprovidername.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS capacityprovidername,&#10;    (clusterarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS clusterarn,&#10;    (connectivity.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS connectivity,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((connectivityat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS connectivityat,&#10;    (containerinstancearn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS containerinstancearn,&#10;    containers.attr_value AS containers,&#10;    (cpu.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS cpu,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((createdat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS createdat,&#10;    (desiredstatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS desiredstatus,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((executionstoppedat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS executionstoppedat,&#10;    (&quot;group&quot;.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS &quot;group&quot;,&#10;    (healthstatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS healthstatus,&#10;    inferenceaccelerators.attr_value AS inferenceaccelerators,&#10;    (laststatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS laststatus,&#10;    (launchtype.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS launchtype,&#10;    (memory.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS memory,&#10;    overrides.attr_value AS overrides,&#10;    (platformversion.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS platformversion,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((pullstartedat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS pullstartedat,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((pullstoppedat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS pullstoppedat,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((startedat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS startedat,&#10;    (startedby.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS startedby,&#10;    (stopcode.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS stopcode,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((stoppedat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS stoppedat,&#10;    (stoppedreason.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS stoppedreason,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((stoppingat.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS stoppingat,&#10;    tags.attr_value AS tags,&#10;    (taskarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS taskarn,&#10;    (taskdefinitionarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS taskdefinitionarn,&#10;    ((version.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::bigint AS version,&#10;    _cluster_id.target_id AS _cluster_id,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((((((((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs attachments ON (((attachments.id = r.id) AND (attachments.attr_name = &#39;attachments&#39;::text))))&#10;     LEFT JOIN attrs attributes ON (((attributes.id = r.id) AND (attributes.attr_name = &#39;attributes&#39;::text))))&#10;     LEFT JOIN attrs availabilityzone ON (((availabilityzone.id = r.id) AND (availabilityzone.attr_name = &#39;availabilityzone&#39;::text))))&#10;     LEFT JOIN attrs capacityprovidername ON (((capacityprovidername.id = r.id) AND (capacityprovidername.attr_name = &#39;capacityprovidername&#39;::text))))&#10;     LEFT JOIN attrs clusterarn ON (((clusterarn.id = r.id) AND (clusterarn.attr_name = &#39;clusterarn&#39;::text))))&#10;     LEFT JOIN attrs connectivity ON (((connectivity.id = r.id) AND (connectivity.attr_name = &#39;connectivity&#39;::text))))&#10;     LEFT JOIN attrs connectivityat ON (((connectivityat.id = r.id) AND (connectivityat.attr_name = &#39;connectivityat&#39;::text))))&#10;     LEFT JOIN attrs containerinstancearn ON (((containerinstancearn.id = r.id) AND (containerinstancearn.attr_name = &#39;containerinstancearn&#39;::text))))&#10;     LEFT JOIN attrs containers ON (((containers.id = r.id) AND (containers.attr_name = &#39;containers&#39;::text))))&#10;     LEFT JOIN attrs cpu ON (((cpu.id = r.id) AND (cpu.attr_name = &#39;cpu&#39;::text))))&#10;     LEFT JOIN attrs createdat ON (((createdat.id = r.id) AND (createdat.attr_name = &#39;createdat&#39;::text))))&#10;     LEFT JOIN attrs desiredstatus ON (((desiredstatus.id = r.id) AND (desiredstatus.attr_name = &#39;desiredstatus&#39;::text))))&#10;     LEFT JOIN attrs executionstoppedat ON (((executionstoppedat.id = r.id) AND (executionstoppedat.attr_name = &#39;executionstoppedat&#39;::text))))&#10;     LEFT JOIN attrs &quot;group&quot; ON (((&quot;group&quot;.id = r.id) AND (&quot;group&quot;.attr_name = &#39;group&#39;::text))))&#10;     LEFT JOIN attrs healthstatus ON (((healthstatus.id = r.id) AND (healthstatus.attr_name = &#39;healthstatus&#39;::text))))&#10;     LEFT JOIN attrs inferenceaccelerators ON (((inferenceaccelerators.id = r.id) AND (inferenceaccelerators.attr_name = &#39;inferenceaccelerators&#39;::text))))&#10;     LEFT JOIN attrs laststatus ON (((laststatus.id = r.id) AND (laststatus.attr_name = &#39;laststatus&#39;::text))))&#10;     LEFT JOIN attrs launchtype ON (((launchtype.id = r.id) AND (launchtype.attr_name = &#39;launchtype&#39;::text))))&#10;     LEFT JOIN attrs memory ON (((memory.id = r.id) AND (memory.attr_name = &#39;memory&#39;::text))))&#10;     LEFT JOIN attrs overrides ON (((overrides.id = r.id) AND (overrides.attr_name = &#39;overrides&#39;::text))))&#10;     LEFT JOIN attrs platformversion ON (((platformversion.id = r.id) AND (platformversion.attr_name = &#39;platformversion&#39;::text))))&#10;     LEFT JOIN attrs pullstartedat ON (((pullstartedat.id = r.id) AND (pullstartedat.attr_name = &#39;pullstartedat&#39;::text))))&#10;     LEFT JOIN attrs pullstoppedat ON (((pullstoppedat.id = r.id) AND (pullstoppedat.attr_name = &#39;pullstoppedat&#39;::text))))&#10;     LEFT JOIN attrs startedat ON (((startedat.id = r.id) AND (startedat.attr_name = &#39;startedat&#39;::text))))&#10;     LEFT JOIN attrs startedby ON (((startedby.id = r.id) AND (startedby.attr_name = &#39;startedby&#39;::text))))&#10;     LEFT JOIN attrs stopcode ON (((stopcode.id = r.id) AND (stopcode.attr_name = &#39;stopcode&#39;::text))))&#10;     LEFT JOIN attrs stoppedat ON (((stoppedat.id = r.id) AND (stoppedat.attr_name = &#39;stoppedat&#39;::text))))&#10;     LEFT JOIN attrs stoppedreason ON (((stoppedreason.id = r.id) AND (stoppedreason.attr_name = &#39;stoppedreason&#39;::text))))&#10;     LEFT JOIN attrs stoppingat ON (((stoppingat.id = r.id) AND (stoppingat.attr_name = &#39;stoppingat&#39;::text))))&#10;     LEFT JOIN attrs tags ON (((tags.id = r.id) AND (tags.attr_name = &#39;tags&#39;::text))))&#10;     LEFT JOIN attrs taskarn ON (((taskarn.id = r.id) AND (taskarn.attr_name = &#39;taskarn&#39;::text))))&#10;     LEFT JOIN attrs taskdefinitionarn ON (((taskdefinitionarn.id = r.id) AND (taskdefinitionarn.attr_name = &#39;taskdefinitionarn&#39;::text))))&#10;     LEFT JOIN attrs version ON (((version.id = r.id) AND (version.attr_name = &#39;version&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_ecs_cluster_relation.resource_id,&#10;            _aws_ecs_cluster.id AS target_id&#10;           FROM (resource_relation _aws_ecs_cluster_relation&#10;             JOIN resource _aws_ecs_cluster ON (((_aws_ecs_cluster_relation.target_id = _aws_ecs_cluster.id) AND ((_aws_ecs_cluster.provider_type)::text = &#39;Cluster&#39;::text) AND ((_aws_ecs_cluster.service)::text = &#39;ecs&#39;::text))))&#10;          WHERE ((_aws_ecs_cluster_relation.relation)::text = &#39;belongs-to&#39;::text)) _cluster_id ON ((_cluster_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;task&#39;::text) AND ((r.service)::text = &#39;ecs&#39;::text));</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="resource.html">resource</a></li>
+                                        <li><a href="resource_attribute.html">resource_attribute</a></li>
+                                        <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>

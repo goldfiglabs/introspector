@@ -1,0 +1,36 @@
+version: 1
+resources:
+- service: cloudfront
+  provider_type: Distribution
+  name: Id
+  uri:
+    uri: ARN
+  attributes:
+    provider:
+    - Id
+    - ARN
+    - Status
+    - LastModifiedTime
+    - InProgressInvalidationBatches
+    - DomainName
+    - ActiveTrustedSigners
+    - AliasICPRecordals
+    - Tags
+    - CallerReference
+    - Aliases
+    - DefaultRootObject
+    - Origins
+    - OriginGroups
+    - DefaultCacheBehavior
+    - CacheBehaviors
+    - CustomErrorResponses
+    - Comment
+    - Logging
+    - PriceClass
+    - Enabled
+    - ViewerCertificate
+    - Restrictions
+    - WebACLId
+    - HttpVersion
+    - IsIPV6Enabled
+  resource_name: Distribution

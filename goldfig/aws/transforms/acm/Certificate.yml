@@ -1,0 +1,42 @@
+version: 1
+resources:
+- service: acm
+  provider_type: Certificate
+  name: DomainName
+  uri:
+    uri: CertificateArn
+  attributes:
+    provider:
+    - CertificateArn
+    - DomainName
+    - SubjectAlternativeNames
+    - DomainValidationOptions
+    - Serial
+    - Subject
+    - Issuer
+    - CreatedAt
+    - IssuedAt
+    - ImportedAt
+    - Status
+    - RevokedAt
+    - RevocationReason
+    - NotBefore
+    - NotAfter
+    - KeyAlgorithm
+    - SignatureAlgorithm
+    - InUseBy
+    - FailureReason
+    - Type
+    - RenewalSummary
+    - KeyUsages
+    - ExtendedKeyUsages
+    - CertificateAuthorityArn
+    - RenewalEligibility
+    - Options:
+      - CertificateTransparencyLoggingPreference
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  resource_name: certificate

@@ -1,0 +1,28 @@
+version: 1
+resources:
+- service: ecs
+  provider_type: Cluster
+  name: clusterName
+  uri:
+    uri: clusterArn
+  attributes:
+    provider:
+    - clusterArn
+    - clusterName
+    - status
+    - registeredContainerInstancesCount
+    - runningTasksCount
+    - pendingTasksCount
+    - activeServicesCount
+    - statistics
+    - tags
+    - settings
+    - capacityProviders
+    - defaultCapacityProviderStrategy
+    - attachments
+    - attachmentsStatus
+    custom:
+      Metadata:
+        Tags:
+          path: tags
+          transform: aws_tags

@@ -1,0 +1,25 @@
+version: 1
+resources:
+- service: sqs
+  provider_type: Queue
+  name: url
+  uri:
+    uri: QueueArn
+  attributes:
+    provider:
+    - ReceiveMessageWaitTimeSeconds
+    - VisibilityTimeout
+    - ApproximateNumberOfMessages
+    - ApproximateNumberOfMessagesNotVisible
+    - CreatedTimestamp
+    - LastModifiedTimestamp
+    - QueueArn
+    - MaximumMessageSize
+    - MessageRetentionPeriod
+    - url
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  resource_name: queue
