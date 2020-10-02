@@ -9,6 +9,9 @@ _log = logging.getLogger(__name__)
 
 
 def _import_cluster(proxy: ServiceProxy, cluster: Dict) -> Dict[str, Any]:
+  cluster_id = cluster['ClusterIdentifier']
+  logging_status = proxy.get('describe_logging_status', ClusterIdentifier=cluster_id)
+  cluster['LoggingStatus'] = logging_status
   return cluster
 
 

@@ -1114,12 +1114,12 @@ class AlertOnUnauthorizedAPICalls(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1169,12 +1169,12 @@ class AlertOnNoMFAConsoleSignin(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1224,12 +1224,12 @@ class AlertOnRootAccountUsage(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1290,12 +1290,12 @@ class AlertOnIAMPolicyChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1350,12 +1350,12 @@ class AlertOnCloudTrailConfigurationChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1405,12 +1405,12 @@ class AlertOnFailedConsoleAuthentication(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1460,12 +1460,12 @@ class AlertOnCMKDisablingOrScheduledDeletion(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1526,12 +1526,12 @@ class AlertOnS3BucketPolicyChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1589,12 +1589,12 @@ class AlertOnConfigConfigurationChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1654,12 +1654,12 @@ class AlertOnSecurityGroupChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1719,12 +1719,12 @@ class AlertOnNetworkACLChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1784,12 +1784,12 @@ class AlertOnNetworkGatewayChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1848,12 +1848,12 @@ class AlertOnRouteTableChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic
@@ -1917,12 +1917,12 @@ class AlertOnVPCChanges(Check):
               ON LogGroup.resource_id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
               ON MetricFilter._loggroup_id = LogGroup.resource_id
-            LEFT JOIN aws_logs_metricfilter_metric AS filter2metric
+            LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
               ON filter2metric.metricfilter_id = MetricFilter.resource_id
-            LEFT JOIN aws_logs_metric AS Metric
+            LEFT JOIN aws_cloudwatch_metric AS Metric
               ON filter2metric.metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._logs_metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric.resource_id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
               ON Alarm2Topic.metricalarm_id = Alarm.resource_id
             LEFT JOIN aws_sns_topic AS Topic

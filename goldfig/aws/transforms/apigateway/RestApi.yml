@@ -1,0 +1,43 @@
+version: 1
+resources:
+- service: apigateway
+  provider_type: RestApi
+  name: name
+  uri:
+    id: id
+  attributes:
+    provider:
+    - id
+    - name
+    - description
+    - createdDate
+    - version
+    - warnings
+    - binaryMediaTypes
+    - minimumCompressionSize
+    - apiKeySource
+    - endpointConfiguration
+    - policy
+    - tags
+    - Stages
+    custom:
+      Metadata:
+        Tags:
+          path: tags
+  relations:
+  - relation: belongs-to
+    path: Stages
+    uri:
+      resource_name:
+        value: Stage
+      apiId:
+        parent_path: id
+      id:
+        path: stageName
+    invert: true
+subresources:
+- type: Stage
+  key: Stages
+  parent:
+    apiId:
+      path: id

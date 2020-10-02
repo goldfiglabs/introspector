@@ -63,6 +63,7 @@ SELECT
   expectednextsnapshotscheduletimestatus.attr_value #>> '{}' AS expectednextsnapshotscheduletimestatus,
   (TO_TIMESTAMP(nextmaintenancewindowstarttime.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS nextmaintenancewindowstarttime,
   resizeinfo.attr_value::jsonb AS resizeinfo,
+  loggingstatus.attr_value::jsonb AS loggingstatus,
   
     _kms_key_id.target_id AS _kms_key_id,
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
@@ -209,6 +210,9 @@ FROM
   LEFT JOIN attrs AS resizeinfo
     ON resizeinfo.id = R.id
     AND resizeinfo.attr_name = 'resizeinfo'
+  LEFT JOIN attrs AS loggingstatus
+    ON loggingstatus.id = R.id
+    AND loggingstatus.attr_name = 'loggingstatus'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,

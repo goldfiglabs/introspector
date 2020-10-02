@@ -7,11 +7,13 @@ from sqlalchemy.orm import Session
 from goldfig import collect_exceptions, PathStack
 from goldfig.aws import ProxyBuilder
 from goldfig.aws.acm import import_account_acm_region_to_db, import_account_acm_region_with_pool
+from goldfig.aws.apigateway import import_account_apigateway_region_to_db, import_account_apigateway_region_with_pool
 from goldfig.aws.apigatewayv2 import import_account_apigatewayv2_region_to_db, import_account_apigatewayv2_region_with_pool
 from goldfig.aws.iam import import_account_iam_to_db, import_account_iam_with_pool
 from goldfig.aws.ec2 import import_account_ec2_region_to_db, import_account_ec2_region_with_pool
 from goldfig.aws.ecs import import_account_ecs_region_to_db, import_account_ecs_region_with_pool
 from goldfig.aws.elb import import_account_elb_region_to_db, import_account_elb_region_with_pool
+from goldfig.aws.elbv2 import import_account_elbv2_region_to_db, import_account_elbv2_region_with_pool
 from goldfig.aws.s3 import import_account_s3_to_db, import_account_s3_with_pool
 from goldfig.aws.kms import import_account_kms_region_to_db, import_account_kms_region_with_pool
 from goldfig.aws.lambdax import import_account_lambda_region_to_db, import_account_lambda_region_with_pool
@@ -23,6 +25,7 @@ from goldfig.aws.config import import_account_config_region_to_db, import_accoun
 from goldfig.aws.region import RegionCache
 from goldfig.aws.rds import import_account_rds_region_to_db, import_account_rds_region_with_pool
 from goldfig.aws.redshift import import_account_redshift_region_to_db, import_account_redshift_region_with_pool
+from goldfig.aws.route53 import import_account_route53_to_db, import_account_route53_with_pool
 from goldfig.aws.sns import import_account_sns_region_to_db, import_account_sns_region_with_pool
 from goldfig.aws.sqs import import_account_sqs_region_to_db, import_account_sqs_region_with_pool
 from goldfig.models import ImportJob, ProviderCredential
@@ -32,6 +35,9 @@ def run_single_session(db: Session, import_job_id: int,
                        proxy_builder: ProxyBuilder, region_cache: RegionCache):
 
   import_account_iam_to_db(db, import_job_id, proxy_builder)
+  db.flush()
+
+  import_account_route53_to_db(db, import_job_id, proxy_builder)
   db.flush()
 
   for region in region_cache.regions_for_service('ec2'):
@@ -49,6 +55,11 @@ def run_single_session(db: Session, import_job_id: int,
   for region in region_cache.regions_for_service('elb'):
     import_account_elb_region_to_db(db, import_job_id, region, proxy_builder)
     db.flush()
+
+  for region in region_cache.regions_for_service('elbv2'):
+    import_account_elbv2_region_to_db(db, import_job_id, region, proxy_builder)
+    db.flush()
+
   for region in region_cache.regions_for_service('lambda'):
     import_account_lambda_region_to_db(db, import_job_id, region,
                                        proxy_builder)
@@ -94,6 +105,11 @@ def run_single_session(db: Session, import_job_id: int,
                                              proxy_builder)
     db.flush()
 
+  for region in region_cache.regions_for_service('apigateway'):
+    import_account_apigateway_region_to_db(db, import_job_id, region,
+                                           proxy_builder)
+    db.flush()
+
   for region in region_cache.regions_for_service('acm'):
     import_account_acm_region_to_db(db, import_job_id, region, proxy_builder)
     db.flush()
@@ -120,6 +136,9 @@ def run_parallel_session(region_cache: RegionCache,
     results = import_account_iam_with_pool(pool, proxy_builder_args,
                                            import_job.id, ps, accounts)
 
+    results += import_account_route53_with_pool(pool, proxy_builder_args,
+                                                import_job.id, ps, accounts)
+
     for region in region_cache.regions_for_service('ec2'):
       results += import_account_ec2_region_with_pool(pool, proxy_builder_args,
                                                      import_job.id, region, ps,
@@ -139,6 +158,13 @@ def run_parallel_session(region_cache: RegionCache,
       results += import_account_elb_region_with_pool(pool, proxy_builder_args,
                                                      import_job.id, region, ps,
                                                      accounts)
+
+    for region in region_cache.regions_for_service('elbv2'):
+      results += import_account_elbv2_region_with_pool(pool,
+                                                       proxy_builder_args,
+                                                       import_job.id, region,
+                                                       ps, accounts)
+
     results += import_account_s3_with_pool(pool, proxy_builder_args,
                                            import_job.id, ps, accounts)
     for region in region_cache.regions_for_service('rds'):
@@ -182,6 +208,10 @@ def run_parallel_session(region_cache: RegionCache,
 
     for region in region_cache.regions_for_service('apigatewayv2'):
       results += import_account_apigatewayv2_region_with_pool(
+          pool, proxy_builder_args, import_job.id, region, ps, accounts)
+
+    for region in region_cache.regions_for_service('apigateway'):
+      results += import_account_apigateway_region_with_pool(
           pool, proxy_builder_args, import_job.id, region, ps, accounts)
 
     for region in region_cache.regions_for_service('acm'):

@@ -27,3 +27,6 @@ Inverse terraformers/IAC tools:
   https://github.com/GoogleCloudPlatform/terraformer
   https://github.com/cycloidio/terracognita
   https://github.com/dtan4/terraforming
+
+Misc:
+  https://docs.paloaltonetworks.com/prisma/prisma-cloud/prisma-cloud-rql-reference/rql-reference/rql-examples

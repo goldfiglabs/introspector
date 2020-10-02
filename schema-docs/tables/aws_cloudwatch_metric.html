@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_logs_metric - goldfig Database</title>
+        <title>aws_cloudwatch_metric - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_logs_metric</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>aws_cloudwatch_metric</h1><p><span id="recordNumber">0</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>logs metric resources and their associated attributes.</p>
+                            <p>cloudwatch metric resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,6 +167,23 @@
                                     <td></td>
                                 </tr>
                                 <tr>
+                                    <td><span id="namespace">namespace</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
                                     <td><span id="metricname">metricname</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
@@ -184,8 +201,8 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="metricnamespace">metricnamespace</span></td>
-                                    <td>text</td>
+                                    <td><span id="dimensions">dimensions</span></td>
+                                    <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -231,7 +248,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (metricname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS metricname,&#10;    (metricnamespace.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS metricnamespace,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs metricname ON (((metricname.id = r.id) AND (metricname.attr_name = &#39;metricname&#39;::text))))&#10;     LEFT JOIN attrs metricnamespace ON (((metricnamespace.id = r.id) AND (metricnamespace.attr_name = &#39;metricnamespace&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;metric&#39;::text));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (namespace.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS namespace,&#10;    (metricname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS metricname,&#10;    dimensions.attr_value AS dimensions,&#10;    _account_id.target_id AS _account_id&#10;   FROM (((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs namespace ON (((namespace.id = r.id) AND (namespace.attr_name = &#39;namespace&#39;::text))))&#10;     LEFT JOIN attrs metricname ON (((metricname.id = r.id) AND (metricname.attr_name = &#39;metricname&#39;::text))))&#10;     LEFT JOIN attrs dimensions ON (((dimensions.id = r.id) AND (dimensions.attr_name = &#39;dimensions&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;metric&#39;::text) AND ((r.service)::text = &#39;cloudwatch&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">

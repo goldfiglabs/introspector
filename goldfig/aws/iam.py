@@ -2,6 +2,7 @@ import concurrent.futures as f
 import csv
 from functools import partial
 from io import StringIO
+import logging
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -15,6 +16,8 @@ from goldfig.bootstrap_db import import_session
 from goldfig.delta.resource import apply_mapped_attrs
 from goldfig.error import GFError, GFInternal
 from goldfig.models import ImportJob, ProviderCredential
+
+_log = logging.getLogger(__name__)
 
 _USER_ATTRS = {
     'AttachedPolicies': 'list_attached_user_policies',
@@ -69,6 +72,7 @@ def _import_credential_report(proxy: ServiceProxy, ps: PathStack,
   except ClientError as e:
     is_throttled = e.response.get('Error', {}).get('Code') == 'Throttling'
     # If we're throttled, we've at least kicked it off already
+    _log.error('credential report error', exc_info=e)
     if not is_throttled:
       raise
   attempts = 0

@@ -1,0 +1,54 @@
+version: 1
+resources:
+- service: elbv2
+  provider_type: TargetGroup
+  name: TargetGroupName
+  uri:
+    uri: TargetGroupArn
+  attributes:
+    provider:
+    - TargetGroupArn
+    - TargetGroupName
+    - Protocol
+    - Port
+    - VpcId
+    - HealthCheckProtocol
+    - HealthCheckPort
+    - HealthCheckEnabled
+    - HealthCheckIntervalSeconds
+    - HealthCheckTimeoutSeconds
+    - HealthyThresholdCount
+    - UnhealthyThresholdCount
+    - HealthCheckPath
+    - Matcher
+    - LoadBalancerArns
+    - TargetType
+    - Tags
+    - deregistration_delay_timeout_seconds
+    - stickiness_enabled
+    - stickiness_type
+    - load_balancing_algorithm_type
+    - slow_start_duration_seconds
+    - stickiness_lb_cookie_duration_seconds
+    - lambda_multi_value_headers_enabled
+    - proxy_protocol_v2_enabled
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: in
+    path: VpcId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      id:
+        path: ''
+  - relation: receives-from
+    path: LoadBalancerArns
+    uri:
+      uri:
+        path: ''

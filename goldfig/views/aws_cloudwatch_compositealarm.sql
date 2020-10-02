@@ -95,6 +95,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'compositealarm'
+  AND R.service = 'cloudwatch'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudwatch_compositealarm;

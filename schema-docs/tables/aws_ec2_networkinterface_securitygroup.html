@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_relation_ec2_instance_attached - goldfig Database</title>
+        <title>aws_ec2_networkinterface_securitygroup - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,20 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_relation_ec2_instance_attached</h1><p><span id="recordNumber">0</span> rows</p><br />
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <i class="fa fa-file-text-o"></i>
-                            <h3 id="Description" class="box-title">Description</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div><!-- /.box-header -->
-                        <div class="box-body clearfix">
-                            <p>AWS EC2 instance attached relationships.</p>
-                        </div><!-- /.box-body -->
-                    </div>
+                    <h1>aws_ec2_networkinterface_securitygroup</h1><p><span id="recordNumber">0</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -116,7 +103,7 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td><span id="resource_id">resource_id</span></td>
+                                    <td><span id="networkinterface_id">networkinterface_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -133,94 +120,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="target_id">target_id</span></td>
+                                    <td><span id="securitygroup_id">securitygroup_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="deleteontermination">deleteontermination</span></td>
-                                    <td>bool</td>
-                                    <td>1</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="attachtime">attachtime</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="volumeid">volumeid</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="status">status</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="devicename">devicename</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -248,7 +150,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH cte_resourceattrs AS (&#10;         SELECT resource.id AS resource_id,&#10;            resource.uri,&#10;            resource.provider_account_id,&#10;            resource_relation.relation,&#10;            resource_relation.target_id,&#10;            resource_relation_attribute.name,&#10;            resource_relation_attribute.value&#10;           FROM (((resource&#10;             JOIN resource_relation ON ((resource.id = resource_relation.resource_id)))&#10;             JOIN resource_relation_attribute ON ((resource_relation.id = resource_relation_attribute.relation_id)))&#10;             JOIN provider_account ON ((resource.provider_account_id = provider_account.id)))&#10;          WHERE (((resource_relation.relation)::text = &#39;attached&#39;::text) AND ((resource.provider_type)::text = &#39;Instance&#39;::text) AND ((resource.service)::text = &#39;ec2&#39;::text) AND (provider_account.provider = &#39;aws&#39;::provider))&#10;        )&#10; SELECT DISTINCT cte_resourceattrs.resource_id,&#10;    cte_resourceattrs.target_id,&#10;    (_clsc_1.value)::boolean AS deleteontermination,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((_clsc_2.value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS attachtime,&#10;    (_clsc_3.value #&gt;&gt; &#39;{}&#39;::text[]) AS volumeid,&#10;    (_clsc_4.value #&gt;&gt; &#39;{}&#39;::text[]) AS status,&#10;    (_clsc_5.value #&gt;&gt; &#39;{}&#39;::text[]) AS devicename&#10;   FROM (((((cte_resourceattrs&#10;     LEFT JOIN cte_resourceattrs _clsc_1 ON ((((_clsc_1.uri)::text = (cte_resourceattrs.uri)::text) AND (_clsc_1.resource_id = cte_resourceattrs.resource_id) AND ((_clsc_1.name)::text = &#39;DeleteOnTermination&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_2 ON ((((_clsc_2.uri)::text = (cte_resourceattrs.uri)::text) AND (_clsc_2.resource_id = cte_resourceattrs.resource_id) AND ((_clsc_2.name)::text = &#39;AttachTime&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_3 ON ((((_clsc_3.uri)::text = (cte_resourceattrs.uri)::text) AND (_clsc_3.resource_id = cte_resourceattrs.resource_id) AND ((_clsc_3.name)::text = &#39;VolumeId&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_4 ON ((((_clsc_4.uri)::text = (cte_resourceattrs.uri)::text) AND (_clsc_4.resource_id = cte_resourceattrs.resource_id) AND ((_clsc_4.name)::text = &#39;Status&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_5 ON ((((_clsc_5.uri)::text = (cte_resourceattrs.uri)::text) AND (_clsc_5.resource_id = cte_resourceattrs.resource_id) AND ((_clsc_5.name)::text = &#39;DeviceName&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_ec2_networkinterface.id AS networkinterface_id,&#10;    aws_ec2_securitygroup.id AS securitygroup_id&#10;   FROM ((resource aws_ec2_networkinterface&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_ec2_networkinterface.id) AND ((rr.relation)::text = &#39;in&#39;::text))))&#10;     JOIN resource aws_ec2_securitygroup ON (((aws_ec2_securitygroup.id = rr.target_id) AND ((aws_ec2_securitygroup.provider_type)::text = &#39;SecurityGroup&#39;::text))));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -258,10 +160,10 @@
                                 <!-- /.box-header -->
                                 <div class="box-body">
                                     <ul class="list-unstyled">
+                                        <li><a href="aws_ec2_networkinterface.html">aws_ec2_networkinterface</a></li>
+                                        <li><a href="aws_ec2_securitygroup.html">aws_ec2_securitygroup</a></li>
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_relation.html">resource_relation</a></li>
-                                        <li><a href="resource_relation_attribute.html">resource_relation_attribute</a></li>
-                                        <li><a href="provider_account.html">provider_account</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

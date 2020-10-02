@@ -1,0 +1,34 @@
+version: 1
+resources:
+- service: eks
+  provider_type: Cluster
+  name: name
+  uri:
+    uri: arn
+  attributes:
+    provider:
+    - name
+    - arn
+    - createdAt
+    - version
+    - endpoint
+    - roleArn
+    - resourcesVpcConfig
+    - logging
+    - identity
+    - status
+    - certificateAuthority
+    - clientRequestToken
+    - platformVersion
+    - tags
+    - encryptionConfig
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+  relations:
+  - relation: acts-as
+    path: roleArn
+    uri:
+      uri:
+        path: ''

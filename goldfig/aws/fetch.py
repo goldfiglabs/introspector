@@ -256,7 +256,9 @@ class EC2ClientProxy(ClientProxy):
       # TODO: verify this, i think it's about regional support for long ids
       'describe_aggregate_id_format',
       # TODO: look into this
-      'describe_moving_addresses'
+      'describe_moving_addresses',
+      # Failing in some cases, and we don't map
+      'describe_id_format'
   ]
 
   EXTRA_ARGS = {

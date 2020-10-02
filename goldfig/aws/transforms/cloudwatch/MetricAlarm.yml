@@ -47,7 +47,7 @@ resources:
       metric_namespace: Namespace
     uri:
       service:
-        value: logs
+        value: cloudwatch
       resource_name:
         value: metric
       metric_name:

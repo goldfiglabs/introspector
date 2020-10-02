@@ -53,6 +53,7 @@ resources:
     - ExpectedNextSnapshotScheduleTimeStatus
     - NextMaintenanceWindowStartTime
     - ResizeInfo
+    - LoggingStatus
     custom:
       Metadata:
         Tags:

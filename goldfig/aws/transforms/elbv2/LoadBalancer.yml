@@ -1,0 +1,55 @@
+version: 1
+resources:
+- service: elbv2
+  provider_type: LoadBalancer
+  name: LoadBalancerName
+  uri:
+    uri: LoadBalancerArn
+  attributes:
+    provider:
+    - LoadBalancerArn
+    - DNSName
+    - CanonicalHostedZoneId
+    - CreatedTime
+    - LoadBalancerName
+    - Scheme
+    - VpcId
+    - State
+    - Type
+    - AvailabilityZones
+    - SecurityGroups
+    - IpAddressType
+    - Tags
+    - access_logs_s3_enabled
+    - access_logs_s3_bucket
+    - access_logs_s3_prefix
+    - deletion_protection_enabled
+    - idle_timeout_timeout_seconds
+    - routing_http_desync_mitigation_mode
+    - routing_http_drop_invalid_header_fields_enabled
+    - routing_http2_enabled
+    - load_balancing_cross_zone_enabled
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: in
+    path: SecurityGroups
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: security-group
+      id:
+        path: ''
+  - relation: in
+    path: VpcId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      id:
+        path: ''

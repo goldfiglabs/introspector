@@ -75,6 +75,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'loggroup'
+  AND R.service = 'logs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_logs_loggroup;

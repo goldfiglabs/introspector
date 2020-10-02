@@ -1,0 +1,38 @@
+version: 1
+resources:
+- service: route53
+  provider_type: HostedZone
+  name: Name
+  uri:
+    id: Id
+  attributes:
+    provider:
+    - Id
+    - Name
+    - CallerReference
+    - Config
+    - ResourceRecordSetCount
+    - LinkedService
+    - Tags
+    - ResourceRecordSets
+    - TrafficPolicyInstances
+    - VPCs
+    - QueryLoggingConfigs
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: hostedzone
+  relations:
+  - relation: in
+    path: VPCs
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      region:
+        path: VPCRegion
+      id:
+        path: VPCId

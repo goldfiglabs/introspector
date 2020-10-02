@@ -46,7 +46,7 @@ SELECT
   thresholdmetricid.attr_value #>> '{}' AS thresholdmetricid,
   tags.attr_value::jsonb AS tags,
   
-    _logs_metric_id.target_id AS _logs_metric_id,
+    _metric_id.target_id AS _metric_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -138,17 +138,17 @@ FROM
     AND tags.attr_name = 'tags'
   LEFT JOIN (
     SELECT
-      _aws_logs_metric_relation.resource_id AS resource_id,
-      _aws_logs_metric.id AS target_id
+      _aws_cloudwatch_metric_relation.resource_id AS resource_id,
+      _aws_cloudwatch_metric.id AS target_id
     FROM
-      resource_relation AS _aws_logs_metric_relation
-      INNER JOIN resource AS _aws_logs_metric
-        ON _aws_logs_metric_relation.target_id = _aws_logs_metric.id
-        AND _aws_logs_metric.provider_type = 'Metric'
-        AND _aws_logs_metric.service = 'logs'
+      resource_relation AS _aws_cloudwatch_metric_relation
+      INNER JOIN resource AS _aws_cloudwatch_metric
+        ON _aws_cloudwatch_metric_relation.target_id = _aws_cloudwatch_metric.id
+        AND _aws_cloudwatch_metric.provider_type = 'Metric'
+        AND _aws_cloudwatch_metric.service = 'cloudwatch'
     WHERE
-      _aws_logs_metric_relation.relation = 'fires-on'
-  ) AS _logs_metric_id ON _logs_metric_id.resource_id = R.id
+      _aws_cloudwatch_metric_relation.relation = 'fires-on'
+  ) AS _metric_id ON _metric_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -165,6 +165,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'metricalarm'
+  AND R.service = 'cloudwatch'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudwatch_metricalarm;

@@ -1,0 +1,14 @@
+version: 1
+resources:
+- service: cloudwatch
+  provider_type: Metric
+  name: MetricName
+  uri:
+    metric_name: MetricName
+    metric_namespace: Namespace
+  attributes:
+    provider:
+    - Namespace
+    - MetricName
+    - Dimensions
+  resource_name: metric

@@ -1,0 +1,31 @@
+version: 1
+resources:
+- service: elbv2
+  provider_type: Listener
+  name: ListenerArn
+  uri:
+    uri: ListenerArn
+  attributes:
+    provider:
+    - ListenerArn
+    - LoadBalancerArn
+    - Port
+    - Protocol
+    - Certificates
+    - SslPolicy
+    - DefaultActions
+    - AlpnPolicy
+  relations:
+  - relation: forwards-to
+    path: LoadBalancerArn
+    uri:
+      uri:
+        path: ''
+  - relation: serves
+    path: Certificates
+    uri:
+      uri:
+        path: CertificateArn
+    attributes:
+      IsDefault:
+        path: IsDefault

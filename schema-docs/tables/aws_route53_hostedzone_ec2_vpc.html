@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_ec2_keypairs - goldfig Database</title>
+        <title>aws_route53_hostedzone_ec2_vpc - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,20 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_ec2_keypairs</h1><p><span id="recordNumber">0</span> rows</p><br />
-                    <div class="box box-primary">
-                        <div class="box-header with-border">
-                            <i class="fa fa-file-text-o"></i>
-                            <h3 id="Description" class="box-title">Description</h3>
-                            <div class="box-tools pull-right">
-                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
-                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-                            </div>
-                        </div><!-- /.box-header -->
-                        <div class="box-body clearfix">
-                            <p>ec2 keypairs resources and their associated attributes.</p>
-                        </div><!-- /.box-body -->
-                    </div>
+                    <h1>aws_route53_hostedzone_ec2_vpc</h1><p><span id="recordNumber">0</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -116,7 +103,7 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td><span id="resource_id">resource_id</span></td>
+                                    <td><span id="hostedzone_id">hostedzone_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -133,94 +120,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="uri">uri</span></td>
-                                    <td>varchar</td>
-                                    <td>1024</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="provider_account_id">provider_account_id</span></td>
+                                    <td><span id="vpc_id">vpc_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="keypairid">keypairid</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="keyfingerprint">keyfingerprint</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="keyname">keyname</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="tags">tags</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -248,7 +150,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (keypairid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS keypairid,&#10;    (keyfingerprint.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS keyfingerprint,&#10;    (keyname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS keyname,&#10;    tags.attr_value AS tags&#10;   FROM (((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs keypairid ON (((keypairid.id = r.id) AND (keypairid.attr_name = &#39;keypairid&#39;::text))))&#10;     LEFT JOIN attrs keyfingerprint ON (((keyfingerprint.id = r.id) AND (keyfingerprint.attr_name = &#39;keyfingerprint&#39;::text))))&#10;     LEFT JOIN attrs keyname ON (((keyname.id = r.id) AND (keyname.attr_name = &#39;keyname&#39;::text))))&#10;     LEFT JOIN attrs tags ON (((tags.id = r.id) AND (tags.attr_name = &#39;tags&#39;::text))))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;keypairinfo&#39;::text));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_route53_hostedzone.id AS hostedzone_id,&#10;    aws_ec2_vpc.id AS vpc_id&#10;   FROM ((resource aws_route53_hostedzone&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_route53_hostedzone.id) AND ((rr.relation)::text = &#39;in&#39;::text))))&#10;     JOIN resource aws_ec2_vpc ON (((aws_ec2_vpc.id = rr.target_id) AND ((aws_ec2_vpc.provider_type)::text = &#39;VPC&#39;::text))));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -258,9 +160,10 @@
                                 <!-- /.box-header -->
                                 <div class="box-body">
                                     <ul class="list-unstyled">
+                                        <li><a href="aws_route53_hostedzone.html">aws_route53_hostedzone</a></li>
+                                        <li><a href="aws_ec2_vpc.html">aws_ec2_vpc</a></li>
                                         <li><a href="resource.html">resource</a></li>
-                                        <li><a href="resource_attribute.html">resource_attribute</a></li>
-                                        <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

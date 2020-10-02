@@ -1,0 +1,57 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: NetworkInterface
+  name: NetworkInterfaceId
+  uri:
+    id: NetworkInterfaceId
+  attributes:
+    provider:
+    - Association
+    - Attachment
+    - AvailabilityZone
+    - Description
+    - Groups
+    - InterfaceType
+    - Ipv6Addresses
+    - MacAddress
+    - NetworkInterfaceId
+    - OutpostArn
+    - OwnerId
+    - PrivateDnsName
+    - PrivateIpAddress
+    - PrivateIpAddresses
+    - RequesterId
+    - RequesterManaged
+    - SourceDestCheck
+    - Status
+    - SubnetId
+    - TagSet
+    - VpcId
+    custom:
+      Metadata:
+        Tags:
+          path: TagSet
+          transform: aws_tags
+  relations:
+  - relation: attached-to
+    path: Attachment
+    uri:
+      resource_name:
+        value: instance
+      id:
+        path: InstanceId
+  - relation: in
+    path: Groups
+    uri:
+      resource_name:
+        value: security-group
+      id:
+        path: GroupId
+  - relation: in
+    path: VpcId
+    uri:
+      resource_name:
+        value: vpc
+      id:
+        path: ''

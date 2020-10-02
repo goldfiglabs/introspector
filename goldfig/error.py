@@ -7,3 +7,9 @@ class GFError(Exception):
 
 class GFInternal(GFError):
   pass
+
+class GFNoAccess(GFError):
+  def __init__(self, service: str, method: str):
+    super().__init__(f'No access to {service} - {method}')
+    self.service = service
+    self.method = method

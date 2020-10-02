@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_iam_inlinepolicy - goldfig Database</title>
+        <title>aws_route53_hostedzone - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_iam_inlinepolicy</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>aws_route53_hostedzone</h1><p><span id="recordNumber">0</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>AWS IAM inline policies and their associated attributes.</p>
+                            <p>route53 hostedzone resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,7 +167,58 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="policydocument">policydocument</span></td>
+                                    <td><span id="id">id</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="name">name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="callerreference">callerreference</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="config">config</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -184,9 +235,128 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="policyname">policyname</span></td>
-                                    <td>text</td>
+                                    <td><span id="resourcerecordsetcount">resourcerecordsetcount</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="linkedservice">linkedservice</span></td>
+                                    <td>jsonb</td>
                                     <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="tags">tags</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="resourcerecordsets">resourcerecordsets</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="trafficpolicyinstances">trafficpolicyinstances</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="vpcs">vpcs</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="queryloggingconfigs">queryloggingconfigs</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -214,7 +384,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH cte_resourceattrs AS (&#10;         SELECT resource.id,&#10;            resource.uri,&#10;            resource.provider_account_id,&#10;            resource_attribute.resource_id,&#10;            lower((resource_attribute.attr_name)::text) AS attr_name,&#10;            resource_attribute.attr_value&#10;           FROM ((resource&#10;             JOIN provider_account ON ((resource.provider_account_id = provider_account.id)))&#10;             JOIN resource_attribute ON ((resource.id = resource_attribute.resource_id)))&#10;          WHERE (((resource.provider_type)::text = &#39;InlinePolicy&#39;::text) AND (provider_account.provider = &#39;aws&#39;::provider) AND ((resource_attribute.type)::text = &#39;provider&#39;::text))&#10;        )&#10; SELECT DISTINCT _key.resource_id,&#10;    _key.uri,&#10;    _key.provider_account_id,&#10;    _clsc_1.attr_value AS policydocument,&#10;    (_clsc_2.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS policyname&#10;   FROM ((( SELECT DISTINCT cte_resourceattrs.uri,&#10;            cte_resourceattrs.resource_id,&#10;            cte_resourceattrs.id,&#10;            cte_resourceattrs.provider_account_id&#10;           FROM cte_resourceattrs) _key&#10;     LEFT JOIN cte_resourceattrs _clsc_1 ON ((((_clsc_1.uri)::text = (_key.uri)::text) AND (_clsc_1.resource_id = _key.resource_id) AND (_clsc_1.id = _key.id) AND (_clsc_1.attr_name = &#39;policydocument&#39;::text))))&#10;     LEFT JOIN cte_resourceattrs _clsc_2 ON ((((_clsc_2.uri)::text = (_key.uri)::text) AND (_clsc_2.resource_id = _key.resource_id) AND (_clsc_2.id = _key.id) AND (_clsc_2.attr_name = &#39;policyname&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">WITH attrs AS (&#10;         SELECT r_1.id,&#10;            lower((ra.attr_name)::text) AS attr_name,&#10;            ra.attr_value&#10;           FROM (resource r_1&#10;             JOIN resource_attribute ra ON ((ra.resource_id = r_1.id)))&#10;          WHERE ((ra.type)::text = &#39;provider&#39;::text)&#10;        )&#10; SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    (id.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS id,&#10;    (name.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS name,&#10;    (callerreference.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS callerreference,&#10;    config.attr_value AS config,&#10;    ((resourcerecordsetcount.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::bigint AS resourcerecordsetcount,&#10;    linkedservice.attr_value AS linkedservice,&#10;    tags.attr_value AS tags,&#10;    resourcerecordsets.attr_value AS resourcerecordsets,&#10;    trafficpolicyinstances.attr_value AS trafficpolicyinstances,&#10;    vpcs.attr_value AS vpcs,&#10;    queryloggingconfigs.attr_value AS queryloggingconfigs,&#10;    _account_id.target_id AS _account_id&#10;   FROM (((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN attrs id ON (((id.id = r.id) AND (id.attr_name = &#39;id&#39;::text))))&#10;     LEFT JOIN attrs name ON (((name.id = r.id) AND (name.attr_name = &#39;name&#39;::text))))&#10;     LEFT JOIN attrs callerreference ON (((callerreference.id = r.id) AND (callerreference.attr_name = &#39;callerreference&#39;::text))))&#10;     LEFT JOIN attrs config ON (((config.id = r.id) AND (config.attr_name = &#39;config&#39;::text))))&#10;     LEFT JOIN attrs resourcerecordsetcount ON (((resourcerecordsetcount.id = r.id) AND (resourcerecordsetcount.attr_name = &#39;resourcerecordsetcount&#39;::text))))&#10;     LEFT JOIN attrs linkedservice ON (((linkedservice.id = r.id) AND (linkedservice.attr_name = &#39;linkedservice&#39;::text))))&#10;     LEFT JOIN attrs tags ON (((tags.id = r.id) AND (tags.attr_name = &#39;tags&#39;::text))))&#10;     LEFT JOIN attrs resourcerecordsets ON (((resourcerecordsets.id = r.id) AND (resourcerecordsets.attr_name = &#39;resourcerecordsets&#39;::text))))&#10;     LEFT JOIN attrs trafficpolicyinstances ON (((trafficpolicyinstances.id = r.id) AND (trafficpolicyinstances.attr_name = &#39;trafficpolicyinstances&#39;::text))))&#10;     LEFT JOIN attrs vpcs ON (((vpcs.id = r.id) AND (vpcs.attr_name = &#39;vpcs&#39;::text))))&#10;     LEFT JOIN attrs queryloggingconfigs ON (((queryloggingconfigs.id = r.id) AND (queryloggingconfigs.attr_name = &#39;queryloggingconfigs&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND (lower((r.provider_type)::text) = &#39;hostedzone&#39;::text) AND ((r.service)::text = &#39;route53&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -227,6 +397,7 @@
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_attribute.html">resource_attribute</a></li>
                                         <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
                                     </ul>
                                 </div><!-- /.box-body -->
                             </div>

@@ -20,23 +20,25 @@ def _zone_to_region(zone: str, **_) -> str:
   return zone[:-1]
 
 
+_KEY_ATTRS = ['Key', 'key', 'TagKey']
+
+
 def _aws_tag_key(item: Dict) -> str:
-  key = item.get('Key')
-  if key is not None:
-    return key
-  key = item.get('TagKey')
-  if key is not None:
-    return key
+  for attr in _KEY_ATTRS:
+    key = item.get(attr)
+    if key is not None:
+      return key
   raise GFError(f'Cannot find tag key in {item}')
 
 
+_VALUE_ATTRS = ['Value', 'value', 'TagValue']
+
+
 def _aws_tag_value(item: Dict) -> str:
-  value = item.get('Value')
-  if value is not None:
-    return value
-  value = item.get('TagValue')
-  if value is not None:
-    return value
+  for attr in _VALUE_ATTRS:
+    value = item.get(attr)
+    if value is not None:
+      return value
   raise GFError(f'Cannot find tag value in {item}')
 
 

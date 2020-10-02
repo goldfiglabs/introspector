@@ -1,0 +1,30 @@
+version: 1
+resources:
+- service: apigateway
+  provider_type: Stage
+  name: stageName
+  uri:
+    id: stageName
+  attributes:
+    provider:
+    - deploymentId
+    - clientCertificateId
+    - stageName
+    - description
+    - cacheClusterEnabled
+    - cacheClusterSize
+    - cacheClusterStatus
+    - methodSettings
+    - variables
+    - documentationVersion
+    - accessLogSettings
+    - canarySettings
+    - tracingEnabled
+    - webAclArn
+    - tags
+    - createdDate
+    - lastUpdatedDate
+    custom:
+      Metadata:
+        Tags:
+          path: tags

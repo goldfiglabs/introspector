@@ -27,10 +27,19 @@ def _import_alarms(proxy: ServiceProxy):
       yield 'CompositeAlarm', _import_alarm(proxy, alarm)
 
 
+def _import_metrics(proxy: ServiceProxy):
+  metrics_resp = proxy.list('list_metrics')
+  if metrics_resp is not None:
+    metrics = metrics_resp[1]['Metrics']
+    for metric in metrics:
+      yield 'Metric', metric
+
+
 def _import_cloudwatch_region(proxy: ServiceProxy,
                               region: str) -> Iterator[Tuple[str, Any]]:
   _log.info(f'import alarms in {region}')
   yield from _import_alarms(proxy)
+  yield from _import_metrics(proxy)
 
 
 import_account_cloudwatch_region_to_db = make_import_to_db(

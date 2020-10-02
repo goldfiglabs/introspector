@@ -44,12 +44,16 @@ def _import_elb_region_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack,
     writer(ps, 'LoadBalancer', elb, {'region': region})
 
 
+def _is_v2(arn) -> bool:
+  return ':loadbalancer/net/' in arn or ':loadbalancer/app/' in arn
+
 def _import_elb_region(proxy: ServiceProxy):
   result = proxy.list('describe_load_balancers')
   if result is not None:
     elbs = result[1]
     for elb in elbs.get('LoadBalancerDescriptions', []):
-      yield import_elb(proxy, elb)
+      if not _is_v2(elb['LoadBalancerName']):
+        yield import_elb(proxy, elb)
 
 
 def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,

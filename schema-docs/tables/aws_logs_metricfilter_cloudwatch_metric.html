@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_logs_metricfilter_metric - goldfig Database</title>
+        <title>aws_logs_metricfilter_cloudwatch_metric - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_logs_metricfilter_metric</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>aws_logs_metricfilter_cloudwatch_metric</h1><p><span id="recordNumber">0</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -184,7 +184,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_logs_metricfilter.id AS metricfilter_id,&#10;    aws_logs_metric.id AS metric_id,&#10;    (metricvalue.value #&gt;&gt; &#39;{}&#39;::text[]) AS metricvalue,&#10;    ((defaultvalue.value #&gt;&gt; &#39;{}&#39;::text[]))::double precision AS defaultvalue&#10;   FROM ((((resource aws_logs_metricfilter&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_logs_metricfilter.id) AND ((rr.relation)::text = &#39;forwards-to&#39;::text))))&#10;     JOIN resource aws_logs_metric ON (((aws_logs_metric.id = rr.target_id) AND ((aws_logs_metric.provider_type)::text = &#39;Metric&#39;::text))))&#10;     LEFT JOIN resource_relation_attribute metricvalue ON (((metricvalue.relation_id = rr.id) AND ((metricvalue.name)::text = &#39;MetricValue&#39;::text))))&#10;     LEFT JOIN resource_relation_attribute defaultvalue ON (((defaultvalue.relation_id = rr.id) AND ((defaultvalue.name)::text = &#39;DefaultValue&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_logs_metricfilter.id AS metricfilter_id,&#10;    aws_cloudwatch_metric.id AS metric_id,&#10;    (metricvalue.value #&gt;&gt; &#39;{}&#39;::text[]) AS metricvalue,&#10;    ((defaultvalue.value #&gt;&gt; &#39;{}&#39;::text[]))::double precision AS defaultvalue&#10;   FROM ((((resource aws_logs_metricfilter&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_logs_metricfilter.id) AND ((rr.relation)::text = &#39;forwards-to&#39;::text))))&#10;     JOIN resource aws_cloudwatch_metric ON (((aws_cloudwatch_metric.id = rr.target_id) AND ((aws_cloudwatch_metric.provider_type)::text = &#39;Metric&#39;::text))))&#10;     LEFT JOIN resource_relation_attribute metricvalue ON (((metricvalue.relation_id = rr.id) AND ((metricvalue.name)::text = &#39;MetricValue&#39;::text))))&#10;     LEFT JOIN resource_relation_attribute defaultvalue ON (((defaultvalue.relation_id = rr.id) AND ((defaultvalue.name)::text = &#39;DefaultValue&#39;::text))));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">
@@ -195,7 +195,7 @@
                                 <div class="box-body">
                                     <ul class="list-unstyled">
                                         <li><a href="aws_logs_metricfilter.html">aws_logs_metricfilter</a></li>
-                                        <li><a href="aws_logs_metric.html">aws_logs_metric</a></li>
+                                        <li><a href="aws_cloudwatch_metric.html">aws_cloudwatch_metric</a></li>
                                         <li><a href="resource.html">resource</a></li>
                                         <li><a href="resource_relation.html">resource_relation</a></li>
                                         <li><a href="resource_relation_attribute.html">resource_relation_attribute</a></li>

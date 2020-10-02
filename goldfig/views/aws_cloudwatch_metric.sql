@@ -1,6 +1,6 @@
-DROP MATERIALIZED VIEW IF EXISTS aws_logs_metric CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_metric CASCADE;
 
-CREATE MATERIALIZED VIEW aws_logs_metric AS
+CREATE MATERIALIZED VIEW aws_cloudwatch_metric AS
 WITH attrs AS (
   SELECT
     R.id,
@@ -17,20 +17,24 @@ SELECT
   R.id AS resource_id,
   R.uri,
   R.provider_account_id,
-  metricName.attr_value #>> '{}' AS metricname,
-  metricNamespace.attr_value #>> '{}' AS metricnamespace,
+  namespace.attr_value #>> '{}' AS namespace,
+  metricname.attr_value #>> '{}' AS metricname,
+  dimensions.attr_value::jsonb AS dimensions,
   
     _account_id.target_id AS _account_id
 FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS metricName
-    ON metricName.id = R.id
-    AND metricName.attr_name = 'metricname'
-  LEFT JOIN attrs AS metricNamespace
-    ON metricNamespace.id = R.id
-    AND metricNamespace.attr_name = 'metricnamespace'
+  LEFT JOIN attrs AS namespace
+    ON namespace.id = R.id
+    AND namespace.attr_name = 'namespace'
+  LEFT JOIN attrs AS metricname
+    ON metricname.id = R.id
+    AND metricname.attr_name = 'metricname'
+  LEFT JOIN attrs AS dimensions
+    ON dimensions.id = R.id
+    AND dimensions.attr_name = 'dimensions'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -47,9 +51,10 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'metric'
+  AND R.service = 'cloudwatch'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_logs_metric;
+REFRESH MATERIALIZED VIEW aws_cloudwatch_metric;
 
-COMMENT ON MATERIALIZED VIEW aws_logs_metric IS 'logs metric resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metric IS 'cloudwatch metric resources and their associated attributes.';
 
