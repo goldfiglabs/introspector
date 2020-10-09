@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_flowlog CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_flowlog AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -41,48 +29,62 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS creationtime
-    ON creationtime.id = R.id
-    AND creationtime.attr_name = 'creationtime'
-  LEFT JOIN attrs AS deliverlogserrormessage
-    ON deliverlogserrormessage.id = R.id
-    AND deliverlogserrormessage.attr_name = 'deliverlogserrormessage'
-  LEFT JOIN attrs AS deliverlogspermissionarn
-    ON deliverlogspermissionarn.id = R.id
-    AND deliverlogspermissionarn.attr_name = 'deliverlogspermissionarn'
-  LEFT JOIN attrs AS deliverlogsstatus
-    ON deliverlogsstatus.id = R.id
-    AND deliverlogsstatus.attr_name = 'deliverlogsstatus'
-  LEFT JOIN attrs AS flowlogid
-    ON flowlogid.id = R.id
-    AND flowlogid.attr_name = 'flowlogid'
-  LEFT JOIN attrs AS flowlogstatus
-    ON flowlogstatus.id = R.id
-    AND flowlogstatus.attr_name = 'flowlogstatus'
-  LEFT JOIN attrs AS loggroupname
-    ON loggroupname.id = R.id
-    AND loggroupname.attr_name = 'loggroupname'
-  LEFT JOIN attrs AS resourceid
-    ON resourceid.id = R.id
-    AND resourceid.attr_name = 'resourceid'
-  LEFT JOIN attrs AS traffictype
-    ON traffictype.id = R.id
-    AND traffictype.attr_name = 'traffictype'
-  LEFT JOIN attrs AS logdestinationtype
-    ON logdestinationtype.id = R.id
-    AND logdestinationtype.attr_name = 'logdestinationtype'
-  LEFT JOIN attrs AS logdestination
-    ON logdestination.id = R.id
-    AND logdestination.attr_name = 'logdestination'
-  LEFT JOIN attrs AS logformat
-    ON logformat.id = R.id
-    AND logformat.attr_name = 'logformat'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS maxaggregationinterval
-    ON maxaggregationinterval.id = R.id
-    AND maxaggregationinterval.attr_name = 'maxaggregationinterval'
+  LEFT JOIN resource_attribute AS creationtime
+    ON creationtime.resource_id = R.id
+    AND creationtime.type = 'provider'
+    AND lower(creationtime.attr_name) = 'creationtime'
+  LEFT JOIN resource_attribute AS deliverlogserrormessage
+    ON deliverlogserrormessage.resource_id = R.id
+    AND deliverlogserrormessage.type = 'provider'
+    AND lower(deliverlogserrormessage.attr_name) = 'deliverlogserrormessage'
+  LEFT JOIN resource_attribute AS deliverlogspermissionarn
+    ON deliverlogspermissionarn.resource_id = R.id
+    AND deliverlogspermissionarn.type = 'provider'
+    AND lower(deliverlogspermissionarn.attr_name) = 'deliverlogspermissionarn'
+  LEFT JOIN resource_attribute AS deliverlogsstatus
+    ON deliverlogsstatus.resource_id = R.id
+    AND deliverlogsstatus.type = 'provider'
+    AND lower(deliverlogsstatus.attr_name) = 'deliverlogsstatus'
+  LEFT JOIN resource_attribute AS flowlogid
+    ON flowlogid.resource_id = R.id
+    AND flowlogid.type = 'provider'
+    AND lower(flowlogid.attr_name) = 'flowlogid'
+  LEFT JOIN resource_attribute AS flowlogstatus
+    ON flowlogstatus.resource_id = R.id
+    AND flowlogstatus.type = 'provider'
+    AND lower(flowlogstatus.attr_name) = 'flowlogstatus'
+  LEFT JOIN resource_attribute AS loggroupname
+    ON loggroupname.resource_id = R.id
+    AND loggroupname.type = 'provider'
+    AND lower(loggroupname.attr_name) = 'loggroupname'
+  LEFT JOIN resource_attribute AS resourceid
+    ON resourceid.resource_id = R.id
+    AND resourceid.type = 'provider'
+    AND lower(resourceid.attr_name) = 'resourceid'
+  LEFT JOIN resource_attribute AS traffictype
+    ON traffictype.resource_id = R.id
+    AND traffictype.type = 'provider'
+    AND lower(traffictype.attr_name) = 'traffictype'
+  LEFT JOIN resource_attribute AS logdestinationtype
+    ON logdestinationtype.resource_id = R.id
+    AND logdestinationtype.type = 'provider'
+    AND lower(logdestinationtype.attr_name) = 'logdestinationtype'
+  LEFT JOIN resource_attribute AS logdestination
+    ON logdestination.resource_id = R.id
+    AND logdestination.type = 'provider'
+    AND lower(logdestination.attr_name) = 'logdestination'
+  LEFT JOIN resource_attribute AS logformat
+    ON logformat.resource_id = R.id
+    AND logformat.type = 'provider'
+    AND lower(logformat.attr_name) = 'logformat'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS maxaggregationinterval
+    ON maxaggregationinterval.resource_id = R.id
+    AND maxaggregationinterval.type = 'provider'
+    AND lower(maxaggregationinterval.attr_name) = 'maxaggregationinterval'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -151,6 +153,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'flowlog'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_flowlog;

@@ -1,6 +1,6 @@
 import concurrent.futures as f
 import logging
-from typing import Any, Dict, Generator, List, Tuple
+from typing import Any, Dict, Generator, Iterator, List, Tuple
 
 from sqlalchemy.orm import Session
 
@@ -15,14 +15,27 @@ from goldfig.models import ImportJob, ProviderCredential
 _log = logging.getLogger(__name__)
 
 
-def _import_ec2_region(
-    proxy: ServiceProxy) -> Generator[Tuple[str, Any], None, None]:
+def _synthesize_defaults(proxy: ServiceProxy,
+                         region: str) -> Iterator[Tuple[str, Any]]:
+  defaults = {'name': 'Defaults', 'uri': f'ec2/defaults/{region}'}
+  # TODO: update permissions
+  # key_id_resp = proxy.get('get_ebs_default_kms_key_id')
+  # defaults['EbsDefaultKmsKeyId'] = key_id_resp.get('KmsKeyId')
+  encryption_resp = proxy.get('get_ebs_encryption_by_default')
+  defaults['EbsEncryptionByDefault'] = encryption_resp[
+      'EbsEncryptionByDefault']
+  yield 'Defaults', defaults
+
+
+def _import_ec2_region(proxy: ServiceProxy,
+                       region: str) -> Generator[Tuple[str, Any], None, None]:
   for resource in proxy.resource_names():
     _log.info(f'importing {resource}')
     result = proxy.list(resource)
     if result is not None:
       yield result[0], result[1]
     _log.info(f'done with {resource}')
+  yield from _synthesize_defaults(proxy, region)
 
 
 def import_account_ec2_region_to_db(db: Session, import_job_id: int,
@@ -40,7 +53,8 @@ def _import_ec2_region_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack,
                              region: str):
   service_proxy = proxy.service('ec2', region)
   ps = ps.scope(region)
-  for resource_name, raw_resources in _import_ec2_region(service_proxy):
+  for resource_name, raw_resources in _import_ec2_region(
+      service_proxy, region):
     writer(ps, resource_name, raw_resources, {'region': region})
 
 

@@ -326,13 +326,19 @@ def _import_graph(
 ) -> List[f.Future]:
   config = import_job.configuration
   org = config['aws_org']
+  is_mocked = org['Id'].startswith('OrgDummy')
   master_account_arn = org['MasterAccountArn']
   proxies = _AccountProxies(account_credentials, master_account_arn,
                             proxy_builder)
   ps = PathStack.from_import_job(import_job)
   results = []
   for path, typ, entry in walk_graph(org, config['aws_graph']):
-    if typ == 'Organization':
+    if is_mocked:
+      writer(ps, typ, entry)
+      if typ == 'Account':
+        results += import_iam_fn(ps.scope(path),
+                                 proxies.credentials_for_arn(entry['Arn']))
+    elif typ == 'Organization':
       _import_organization(ps, writer, entry)
     elif typ == 'Root':
       _import_root(proxies.master_account_proxy(), ps.scope(path), writer,

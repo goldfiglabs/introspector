@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Enum, ForeignKey, Integer, String, UniqueConstraint, CheckConstraint
+from sqlalchemy import Column, Enum, ForeignKey, func, Index, Integer, String, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -110,7 +110,10 @@ class ResourceRaw(Base):
 
 class ResourceAttribute(Base):
   __tablename__ = 'resource_attribute'
-  __table_args__ = {'comment': 'Attributes of resources.'}
+  __table_args__ = (Index('case_insensitive_name_idx',
+                          func.lower('attr_name')), {
+                              'comment': 'Attributes of resources.'
+                          })
   id = Column(Integer, primary_key=True)
   resource_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
   source = Column(String(256), nullable=False)

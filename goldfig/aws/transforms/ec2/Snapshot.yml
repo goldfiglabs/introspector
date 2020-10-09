@@ -1,0 +1,47 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Snapshot
+  name: SnapshotId
+  uri:
+    id: SnapshotId
+  attributes:
+    provider:
+    - DataEncryptionKeyId
+    - Description
+    - Encrypted
+    - KmsKeyId
+    - OwnerId
+    - Progress
+    - SnapshotId
+    - StartTime
+    - State
+    - StateMessage
+    - VolumeId
+    - VolumeSize
+    - OwnerAlias
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: encrypted-using
+    path: KmsKeyId
+    uri:
+      service:
+        value: kms
+      resource_name:
+        value: key
+      id:
+        path: ''
+  - relation: imaged
+    path: VolumeId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: volume
+      id:
+        path: ''

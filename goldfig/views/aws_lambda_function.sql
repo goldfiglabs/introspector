@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_lambda_function CASCADE;
 
 CREATE MATERIALIZED VIEW aws_lambda_function AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -44,9 +32,7 @@ SELECT
   lastupdatestatusreason.attr_value #>> '{}' AS lastupdatestatusreason,
   lastupdatestatusreasoncode.attr_value #>> '{}' AS lastupdatestatusreasoncode,
   filesystemconfigs.attr_value::jsonb AS filesystemconfigs,
-  code.attr_value::jsonb AS code,
   tags.attr_value::jsonb AS tags,
-  concurrency.attr_value::jsonb AS concurrency,
   Policy.attr_value::jsonb AS policy,
   
     _iam_role_id.target_id AS _iam_role_id,
@@ -55,99 +41,122 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS functionname
-    ON functionname.id = R.id
-    AND functionname.attr_name = 'functionname'
-  LEFT JOIN attrs AS functionarn
-    ON functionarn.id = R.id
-    AND functionarn.attr_name = 'functionarn'
-  LEFT JOIN attrs AS runtime
-    ON runtime.id = R.id
-    AND runtime.attr_name = 'runtime'
-  LEFT JOIN attrs AS role
-    ON role.id = R.id
-    AND role.attr_name = 'role'
-  LEFT JOIN attrs AS handler
-    ON handler.id = R.id
-    AND handler.attr_name = 'handler'
-  LEFT JOIN attrs AS codesize
-    ON codesize.id = R.id
-    AND codesize.attr_name = 'codesize'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS timeout
-    ON timeout.id = R.id
-    AND timeout.attr_name = 'timeout'
-  LEFT JOIN attrs AS memorysize
-    ON memorysize.id = R.id
-    AND memorysize.attr_name = 'memorysize'
-  LEFT JOIN attrs AS lastmodified
-    ON lastmodified.id = R.id
-    AND lastmodified.attr_name = 'lastmodified'
-  LEFT JOIN attrs AS codesha256
-    ON codesha256.id = R.id
-    AND codesha256.attr_name = 'codesha256'
-  LEFT JOIN attrs AS version
-    ON version.id = R.id
-    AND version.attr_name = 'version'
-  LEFT JOIN attrs AS vpcconfig
-    ON vpcconfig.id = R.id
-    AND vpcconfig.attr_name = 'vpcconfig'
-  LEFT JOIN attrs AS deadletterconfig
-    ON deadletterconfig.id = R.id
-    AND deadletterconfig.attr_name = 'deadletterconfig'
-  LEFT JOIN attrs AS environment
-    ON environment.id = R.id
-    AND environment.attr_name = 'environment'
-  LEFT JOIN attrs AS kmskeyarn
-    ON kmskeyarn.id = R.id
-    AND kmskeyarn.attr_name = 'kmskeyarn'
-  LEFT JOIN attrs AS tracingconfig
-    ON tracingconfig.id = R.id
-    AND tracingconfig.attr_name = 'tracingconfig'
-  LEFT JOIN attrs AS masterarn
-    ON masterarn.id = R.id
-    AND masterarn.attr_name = 'masterarn'
-  LEFT JOIN attrs AS revisionid
-    ON revisionid.id = R.id
-    AND revisionid.attr_name = 'revisionid'
-  LEFT JOIN attrs AS layers
-    ON layers.id = R.id
-    AND layers.attr_name = 'layers'
-  LEFT JOIN attrs AS state
-    ON state.id = R.id
-    AND state.attr_name = 'state'
-  LEFT JOIN attrs AS statereason
-    ON statereason.id = R.id
-    AND statereason.attr_name = 'statereason'
-  LEFT JOIN attrs AS statereasoncode
-    ON statereasoncode.id = R.id
-    AND statereasoncode.attr_name = 'statereasoncode'
-  LEFT JOIN attrs AS lastupdatestatus
-    ON lastupdatestatus.id = R.id
-    AND lastupdatestatus.attr_name = 'lastupdatestatus'
-  LEFT JOIN attrs AS lastupdatestatusreason
-    ON lastupdatestatusreason.id = R.id
-    AND lastupdatestatusreason.attr_name = 'lastupdatestatusreason'
-  LEFT JOIN attrs AS lastupdatestatusreasoncode
-    ON lastupdatestatusreasoncode.id = R.id
-    AND lastupdatestatusreasoncode.attr_name = 'lastupdatestatusreasoncode'
-  LEFT JOIN attrs AS filesystemconfigs
-    ON filesystemconfigs.id = R.id
-    AND filesystemconfigs.attr_name = 'filesystemconfigs'
-  LEFT JOIN attrs AS code
-    ON code.id = R.id
-    AND code.attr_name = 'code'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS concurrency
-    ON concurrency.id = R.id
-    AND concurrency.attr_name = 'concurrency'
-  LEFT JOIN attrs AS Policy
-    ON Policy.id = R.id
-    AND Policy.attr_name = 'policy'
+  LEFT JOIN resource_attribute AS functionname
+    ON functionname.resource_id = R.id
+    AND functionname.type = 'provider'
+    AND lower(functionname.attr_name) = 'functionname'
+  LEFT JOIN resource_attribute AS functionarn
+    ON functionarn.resource_id = R.id
+    AND functionarn.type = 'provider'
+    AND lower(functionarn.attr_name) = 'functionarn'
+  LEFT JOIN resource_attribute AS runtime
+    ON runtime.resource_id = R.id
+    AND runtime.type = 'provider'
+    AND lower(runtime.attr_name) = 'runtime'
+  LEFT JOIN resource_attribute AS role
+    ON role.resource_id = R.id
+    AND role.type = 'provider'
+    AND lower(role.attr_name) = 'role'
+  LEFT JOIN resource_attribute AS handler
+    ON handler.resource_id = R.id
+    AND handler.type = 'provider'
+    AND lower(handler.attr_name) = 'handler'
+  LEFT JOIN resource_attribute AS codesize
+    ON codesize.resource_id = R.id
+    AND codesize.type = 'provider'
+    AND lower(codesize.attr_name) = 'codesize'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS timeout
+    ON timeout.resource_id = R.id
+    AND timeout.type = 'provider'
+    AND lower(timeout.attr_name) = 'timeout'
+  LEFT JOIN resource_attribute AS memorysize
+    ON memorysize.resource_id = R.id
+    AND memorysize.type = 'provider'
+    AND lower(memorysize.attr_name) = 'memorysize'
+  LEFT JOIN resource_attribute AS lastmodified
+    ON lastmodified.resource_id = R.id
+    AND lastmodified.type = 'provider'
+    AND lower(lastmodified.attr_name) = 'lastmodified'
+  LEFT JOIN resource_attribute AS codesha256
+    ON codesha256.resource_id = R.id
+    AND codesha256.type = 'provider'
+    AND lower(codesha256.attr_name) = 'codesha256'
+  LEFT JOIN resource_attribute AS version
+    ON version.resource_id = R.id
+    AND version.type = 'provider'
+    AND lower(version.attr_name) = 'version'
+  LEFT JOIN resource_attribute AS vpcconfig
+    ON vpcconfig.resource_id = R.id
+    AND vpcconfig.type = 'provider'
+    AND lower(vpcconfig.attr_name) = 'vpcconfig'
+  LEFT JOIN resource_attribute AS deadletterconfig
+    ON deadletterconfig.resource_id = R.id
+    AND deadletterconfig.type = 'provider'
+    AND lower(deadletterconfig.attr_name) = 'deadletterconfig'
+  LEFT JOIN resource_attribute AS environment
+    ON environment.resource_id = R.id
+    AND environment.type = 'provider'
+    AND lower(environment.attr_name) = 'environment'
+  LEFT JOIN resource_attribute AS kmskeyarn
+    ON kmskeyarn.resource_id = R.id
+    AND kmskeyarn.type = 'provider'
+    AND lower(kmskeyarn.attr_name) = 'kmskeyarn'
+  LEFT JOIN resource_attribute AS tracingconfig
+    ON tracingconfig.resource_id = R.id
+    AND tracingconfig.type = 'provider'
+    AND lower(tracingconfig.attr_name) = 'tracingconfig'
+  LEFT JOIN resource_attribute AS masterarn
+    ON masterarn.resource_id = R.id
+    AND masterarn.type = 'provider'
+    AND lower(masterarn.attr_name) = 'masterarn'
+  LEFT JOIN resource_attribute AS revisionid
+    ON revisionid.resource_id = R.id
+    AND revisionid.type = 'provider'
+    AND lower(revisionid.attr_name) = 'revisionid'
+  LEFT JOIN resource_attribute AS layers
+    ON layers.resource_id = R.id
+    AND layers.type = 'provider'
+    AND lower(layers.attr_name) = 'layers'
+  LEFT JOIN resource_attribute AS state
+    ON state.resource_id = R.id
+    AND state.type = 'provider'
+    AND lower(state.attr_name) = 'state'
+  LEFT JOIN resource_attribute AS statereason
+    ON statereason.resource_id = R.id
+    AND statereason.type = 'provider'
+    AND lower(statereason.attr_name) = 'statereason'
+  LEFT JOIN resource_attribute AS statereasoncode
+    ON statereasoncode.resource_id = R.id
+    AND statereasoncode.type = 'provider'
+    AND lower(statereasoncode.attr_name) = 'statereasoncode'
+  LEFT JOIN resource_attribute AS lastupdatestatus
+    ON lastupdatestatus.resource_id = R.id
+    AND lastupdatestatus.type = 'provider'
+    AND lower(lastupdatestatus.attr_name) = 'lastupdatestatus'
+  LEFT JOIN resource_attribute AS lastupdatestatusreason
+    ON lastupdatestatusreason.resource_id = R.id
+    AND lastupdatestatusreason.type = 'provider'
+    AND lower(lastupdatestatusreason.attr_name) = 'lastupdatestatusreason'
+  LEFT JOIN resource_attribute AS lastupdatestatusreasoncode
+    ON lastupdatestatusreasoncode.resource_id = R.id
+    AND lastupdatestatusreasoncode.type = 'provider'
+    AND lower(lastupdatestatusreasoncode.attr_name) = 'lastupdatestatusreasoncode'
+  LEFT JOIN resource_attribute AS filesystemconfigs
+    ON filesystemconfigs.resource_id = R.id
+    AND filesystemconfigs.type = 'provider'
+    AND lower(filesystemconfigs.attr_name) = 'filesystemconfigs'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS Policy
+    ON Policy.resource_id = R.id
+    AND Policy.type = 'provider'
+    AND lower(Policy.attr_name) = 'policy'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -177,6 +186,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'function'
+  AND R.service = 'lambda'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_lambda_function;

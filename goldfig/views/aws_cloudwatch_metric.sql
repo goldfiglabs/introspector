@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_metric CASCADE;
 
 CREATE MATERIALIZED VIEW aws_cloudwatch_metric AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -26,15 +14,18 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS namespace
-    ON namespace.id = R.id
-    AND namespace.attr_name = 'namespace'
-  LEFT JOIN attrs AS metricname
-    ON metricname.id = R.id
-    AND metricname.attr_name = 'metricname'
-  LEFT JOIN attrs AS dimensions
-    ON dimensions.id = R.id
-    AND dimensions.attr_name = 'dimensions'
+  LEFT JOIN resource_attribute AS namespace
+    ON namespace.resource_id = R.id
+    AND namespace.type = 'provider'
+    AND lower(namespace.attr_name) = 'namespace'
+  LEFT JOIN resource_attribute AS metricname
+    ON metricname.resource_id = R.id
+    AND metricname.type = 'provider'
+    AND lower(metricname.attr_name) = 'metricname'
+  LEFT JOIN resource_attribute AS dimensions
+    ON dimensions.resource_id = R.id
+    AND dimensions.type = 'provider'
+    AND lower(dimensions.attr_name) = 'dimensions'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

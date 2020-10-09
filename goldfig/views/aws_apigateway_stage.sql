@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_apigateway_stage CASCADE;
 
 CREATE MATERIALIZED VIEW aws_apigateway_stage AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -41,57 +29,74 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS deploymentid
-    ON deploymentid.id = R.id
-    AND deploymentid.attr_name = 'deploymentid'
-  LEFT JOIN attrs AS clientcertificateid
-    ON clientcertificateid.id = R.id
-    AND clientcertificateid.attr_name = 'clientcertificateid'
-  LEFT JOIN attrs AS stagename
-    ON stagename.id = R.id
-    AND stagename.attr_name = 'stagename'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS cacheclusterenabled
-    ON cacheclusterenabled.id = R.id
-    AND cacheclusterenabled.attr_name = 'cacheclusterenabled'
-  LEFT JOIN attrs AS cacheclustersize
-    ON cacheclustersize.id = R.id
-    AND cacheclustersize.attr_name = 'cacheclustersize'
-  LEFT JOIN attrs AS cacheclusterstatus
-    ON cacheclusterstatus.id = R.id
-    AND cacheclusterstatus.attr_name = 'cacheclusterstatus'
-  LEFT JOIN attrs AS methodsettings
-    ON methodsettings.id = R.id
-    AND methodsettings.attr_name = 'methodsettings'
-  LEFT JOIN attrs AS variables
-    ON variables.id = R.id
-    AND variables.attr_name = 'variables'
-  LEFT JOIN attrs AS documentationversion
-    ON documentationversion.id = R.id
-    AND documentationversion.attr_name = 'documentationversion'
-  LEFT JOIN attrs AS accesslogsettings
-    ON accesslogsettings.id = R.id
-    AND accesslogsettings.attr_name = 'accesslogsettings'
-  LEFT JOIN attrs AS canarysettings
-    ON canarysettings.id = R.id
-    AND canarysettings.attr_name = 'canarysettings'
-  LEFT JOIN attrs AS tracingenabled
-    ON tracingenabled.id = R.id
-    AND tracingenabled.attr_name = 'tracingenabled'
-  LEFT JOIN attrs AS webaclarn
-    ON webaclarn.id = R.id
-    AND webaclarn.attr_name = 'webaclarn'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS createddate
-    ON createddate.id = R.id
-    AND createddate.attr_name = 'createddate'
-  LEFT JOIN attrs AS lastupdateddate
-    ON lastupdateddate.id = R.id
-    AND lastupdateddate.attr_name = 'lastupdateddate'
+  LEFT JOIN resource_attribute AS deploymentid
+    ON deploymentid.resource_id = R.id
+    AND deploymentid.type = 'provider'
+    AND lower(deploymentid.attr_name) = 'deploymentid'
+  LEFT JOIN resource_attribute AS clientcertificateid
+    ON clientcertificateid.resource_id = R.id
+    AND clientcertificateid.type = 'provider'
+    AND lower(clientcertificateid.attr_name) = 'clientcertificateid'
+  LEFT JOIN resource_attribute AS stagename
+    ON stagename.resource_id = R.id
+    AND stagename.type = 'provider'
+    AND lower(stagename.attr_name) = 'stagename'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS cacheclusterenabled
+    ON cacheclusterenabled.resource_id = R.id
+    AND cacheclusterenabled.type = 'provider'
+    AND lower(cacheclusterenabled.attr_name) = 'cacheclusterenabled'
+  LEFT JOIN resource_attribute AS cacheclustersize
+    ON cacheclustersize.resource_id = R.id
+    AND cacheclustersize.type = 'provider'
+    AND lower(cacheclustersize.attr_name) = 'cacheclustersize'
+  LEFT JOIN resource_attribute AS cacheclusterstatus
+    ON cacheclusterstatus.resource_id = R.id
+    AND cacheclusterstatus.type = 'provider'
+    AND lower(cacheclusterstatus.attr_name) = 'cacheclusterstatus'
+  LEFT JOIN resource_attribute AS methodsettings
+    ON methodsettings.resource_id = R.id
+    AND methodsettings.type = 'provider'
+    AND lower(methodsettings.attr_name) = 'methodsettings'
+  LEFT JOIN resource_attribute AS variables
+    ON variables.resource_id = R.id
+    AND variables.type = 'provider'
+    AND lower(variables.attr_name) = 'variables'
+  LEFT JOIN resource_attribute AS documentationversion
+    ON documentationversion.resource_id = R.id
+    AND documentationversion.type = 'provider'
+    AND lower(documentationversion.attr_name) = 'documentationversion'
+  LEFT JOIN resource_attribute AS accesslogsettings
+    ON accesslogsettings.resource_id = R.id
+    AND accesslogsettings.type = 'provider'
+    AND lower(accesslogsettings.attr_name) = 'accesslogsettings'
+  LEFT JOIN resource_attribute AS canarysettings
+    ON canarysettings.resource_id = R.id
+    AND canarysettings.type = 'provider'
+    AND lower(canarysettings.attr_name) = 'canarysettings'
+  LEFT JOIN resource_attribute AS tracingenabled
+    ON tracingenabled.resource_id = R.id
+    AND tracingenabled.type = 'provider'
+    AND lower(tracingenabled.attr_name) = 'tracingenabled'
+  LEFT JOIN resource_attribute AS webaclarn
+    ON webaclarn.resource_id = R.id
+    AND webaclarn.type = 'provider'
+    AND lower(webaclarn.attr_name) = 'webaclarn'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS createddate
+    ON createddate.resource_id = R.id
+    AND createddate.type = 'provider'
+    AND lower(createddate.attr_name) = 'createddate'
+  LEFT JOIN resource_attribute AS lastupdateddate
+    ON lastupdateddate.resource_id = R.id
+    AND lastupdateddate.type = 'provider'
+    AND lower(lastupdateddate.attr_name) = 'lastupdateddate'
   LEFT JOIN (
     SELECT
       _aws_apigateway_restapi_relation.resource_id AS resource_id,

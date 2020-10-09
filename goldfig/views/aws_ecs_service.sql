@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ecs_service CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ecs_service AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -53,93 +41,122 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS servicearn
-    ON servicearn.id = R.id
-    AND servicearn.attr_name = 'servicearn'
-  LEFT JOIN attrs AS servicename
-    ON servicename.id = R.id
-    AND servicename.attr_name = 'servicename'
-  LEFT JOIN attrs AS clusterarn
-    ON clusterarn.id = R.id
-    AND clusterarn.attr_name = 'clusterarn'
-  LEFT JOIN attrs AS loadbalancers
-    ON loadbalancers.id = R.id
-    AND loadbalancers.attr_name = 'loadbalancers'
-  LEFT JOIN attrs AS serviceregistries
-    ON serviceregistries.id = R.id
-    AND serviceregistries.attr_name = 'serviceregistries'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS desiredcount
-    ON desiredcount.id = R.id
-    AND desiredcount.attr_name = 'desiredcount'
-  LEFT JOIN attrs AS runningcount
-    ON runningcount.id = R.id
-    AND runningcount.attr_name = 'runningcount'
-  LEFT JOIN attrs AS pendingcount
-    ON pendingcount.id = R.id
-    AND pendingcount.attr_name = 'pendingcount'
-  LEFT JOIN attrs AS launchtype
-    ON launchtype.id = R.id
-    AND launchtype.attr_name = 'launchtype'
-  LEFT JOIN attrs AS capacityproviderstrategy
-    ON capacityproviderstrategy.id = R.id
-    AND capacityproviderstrategy.attr_name = 'capacityproviderstrategy'
-  LEFT JOIN attrs AS platformversion
-    ON platformversion.id = R.id
-    AND platformversion.attr_name = 'platformversion'
-  LEFT JOIN attrs AS taskdefinition
-    ON taskdefinition.id = R.id
-    AND taskdefinition.attr_name = 'taskdefinition'
-  LEFT JOIN attrs AS deploymentconfiguration
-    ON deploymentconfiguration.id = R.id
-    AND deploymentconfiguration.attr_name = 'deploymentconfiguration'
-  LEFT JOIN attrs AS tasksets
-    ON tasksets.id = R.id
-    AND tasksets.attr_name = 'tasksets'
-  LEFT JOIN attrs AS deployments
-    ON deployments.id = R.id
-    AND deployments.attr_name = 'deployments'
-  LEFT JOIN attrs AS rolearn
-    ON rolearn.id = R.id
-    AND rolearn.attr_name = 'rolearn'
-  LEFT JOIN attrs AS events
-    ON events.id = R.id
-    AND events.attr_name = 'events'
-  LEFT JOIN attrs AS createdat
-    ON createdat.id = R.id
-    AND createdat.attr_name = 'createdat'
-  LEFT JOIN attrs AS placementconstraints
-    ON placementconstraints.id = R.id
-    AND placementconstraints.attr_name = 'placementconstraints'
-  LEFT JOIN attrs AS placementstrategy
-    ON placementstrategy.id = R.id
-    AND placementstrategy.attr_name = 'placementstrategy'
-  LEFT JOIN attrs AS networkconfiguration
-    ON networkconfiguration.id = R.id
-    AND networkconfiguration.attr_name = 'networkconfiguration'
-  LEFT JOIN attrs AS healthcheckgraceperiodseconds
-    ON healthcheckgraceperiodseconds.id = R.id
-    AND healthcheckgraceperiodseconds.attr_name = 'healthcheckgraceperiodseconds'
-  LEFT JOIN attrs AS schedulingstrategy
-    ON schedulingstrategy.id = R.id
-    AND schedulingstrategy.attr_name = 'schedulingstrategy'
-  LEFT JOIN attrs AS deploymentcontroller
-    ON deploymentcontroller.id = R.id
-    AND deploymentcontroller.attr_name = 'deploymentcontroller'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS createdby
-    ON createdby.id = R.id
-    AND createdby.attr_name = 'createdby'
-  LEFT JOIN attrs AS enableecsmanagedtags
-    ON enableecsmanagedtags.id = R.id
-    AND enableecsmanagedtags.attr_name = 'enableecsmanagedtags'
-  LEFT JOIN attrs AS propagatetags
-    ON propagatetags.id = R.id
-    AND propagatetags.attr_name = 'propagatetags'
+  LEFT JOIN resource_attribute AS servicearn
+    ON servicearn.resource_id = R.id
+    AND servicearn.type = 'provider'
+    AND lower(servicearn.attr_name) = 'servicearn'
+  LEFT JOIN resource_attribute AS servicename
+    ON servicename.resource_id = R.id
+    AND servicename.type = 'provider'
+    AND lower(servicename.attr_name) = 'servicename'
+  LEFT JOIN resource_attribute AS clusterarn
+    ON clusterarn.resource_id = R.id
+    AND clusterarn.type = 'provider'
+    AND lower(clusterarn.attr_name) = 'clusterarn'
+  LEFT JOIN resource_attribute AS loadbalancers
+    ON loadbalancers.resource_id = R.id
+    AND loadbalancers.type = 'provider'
+    AND lower(loadbalancers.attr_name) = 'loadbalancers'
+  LEFT JOIN resource_attribute AS serviceregistries
+    ON serviceregistries.resource_id = R.id
+    AND serviceregistries.type = 'provider'
+    AND lower(serviceregistries.attr_name) = 'serviceregistries'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS desiredcount
+    ON desiredcount.resource_id = R.id
+    AND desiredcount.type = 'provider'
+    AND lower(desiredcount.attr_name) = 'desiredcount'
+  LEFT JOIN resource_attribute AS runningcount
+    ON runningcount.resource_id = R.id
+    AND runningcount.type = 'provider'
+    AND lower(runningcount.attr_name) = 'runningcount'
+  LEFT JOIN resource_attribute AS pendingcount
+    ON pendingcount.resource_id = R.id
+    AND pendingcount.type = 'provider'
+    AND lower(pendingcount.attr_name) = 'pendingcount'
+  LEFT JOIN resource_attribute AS launchtype
+    ON launchtype.resource_id = R.id
+    AND launchtype.type = 'provider'
+    AND lower(launchtype.attr_name) = 'launchtype'
+  LEFT JOIN resource_attribute AS capacityproviderstrategy
+    ON capacityproviderstrategy.resource_id = R.id
+    AND capacityproviderstrategy.type = 'provider'
+    AND lower(capacityproviderstrategy.attr_name) = 'capacityproviderstrategy'
+  LEFT JOIN resource_attribute AS platformversion
+    ON platformversion.resource_id = R.id
+    AND platformversion.type = 'provider'
+    AND lower(platformversion.attr_name) = 'platformversion'
+  LEFT JOIN resource_attribute AS taskdefinition
+    ON taskdefinition.resource_id = R.id
+    AND taskdefinition.type = 'provider'
+    AND lower(taskdefinition.attr_name) = 'taskdefinition'
+  LEFT JOIN resource_attribute AS deploymentconfiguration
+    ON deploymentconfiguration.resource_id = R.id
+    AND deploymentconfiguration.type = 'provider'
+    AND lower(deploymentconfiguration.attr_name) = 'deploymentconfiguration'
+  LEFT JOIN resource_attribute AS tasksets
+    ON tasksets.resource_id = R.id
+    AND tasksets.type = 'provider'
+    AND lower(tasksets.attr_name) = 'tasksets'
+  LEFT JOIN resource_attribute AS deployments
+    ON deployments.resource_id = R.id
+    AND deployments.type = 'provider'
+    AND lower(deployments.attr_name) = 'deployments'
+  LEFT JOIN resource_attribute AS rolearn
+    ON rolearn.resource_id = R.id
+    AND rolearn.type = 'provider'
+    AND lower(rolearn.attr_name) = 'rolearn'
+  LEFT JOIN resource_attribute AS events
+    ON events.resource_id = R.id
+    AND events.type = 'provider'
+    AND lower(events.attr_name) = 'events'
+  LEFT JOIN resource_attribute AS createdat
+    ON createdat.resource_id = R.id
+    AND createdat.type = 'provider'
+    AND lower(createdat.attr_name) = 'createdat'
+  LEFT JOIN resource_attribute AS placementconstraints
+    ON placementconstraints.resource_id = R.id
+    AND placementconstraints.type = 'provider'
+    AND lower(placementconstraints.attr_name) = 'placementconstraints'
+  LEFT JOIN resource_attribute AS placementstrategy
+    ON placementstrategy.resource_id = R.id
+    AND placementstrategy.type = 'provider'
+    AND lower(placementstrategy.attr_name) = 'placementstrategy'
+  LEFT JOIN resource_attribute AS networkconfiguration
+    ON networkconfiguration.resource_id = R.id
+    AND networkconfiguration.type = 'provider'
+    AND lower(networkconfiguration.attr_name) = 'networkconfiguration'
+  LEFT JOIN resource_attribute AS healthcheckgraceperiodseconds
+    ON healthcheckgraceperiodseconds.resource_id = R.id
+    AND healthcheckgraceperiodseconds.type = 'provider'
+    AND lower(healthcheckgraceperiodseconds.attr_name) = 'healthcheckgraceperiodseconds'
+  LEFT JOIN resource_attribute AS schedulingstrategy
+    ON schedulingstrategy.resource_id = R.id
+    AND schedulingstrategy.type = 'provider'
+    AND lower(schedulingstrategy.attr_name) = 'schedulingstrategy'
+  LEFT JOIN resource_attribute AS deploymentcontroller
+    ON deploymentcontroller.resource_id = R.id
+    AND deploymentcontroller.type = 'provider'
+    AND lower(deploymentcontroller.attr_name) = 'deploymentcontroller'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS createdby
+    ON createdby.resource_id = R.id
+    AND createdby.type = 'provider'
+    AND lower(createdby.attr_name) = 'createdby'
+  LEFT JOIN resource_attribute AS enableecsmanagedtags
+    ON enableecsmanagedtags.resource_id = R.id
+    AND enableecsmanagedtags.type = 'provider'
+    AND lower(enableecsmanagedtags.attr_name) = 'enableecsmanagedtags'
+  LEFT JOIN resource_attribute AS propagatetags
+    ON propagatetags.resource_id = R.id
+    AND propagatetags.type = 'provider'
+    AND lower(propagatetags.attr_name) = 'propagatetags'
   LEFT JOIN (
     SELECT
       _aws_ecs_cluster_relation.resource_id AS resource_id,

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_targetgroup CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elbv2_targetgroup AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -49,81 +37,106 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS targetgrouparn
-    ON targetgrouparn.id = R.id
-    AND targetgrouparn.attr_name = 'targetgrouparn'
-  LEFT JOIN attrs AS targetgroupname
-    ON targetgroupname.id = R.id
-    AND targetgroupname.attr_name = 'targetgroupname'
-  LEFT JOIN attrs AS protocol
-    ON protocol.id = R.id
-    AND protocol.attr_name = 'protocol'
-  LEFT JOIN attrs AS port
-    ON port.id = R.id
-    AND port.attr_name = 'port'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS healthcheckprotocol
-    ON healthcheckprotocol.id = R.id
-    AND healthcheckprotocol.attr_name = 'healthcheckprotocol'
-  LEFT JOIN attrs AS healthcheckport
-    ON healthcheckport.id = R.id
-    AND healthcheckport.attr_name = 'healthcheckport'
-  LEFT JOIN attrs AS healthcheckenabled
-    ON healthcheckenabled.id = R.id
-    AND healthcheckenabled.attr_name = 'healthcheckenabled'
-  LEFT JOIN attrs AS healthcheckintervalseconds
-    ON healthcheckintervalseconds.id = R.id
-    AND healthcheckintervalseconds.attr_name = 'healthcheckintervalseconds'
-  LEFT JOIN attrs AS healthchecktimeoutseconds
-    ON healthchecktimeoutseconds.id = R.id
-    AND healthchecktimeoutseconds.attr_name = 'healthchecktimeoutseconds'
-  LEFT JOIN attrs AS healthythresholdcount
-    ON healthythresholdcount.id = R.id
-    AND healthythresholdcount.attr_name = 'healthythresholdcount'
-  LEFT JOIN attrs AS unhealthythresholdcount
-    ON unhealthythresholdcount.id = R.id
-    AND unhealthythresholdcount.attr_name = 'unhealthythresholdcount'
-  LEFT JOIN attrs AS healthcheckpath
-    ON healthcheckpath.id = R.id
-    AND healthcheckpath.attr_name = 'healthcheckpath'
-  LEFT JOIN attrs AS matcher
-    ON matcher.id = R.id
-    AND matcher.attr_name = 'matcher'
-  LEFT JOIN attrs AS loadbalancerarns
-    ON loadbalancerarns.id = R.id
-    AND loadbalancerarns.attr_name = 'loadbalancerarns'
-  LEFT JOIN attrs AS targettype
-    ON targettype.id = R.id
-    AND targettype.attr_name = 'targettype'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS deregistration_delay_timeout_seconds
-    ON deregistration_delay_timeout_seconds.id = R.id
-    AND deregistration_delay_timeout_seconds.attr_name = 'deregistration_delay_timeout_seconds'
-  LEFT JOIN attrs AS stickiness_enabled
-    ON stickiness_enabled.id = R.id
-    AND stickiness_enabled.attr_name = 'stickiness_enabled'
-  LEFT JOIN attrs AS stickiness_type
-    ON stickiness_type.id = R.id
-    AND stickiness_type.attr_name = 'stickiness_type'
-  LEFT JOIN attrs AS load_balancing_algorithm_type
-    ON load_balancing_algorithm_type.id = R.id
-    AND load_balancing_algorithm_type.attr_name = 'load_balancing_algorithm_type'
-  LEFT JOIN attrs AS slow_start_duration_seconds
-    ON slow_start_duration_seconds.id = R.id
-    AND slow_start_duration_seconds.attr_name = 'slow_start_duration_seconds'
-  LEFT JOIN attrs AS stickiness_lb_cookie_duration_seconds
-    ON stickiness_lb_cookie_duration_seconds.id = R.id
-    AND stickiness_lb_cookie_duration_seconds.attr_name = 'stickiness_lb_cookie_duration_seconds'
-  LEFT JOIN attrs AS lambda_multi_value_headers_enabled
-    ON lambda_multi_value_headers_enabled.id = R.id
-    AND lambda_multi_value_headers_enabled.attr_name = 'lambda_multi_value_headers_enabled'
-  LEFT JOIN attrs AS proxy_protocol_v2_enabled
-    ON proxy_protocol_v2_enabled.id = R.id
-    AND proxy_protocol_v2_enabled.attr_name = 'proxy_protocol_v2_enabled'
+  LEFT JOIN resource_attribute AS targetgrouparn
+    ON targetgrouparn.resource_id = R.id
+    AND targetgrouparn.type = 'provider'
+    AND lower(targetgrouparn.attr_name) = 'targetgrouparn'
+  LEFT JOIN resource_attribute AS targetgroupname
+    ON targetgroupname.resource_id = R.id
+    AND targetgroupname.type = 'provider'
+    AND lower(targetgroupname.attr_name) = 'targetgroupname'
+  LEFT JOIN resource_attribute AS protocol
+    ON protocol.resource_id = R.id
+    AND protocol.type = 'provider'
+    AND lower(protocol.attr_name) = 'protocol'
+  LEFT JOIN resource_attribute AS port
+    ON port.resource_id = R.id
+    AND port.type = 'provider'
+    AND lower(port.attr_name) = 'port'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS healthcheckprotocol
+    ON healthcheckprotocol.resource_id = R.id
+    AND healthcheckprotocol.type = 'provider'
+    AND lower(healthcheckprotocol.attr_name) = 'healthcheckprotocol'
+  LEFT JOIN resource_attribute AS healthcheckport
+    ON healthcheckport.resource_id = R.id
+    AND healthcheckport.type = 'provider'
+    AND lower(healthcheckport.attr_name) = 'healthcheckport'
+  LEFT JOIN resource_attribute AS healthcheckenabled
+    ON healthcheckenabled.resource_id = R.id
+    AND healthcheckenabled.type = 'provider'
+    AND lower(healthcheckenabled.attr_name) = 'healthcheckenabled'
+  LEFT JOIN resource_attribute AS healthcheckintervalseconds
+    ON healthcheckintervalseconds.resource_id = R.id
+    AND healthcheckintervalseconds.type = 'provider'
+    AND lower(healthcheckintervalseconds.attr_name) = 'healthcheckintervalseconds'
+  LEFT JOIN resource_attribute AS healthchecktimeoutseconds
+    ON healthchecktimeoutseconds.resource_id = R.id
+    AND healthchecktimeoutseconds.type = 'provider'
+    AND lower(healthchecktimeoutseconds.attr_name) = 'healthchecktimeoutseconds'
+  LEFT JOIN resource_attribute AS healthythresholdcount
+    ON healthythresholdcount.resource_id = R.id
+    AND healthythresholdcount.type = 'provider'
+    AND lower(healthythresholdcount.attr_name) = 'healthythresholdcount'
+  LEFT JOIN resource_attribute AS unhealthythresholdcount
+    ON unhealthythresholdcount.resource_id = R.id
+    AND unhealthythresholdcount.type = 'provider'
+    AND lower(unhealthythresholdcount.attr_name) = 'unhealthythresholdcount'
+  LEFT JOIN resource_attribute AS healthcheckpath
+    ON healthcheckpath.resource_id = R.id
+    AND healthcheckpath.type = 'provider'
+    AND lower(healthcheckpath.attr_name) = 'healthcheckpath'
+  LEFT JOIN resource_attribute AS matcher
+    ON matcher.resource_id = R.id
+    AND matcher.type = 'provider'
+    AND lower(matcher.attr_name) = 'matcher'
+  LEFT JOIN resource_attribute AS loadbalancerarns
+    ON loadbalancerarns.resource_id = R.id
+    AND loadbalancerarns.type = 'provider'
+    AND lower(loadbalancerarns.attr_name) = 'loadbalancerarns'
+  LEFT JOIN resource_attribute AS targettype
+    ON targettype.resource_id = R.id
+    AND targettype.type = 'provider'
+    AND lower(targettype.attr_name) = 'targettype'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS deregistration_delay_timeout_seconds
+    ON deregistration_delay_timeout_seconds.resource_id = R.id
+    AND deregistration_delay_timeout_seconds.type = 'provider'
+    AND lower(deregistration_delay_timeout_seconds.attr_name) = 'deregistration_delay_timeout_seconds'
+  LEFT JOIN resource_attribute AS stickiness_enabled
+    ON stickiness_enabled.resource_id = R.id
+    AND stickiness_enabled.type = 'provider'
+    AND lower(stickiness_enabled.attr_name) = 'stickiness_enabled'
+  LEFT JOIN resource_attribute AS stickiness_type
+    ON stickiness_type.resource_id = R.id
+    AND stickiness_type.type = 'provider'
+    AND lower(stickiness_type.attr_name) = 'stickiness_type'
+  LEFT JOIN resource_attribute AS load_balancing_algorithm_type
+    ON load_balancing_algorithm_type.resource_id = R.id
+    AND load_balancing_algorithm_type.type = 'provider'
+    AND lower(load_balancing_algorithm_type.attr_name) = 'load_balancing_algorithm_type'
+  LEFT JOIN resource_attribute AS slow_start_duration_seconds
+    ON slow_start_duration_seconds.resource_id = R.id
+    AND slow_start_duration_seconds.type = 'provider'
+    AND lower(slow_start_duration_seconds.attr_name) = 'slow_start_duration_seconds'
+  LEFT JOIN resource_attribute AS stickiness_lb_cookie_duration_seconds
+    ON stickiness_lb_cookie_duration_seconds.resource_id = R.id
+    AND stickiness_lb_cookie_duration_seconds.type = 'provider'
+    AND lower(stickiness_lb_cookie_duration_seconds.attr_name) = 'stickiness_lb_cookie_duration_seconds'
+  LEFT JOIN resource_attribute AS lambda_multi_value_headers_enabled
+    ON lambda_multi_value_headers_enabled.resource_id = R.id
+    AND lambda_multi_value_headers_enabled.type = 'provider'
+    AND lower(lambda_multi_value_headers_enabled.attr_name) = 'lambda_multi_value_headers_enabled'
+  LEFT JOIN resource_attribute AS proxy_protocol_v2_enabled
+    ON proxy_protocol_v2_enabled.resource_id = R.id
+    AND proxy_protocol_v2_enabled.type = 'provider'
+    AND lower(proxy_protocol_v2_enabled.attr_name) = 'proxy_protocol_v2_enabled'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,

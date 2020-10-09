@@ -1,0 +1,38 @@
+version: 1
+resources:
+- service: dynamodb
+  provider_type: Table
+  name: TableName
+  uri:
+    uri: TableArn
+  attributes:
+    provider:
+    - AttributeDefinitions
+    - TableName
+    - KeySchema
+    - TableStatus
+    - CreationDateTime
+    - ProvisionedThroughput
+    - TableSizeBytes
+    - ItemCount
+    - TableArn
+    - TableId
+    - BillingModeSummary
+    - LocalSecondaryIndexes
+    - GlobalSecondaryIndexes
+    - StreamSpecification
+    - LatestStreamLabel
+    - LatestStreamArn
+    - GlobalTableVersion
+    - Replicas
+    - RestoreSummary
+    - SSEDescription
+    - ArchivalSummary
+    - ContinuousBackupsStatus
+    - PointInTimeRecoveryDescription
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags

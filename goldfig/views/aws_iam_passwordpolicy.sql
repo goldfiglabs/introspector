@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_passwordpolicy CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_passwordpolicy AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -33,36 +21,46 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS minimumpasswordlength
-    ON minimumpasswordlength.id = R.id
-    AND minimumpasswordlength.attr_name = 'minimumpasswordlength'
-  LEFT JOIN attrs AS requiresymbols
-    ON requiresymbols.id = R.id
-    AND requiresymbols.attr_name = 'requiresymbols'
-  LEFT JOIN attrs AS requirenumbers
-    ON requirenumbers.id = R.id
-    AND requirenumbers.attr_name = 'requirenumbers'
-  LEFT JOIN attrs AS requireuppercasecharacters
-    ON requireuppercasecharacters.id = R.id
-    AND requireuppercasecharacters.attr_name = 'requireuppercasecharacters'
-  LEFT JOIN attrs AS requirelowercasecharacters
-    ON requirelowercasecharacters.id = R.id
-    AND requirelowercasecharacters.attr_name = 'requirelowercasecharacters'
-  LEFT JOIN attrs AS allowuserstochangepassword
-    ON allowuserstochangepassword.id = R.id
-    AND allowuserstochangepassword.attr_name = 'allowuserstochangepassword'
-  LEFT JOIN attrs AS expirepasswords
-    ON expirepasswords.id = R.id
-    AND expirepasswords.attr_name = 'expirepasswords'
-  LEFT JOIN attrs AS maxpasswordage
-    ON maxpasswordage.id = R.id
-    AND maxpasswordage.attr_name = 'maxpasswordage'
-  LEFT JOIN attrs AS passwordreuseprevention
-    ON passwordreuseprevention.id = R.id
-    AND passwordreuseprevention.attr_name = 'passwordreuseprevention'
-  LEFT JOIN attrs AS hardexpiry
-    ON hardexpiry.id = R.id
-    AND hardexpiry.attr_name = 'hardexpiry'
+  LEFT JOIN resource_attribute AS minimumpasswordlength
+    ON minimumpasswordlength.resource_id = R.id
+    AND minimumpasswordlength.type = 'provider'
+    AND lower(minimumpasswordlength.attr_name) = 'minimumpasswordlength'
+  LEFT JOIN resource_attribute AS requiresymbols
+    ON requiresymbols.resource_id = R.id
+    AND requiresymbols.type = 'provider'
+    AND lower(requiresymbols.attr_name) = 'requiresymbols'
+  LEFT JOIN resource_attribute AS requirenumbers
+    ON requirenumbers.resource_id = R.id
+    AND requirenumbers.type = 'provider'
+    AND lower(requirenumbers.attr_name) = 'requirenumbers'
+  LEFT JOIN resource_attribute AS requireuppercasecharacters
+    ON requireuppercasecharacters.resource_id = R.id
+    AND requireuppercasecharacters.type = 'provider'
+    AND lower(requireuppercasecharacters.attr_name) = 'requireuppercasecharacters'
+  LEFT JOIN resource_attribute AS requirelowercasecharacters
+    ON requirelowercasecharacters.resource_id = R.id
+    AND requirelowercasecharacters.type = 'provider'
+    AND lower(requirelowercasecharacters.attr_name) = 'requirelowercasecharacters'
+  LEFT JOIN resource_attribute AS allowuserstochangepassword
+    ON allowuserstochangepassword.resource_id = R.id
+    AND allowuserstochangepassword.type = 'provider'
+    AND lower(allowuserstochangepassword.attr_name) = 'allowuserstochangepassword'
+  LEFT JOIN resource_attribute AS expirepasswords
+    ON expirepasswords.resource_id = R.id
+    AND expirepasswords.type = 'provider'
+    AND lower(expirepasswords.attr_name) = 'expirepasswords'
+  LEFT JOIN resource_attribute AS maxpasswordage
+    ON maxpasswordage.resource_id = R.id
+    AND maxpasswordage.type = 'provider'
+    AND lower(maxpasswordage.attr_name) = 'maxpasswordage'
+  LEFT JOIN resource_attribute AS passwordreuseprevention
+    ON passwordreuseprevention.resource_id = R.id
+    AND passwordreuseprevention.type = 'provider'
+    AND lower(passwordreuseprevention.attr_name) = 'passwordreuseprevention'
+  LEFT JOIN resource_attribute AS hardexpiry
+    ON hardexpiry.resource_id = R.id
+    AND hardexpiry.type = 'provider'
+    AND lower(hardexpiry.attr_name) = 'hardexpiry'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -79,6 +77,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'passwordpolicy'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_passwordpolicy;

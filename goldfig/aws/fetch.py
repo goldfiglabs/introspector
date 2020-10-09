@@ -249,8 +249,6 @@ class EC2ClientProxy(ClientProxy):
   SKIPLIST = [
       'describe_reserved_instances_offerings',
       'describe_spot_price_history',
-      #'describe_images',  # TODO: re-enable with filter
-      'describe_snapshots',  # TODO: re-enable with filter?
       # Describes services that *can* have VPC endpoints, not ones that do
       'describe_vpc_endpoint_services',
       # TODO: verify this, i think it's about regional support for long ids
@@ -266,6 +264,12 @@ class EC2ClientProxy(ClientProxy):
           'Filters': [{
               'Name': 'is-public',
               'Values': ['False']
+          }]
+      },
+      'describe_snapshots': {
+          'Filters': [{
+              'Name': 'owner-alias',
+              'Values': ['self']
           }]
       }
   }

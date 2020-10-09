@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_rootaccount CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_rootaccount AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -31,30 +19,38 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS Arn
-    ON Arn.id = R.id
-    AND Arn.attr_name = 'arn'
-  LEFT JOIN attrs AS has_virtual_mfa
-    ON has_virtual_mfa.id = R.id
-    AND has_virtual_mfa.attr_name = 'has_virtual_mfa'
-  LEFT JOIN attrs AS mfa_active
-    ON mfa_active.id = R.id
-    AND mfa_active.attr_name = 'mfa_active'
-  LEFT JOIN attrs AS access_key_1_active
-    ON access_key_1_active.id = R.id
-    AND access_key_1_active.attr_name = 'access_key_1_active'
-  LEFT JOIN attrs AS access_key_2_active
-    ON access_key_2_active.id = R.id
-    AND access_key_2_active.attr_name = 'access_key_2_active'
-  LEFT JOIN attrs AS cert_1_active
-    ON cert_1_active.id = R.id
-    AND cert_1_active.attr_name = 'cert_1_active'
-  LEFT JOIN attrs AS cert_2_active
-    ON cert_2_active.id = R.id
-    AND cert_2_active.attr_name = 'cert_2_active'
-  LEFT JOIN attrs AS password_last_used
-    ON password_last_used.id = R.id
-    AND password_last_used.attr_name = 'password_last_used'
+  LEFT JOIN resource_attribute AS Arn
+    ON Arn.resource_id = R.id
+    AND Arn.type = 'provider'
+    AND lower(Arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS has_virtual_mfa
+    ON has_virtual_mfa.resource_id = R.id
+    AND has_virtual_mfa.type = 'provider'
+    AND lower(has_virtual_mfa.attr_name) = 'has_virtual_mfa'
+  LEFT JOIN resource_attribute AS mfa_active
+    ON mfa_active.resource_id = R.id
+    AND mfa_active.type = 'provider'
+    AND lower(mfa_active.attr_name) = 'mfa_active'
+  LEFT JOIN resource_attribute AS access_key_1_active
+    ON access_key_1_active.resource_id = R.id
+    AND access_key_1_active.type = 'provider'
+    AND lower(access_key_1_active.attr_name) = 'access_key_1_active'
+  LEFT JOIN resource_attribute AS access_key_2_active
+    ON access_key_2_active.resource_id = R.id
+    AND access_key_2_active.type = 'provider'
+    AND lower(access_key_2_active.attr_name) = 'access_key_2_active'
+  LEFT JOIN resource_attribute AS cert_1_active
+    ON cert_1_active.resource_id = R.id
+    AND cert_1_active.type = 'provider'
+    AND lower(cert_1_active.attr_name) = 'cert_1_active'
+  LEFT JOIN resource_attribute AS cert_2_active
+    ON cert_2_active.resource_id = R.id
+    AND cert_2_active.type = 'provider'
+    AND lower(cert_2_active.attr_name) = 'cert_2_active'
+  LEFT JOIN resource_attribute AS password_last_used
+    ON password_last_used.resource_id = R.id
+    AND password_last_used.type = 'provider'
+    AND lower(password_last_used.attr_name) = 'password_last_used'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -71,6 +67,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'rootaccount'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_rootaccount;

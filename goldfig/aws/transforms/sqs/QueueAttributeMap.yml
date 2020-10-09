@@ -11,6 +11,8 @@ resources:
     - VisibilityTimeout
     - ApproximateNumberOfMessages
     - ApproximateNumberOfMessagesNotVisible
+    - ApproximateNumberOfMessagesDelayed
+    - DelaySeconds
     - CreatedTimestamp
     - LastModifiedTimestamp
     - QueueArn
@@ -18,8 +20,24 @@ resources:
     - MessageRetentionPeriod
     - url
     - Tags
+    - Policy
+    - RedrivePolicy
+    - FifoQueue
+    - ContentBasedDeduplication
+    - KmsMasterKeyId
+    - KmsDataKeyReusePeriodSecond
     custom:
       Metadata:
         Tags:
           path: Tags
   resource_name: queue
+  relations:
+  - relation: has-key
+    path: KmsMasterKeyId
+    uri:
+      service:
+        value: kms
+      resource_name:
+        value: key
+      id:
+        path: ''

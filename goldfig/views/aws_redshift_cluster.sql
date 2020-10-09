@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_redshift_cluster CASCADE;
 
 CREATE MATERIALIZED VIEW aws_redshift_cluster AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -72,147 +60,194 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS clusteridentifier
-    ON clusteridentifier.id = R.id
-    AND clusteridentifier.attr_name = 'clusteridentifier'
-  LEFT JOIN attrs AS nodetype
-    ON nodetype.id = R.id
-    AND nodetype.attr_name = 'nodetype'
-  LEFT JOIN attrs AS clusterstatus
-    ON clusterstatus.id = R.id
-    AND clusterstatus.attr_name = 'clusterstatus'
-  LEFT JOIN attrs AS clusteravailabilitystatus
-    ON clusteravailabilitystatus.id = R.id
-    AND clusteravailabilitystatus.attr_name = 'clusteravailabilitystatus'
-  LEFT JOIN attrs AS modifystatus
-    ON modifystatus.id = R.id
-    AND modifystatus.attr_name = 'modifystatus'
-  LEFT JOIN attrs AS masterusername
-    ON masterusername.id = R.id
-    AND masterusername.attr_name = 'masterusername'
-  LEFT JOIN attrs AS dbname
-    ON dbname.id = R.id
-    AND dbname.attr_name = 'dbname'
-  LEFT JOIN attrs AS endpoint
-    ON endpoint.id = R.id
-    AND endpoint.attr_name = 'endpoint'
-  LEFT JOIN attrs AS clustercreatetime
-    ON clustercreatetime.id = R.id
-    AND clustercreatetime.attr_name = 'clustercreatetime'
-  LEFT JOIN attrs AS automatedsnapshotretentionperiod
-    ON automatedsnapshotretentionperiod.id = R.id
-    AND automatedsnapshotretentionperiod.attr_name = 'automatedsnapshotretentionperiod'
-  LEFT JOIN attrs AS manualsnapshotretentionperiod
-    ON manualsnapshotretentionperiod.id = R.id
-    AND manualsnapshotretentionperiod.attr_name = 'manualsnapshotretentionperiod'
-  LEFT JOIN attrs AS clustersecuritygroups
-    ON clustersecuritygroups.id = R.id
-    AND clustersecuritygroups.attr_name = 'clustersecuritygroups'
-  LEFT JOIN attrs AS vpcsecuritygroups
-    ON vpcsecuritygroups.id = R.id
-    AND vpcsecuritygroups.attr_name = 'vpcsecuritygroups'
-  LEFT JOIN attrs AS clusterparametergroups
-    ON clusterparametergroups.id = R.id
-    AND clusterparametergroups.attr_name = 'clusterparametergroups'
-  LEFT JOIN attrs AS clustersubnetgroupname
-    ON clustersubnetgroupname.id = R.id
-    AND clustersubnetgroupname.attr_name = 'clustersubnetgroupname'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS availabilityzone
-    ON availabilityzone.id = R.id
-    AND availabilityzone.attr_name = 'availabilityzone'
-  LEFT JOIN attrs AS preferredmaintenancewindow
-    ON preferredmaintenancewindow.id = R.id
-    AND preferredmaintenancewindow.attr_name = 'preferredmaintenancewindow'
-  LEFT JOIN attrs AS pendingmodifiedvalues
-    ON pendingmodifiedvalues.id = R.id
-    AND pendingmodifiedvalues.attr_name = 'pendingmodifiedvalues'
-  LEFT JOIN attrs AS clusterversion
-    ON clusterversion.id = R.id
-    AND clusterversion.attr_name = 'clusterversion'
-  LEFT JOIN attrs AS allowversionupgrade
-    ON allowversionupgrade.id = R.id
-    AND allowversionupgrade.attr_name = 'allowversionupgrade'
-  LEFT JOIN attrs AS numberofnodes
-    ON numberofnodes.id = R.id
-    AND numberofnodes.attr_name = 'numberofnodes'
-  LEFT JOIN attrs AS publiclyaccessible
-    ON publiclyaccessible.id = R.id
-    AND publiclyaccessible.attr_name = 'publiclyaccessible'
-  LEFT JOIN attrs AS encrypted
-    ON encrypted.id = R.id
-    AND encrypted.attr_name = 'encrypted'
-  LEFT JOIN attrs AS restorestatus
-    ON restorestatus.id = R.id
-    AND restorestatus.attr_name = 'restorestatus'
-  LEFT JOIN attrs AS datatransferprogress
-    ON datatransferprogress.id = R.id
-    AND datatransferprogress.attr_name = 'datatransferprogress'
-  LEFT JOIN attrs AS hsmstatus
-    ON hsmstatus.id = R.id
-    AND hsmstatus.attr_name = 'hsmstatus'
-  LEFT JOIN attrs AS clustersnapshotcopystatus
-    ON clustersnapshotcopystatus.id = R.id
-    AND clustersnapshotcopystatus.attr_name = 'clustersnapshotcopystatus'
-  LEFT JOIN attrs AS clusterpublickey
-    ON clusterpublickey.id = R.id
-    AND clusterpublickey.attr_name = 'clusterpublickey'
-  LEFT JOIN attrs AS clusternodes
-    ON clusternodes.id = R.id
-    AND clusternodes.attr_name = 'clusternodes'
-  LEFT JOIN attrs AS elasticipstatus
-    ON elasticipstatus.id = R.id
-    AND elasticipstatus.attr_name = 'elasticipstatus'
-  LEFT JOIN attrs AS clusterrevisionnumber
-    ON clusterrevisionnumber.id = R.id
-    AND clusterrevisionnumber.attr_name = 'clusterrevisionnumber'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS kmskeyid
-    ON kmskeyid.id = R.id
-    AND kmskeyid.attr_name = 'kmskeyid'
-  LEFT JOIN attrs AS enhancedvpcrouting
-    ON enhancedvpcrouting.id = R.id
-    AND enhancedvpcrouting.attr_name = 'enhancedvpcrouting'
-  LEFT JOIN attrs AS iamroles
-    ON iamroles.id = R.id
-    AND iamroles.attr_name = 'iamroles'
-  LEFT JOIN attrs AS pendingactions
-    ON pendingactions.id = R.id
-    AND pendingactions.attr_name = 'pendingactions'
-  LEFT JOIN attrs AS maintenancetrackname
-    ON maintenancetrackname.id = R.id
-    AND maintenancetrackname.attr_name = 'maintenancetrackname'
-  LEFT JOIN attrs AS elasticresizenumberofnodeoptions
-    ON elasticresizenumberofnodeoptions.id = R.id
-    AND elasticresizenumberofnodeoptions.attr_name = 'elasticresizenumberofnodeoptions'
-  LEFT JOIN attrs AS deferredmaintenancewindows
-    ON deferredmaintenancewindows.id = R.id
-    AND deferredmaintenancewindows.attr_name = 'deferredmaintenancewindows'
-  LEFT JOIN attrs AS snapshotscheduleidentifier
-    ON snapshotscheduleidentifier.id = R.id
-    AND snapshotscheduleidentifier.attr_name = 'snapshotscheduleidentifier'
-  LEFT JOIN attrs AS snapshotschedulestate
-    ON snapshotschedulestate.id = R.id
-    AND snapshotschedulestate.attr_name = 'snapshotschedulestate'
-  LEFT JOIN attrs AS expectednextsnapshotscheduletime
-    ON expectednextsnapshotscheduletime.id = R.id
-    AND expectednextsnapshotscheduletime.attr_name = 'expectednextsnapshotscheduletime'
-  LEFT JOIN attrs AS expectednextsnapshotscheduletimestatus
-    ON expectednextsnapshotscheduletimestatus.id = R.id
-    AND expectednextsnapshotscheduletimestatus.attr_name = 'expectednextsnapshotscheduletimestatus'
-  LEFT JOIN attrs AS nextmaintenancewindowstarttime
-    ON nextmaintenancewindowstarttime.id = R.id
-    AND nextmaintenancewindowstarttime.attr_name = 'nextmaintenancewindowstarttime'
-  LEFT JOIN attrs AS resizeinfo
-    ON resizeinfo.id = R.id
-    AND resizeinfo.attr_name = 'resizeinfo'
-  LEFT JOIN attrs AS loggingstatus
-    ON loggingstatus.id = R.id
-    AND loggingstatus.attr_name = 'loggingstatus'
+  LEFT JOIN resource_attribute AS clusteridentifier
+    ON clusteridentifier.resource_id = R.id
+    AND clusteridentifier.type = 'provider'
+    AND lower(clusteridentifier.attr_name) = 'clusteridentifier'
+  LEFT JOIN resource_attribute AS nodetype
+    ON nodetype.resource_id = R.id
+    AND nodetype.type = 'provider'
+    AND lower(nodetype.attr_name) = 'nodetype'
+  LEFT JOIN resource_attribute AS clusterstatus
+    ON clusterstatus.resource_id = R.id
+    AND clusterstatus.type = 'provider'
+    AND lower(clusterstatus.attr_name) = 'clusterstatus'
+  LEFT JOIN resource_attribute AS clusteravailabilitystatus
+    ON clusteravailabilitystatus.resource_id = R.id
+    AND clusteravailabilitystatus.type = 'provider'
+    AND lower(clusteravailabilitystatus.attr_name) = 'clusteravailabilitystatus'
+  LEFT JOIN resource_attribute AS modifystatus
+    ON modifystatus.resource_id = R.id
+    AND modifystatus.type = 'provider'
+    AND lower(modifystatus.attr_name) = 'modifystatus'
+  LEFT JOIN resource_attribute AS masterusername
+    ON masterusername.resource_id = R.id
+    AND masterusername.type = 'provider'
+    AND lower(masterusername.attr_name) = 'masterusername'
+  LEFT JOIN resource_attribute AS dbname
+    ON dbname.resource_id = R.id
+    AND dbname.type = 'provider'
+    AND lower(dbname.attr_name) = 'dbname'
+  LEFT JOIN resource_attribute AS endpoint
+    ON endpoint.resource_id = R.id
+    AND endpoint.type = 'provider'
+    AND lower(endpoint.attr_name) = 'endpoint'
+  LEFT JOIN resource_attribute AS clustercreatetime
+    ON clustercreatetime.resource_id = R.id
+    AND clustercreatetime.type = 'provider'
+    AND lower(clustercreatetime.attr_name) = 'clustercreatetime'
+  LEFT JOIN resource_attribute AS automatedsnapshotretentionperiod
+    ON automatedsnapshotretentionperiod.resource_id = R.id
+    AND automatedsnapshotretentionperiod.type = 'provider'
+    AND lower(automatedsnapshotretentionperiod.attr_name) = 'automatedsnapshotretentionperiod'
+  LEFT JOIN resource_attribute AS manualsnapshotretentionperiod
+    ON manualsnapshotretentionperiod.resource_id = R.id
+    AND manualsnapshotretentionperiod.type = 'provider'
+    AND lower(manualsnapshotretentionperiod.attr_name) = 'manualsnapshotretentionperiod'
+  LEFT JOIN resource_attribute AS clustersecuritygroups
+    ON clustersecuritygroups.resource_id = R.id
+    AND clustersecuritygroups.type = 'provider'
+    AND lower(clustersecuritygroups.attr_name) = 'clustersecuritygroups'
+  LEFT JOIN resource_attribute AS vpcsecuritygroups
+    ON vpcsecuritygroups.resource_id = R.id
+    AND vpcsecuritygroups.type = 'provider'
+    AND lower(vpcsecuritygroups.attr_name) = 'vpcsecuritygroups'
+  LEFT JOIN resource_attribute AS clusterparametergroups
+    ON clusterparametergroups.resource_id = R.id
+    AND clusterparametergroups.type = 'provider'
+    AND lower(clusterparametergroups.attr_name) = 'clusterparametergroups'
+  LEFT JOIN resource_attribute AS clustersubnetgroupname
+    ON clustersubnetgroupname.resource_id = R.id
+    AND clustersubnetgroupname.type = 'provider'
+    AND lower(clustersubnetgroupname.attr_name) = 'clustersubnetgroupname'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS availabilityzone
+    ON availabilityzone.resource_id = R.id
+    AND availabilityzone.type = 'provider'
+    AND lower(availabilityzone.attr_name) = 'availabilityzone'
+  LEFT JOIN resource_attribute AS preferredmaintenancewindow
+    ON preferredmaintenancewindow.resource_id = R.id
+    AND preferredmaintenancewindow.type = 'provider'
+    AND lower(preferredmaintenancewindow.attr_name) = 'preferredmaintenancewindow'
+  LEFT JOIN resource_attribute AS pendingmodifiedvalues
+    ON pendingmodifiedvalues.resource_id = R.id
+    AND pendingmodifiedvalues.type = 'provider'
+    AND lower(pendingmodifiedvalues.attr_name) = 'pendingmodifiedvalues'
+  LEFT JOIN resource_attribute AS clusterversion
+    ON clusterversion.resource_id = R.id
+    AND clusterversion.type = 'provider'
+    AND lower(clusterversion.attr_name) = 'clusterversion'
+  LEFT JOIN resource_attribute AS allowversionupgrade
+    ON allowversionupgrade.resource_id = R.id
+    AND allowversionupgrade.type = 'provider'
+    AND lower(allowversionupgrade.attr_name) = 'allowversionupgrade'
+  LEFT JOIN resource_attribute AS numberofnodes
+    ON numberofnodes.resource_id = R.id
+    AND numberofnodes.type = 'provider'
+    AND lower(numberofnodes.attr_name) = 'numberofnodes'
+  LEFT JOIN resource_attribute AS publiclyaccessible
+    ON publiclyaccessible.resource_id = R.id
+    AND publiclyaccessible.type = 'provider'
+    AND lower(publiclyaccessible.attr_name) = 'publiclyaccessible'
+  LEFT JOIN resource_attribute AS encrypted
+    ON encrypted.resource_id = R.id
+    AND encrypted.type = 'provider'
+    AND lower(encrypted.attr_name) = 'encrypted'
+  LEFT JOIN resource_attribute AS restorestatus
+    ON restorestatus.resource_id = R.id
+    AND restorestatus.type = 'provider'
+    AND lower(restorestatus.attr_name) = 'restorestatus'
+  LEFT JOIN resource_attribute AS datatransferprogress
+    ON datatransferprogress.resource_id = R.id
+    AND datatransferprogress.type = 'provider'
+    AND lower(datatransferprogress.attr_name) = 'datatransferprogress'
+  LEFT JOIN resource_attribute AS hsmstatus
+    ON hsmstatus.resource_id = R.id
+    AND hsmstatus.type = 'provider'
+    AND lower(hsmstatus.attr_name) = 'hsmstatus'
+  LEFT JOIN resource_attribute AS clustersnapshotcopystatus
+    ON clustersnapshotcopystatus.resource_id = R.id
+    AND clustersnapshotcopystatus.type = 'provider'
+    AND lower(clustersnapshotcopystatus.attr_name) = 'clustersnapshotcopystatus'
+  LEFT JOIN resource_attribute AS clusterpublickey
+    ON clusterpublickey.resource_id = R.id
+    AND clusterpublickey.type = 'provider'
+    AND lower(clusterpublickey.attr_name) = 'clusterpublickey'
+  LEFT JOIN resource_attribute AS clusternodes
+    ON clusternodes.resource_id = R.id
+    AND clusternodes.type = 'provider'
+    AND lower(clusternodes.attr_name) = 'clusternodes'
+  LEFT JOIN resource_attribute AS elasticipstatus
+    ON elasticipstatus.resource_id = R.id
+    AND elasticipstatus.type = 'provider'
+    AND lower(elasticipstatus.attr_name) = 'elasticipstatus'
+  LEFT JOIN resource_attribute AS clusterrevisionnumber
+    ON clusterrevisionnumber.resource_id = R.id
+    AND clusterrevisionnumber.type = 'provider'
+    AND lower(clusterrevisionnumber.attr_name) = 'clusterrevisionnumber'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS kmskeyid
+    ON kmskeyid.resource_id = R.id
+    AND kmskeyid.type = 'provider'
+    AND lower(kmskeyid.attr_name) = 'kmskeyid'
+  LEFT JOIN resource_attribute AS enhancedvpcrouting
+    ON enhancedvpcrouting.resource_id = R.id
+    AND enhancedvpcrouting.type = 'provider'
+    AND lower(enhancedvpcrouting.attr_name) = 'enhancedvpcrouting'
+  LEFT JOIN resource_attribute AS iamroles
+    ON iamroles.resource_id = R.id
+    AND iamroles.type = 'provider'
+    AND lower(iamroles.attr_name) = 'iamroles'
+  LEFT JOIN resource_attribute AS pendingactions
+    ON pendingactions.resource_id = R.id
+    AND pendingactions.type = 'provider'
+    AND lower(pendingactions.attr_name) = 'pendingactions'
+  LEFT JOIN resource_attribute AS maintenancetrackname
+    ON maintenancetrackname.resource_id = R.id
+    AND maintenancetrackname.type = 'provider'
+    AND lower(maintenancetrackname.attr_name) = 'maintenancetrackname'
+  LEFT JOIN resource_attribute AS elasticresizenumberofnodeoptions
+    ON elasticresizenumberofnodeoptions.resource_id = R.id
+    AND elasticresizenumberofnodeoptions.type = 'provider'
+    AND lower(elasticresizenumberofnodeoptions.attr_name) = 'elasticresizenumberofnodeoptions'
+  LEFT JOIN resource_attribute AS deferredmaintenancewindows
+    ON deferredmaintenancewindows.resource_id = R.id
+    AND deferredmaintenancewindows.type = 'provider'
+    AND lower(deferredmaintenancewindows.attr_name) = 'deferredmaintenancewindows'
+  LEFT JOIN resource_attribute AS snapshotscheduleidentifier
+    ON snapshotscheduleidentifier.resource_id = R.id
+    AND snapshotscheduleidentifier.type = 'provider'
+    AND lower(snapshotscheduleidentifier.attr_name) = 'snapshotscheduleidentifier'
+  LEFT JOIN resource_attribute AS snapshotschedulestate
+    ON snapshotschedulestate.resource_id = R.id
+    AND snapshotschedulestate.type = 'provider'
+    AND lower(snapshotschedulestate.attr_name) = 'snapshotschedulestate'
+  LEFT JOIN resource_attribute AS expectednextsnapshotscheduletime
+    ON expectednextsnapshotscheduletime.resource_id = R.id
+    AND expectednextsnapshotscheduletime.type = 'provider'
+    AND lower(expectednextsnapshotscheduletime.attr_name) = 'expectednextsnapshotscheduletime'
+  LEFT JOIN resource_attribute AS expectednextsnapshotscheduletimestatus
+    ON expectednextsnapshotscheduletimestatus.resource_id = R.id
+    AND expectednextsnapshotscheduletimestatus.type = 'provider'
+    AND lower(expectednextsnapshotscheduletimestatus.attr_name) = 'expectednextsnapshotscheduletimestatus'
+  LEFT JOIN resource_attribute AS nextmaintenancewindowstarttime
+    ON nextmaintenancewindowstarttime.resource_id = R.id
+    AND nextmaintenancewindowstarttime.type = 'provider'
+    AND lower(nextmaintenancewindowstarttime.attr_name) = 'nextmaintenancewindowstarttime'
+  LEFT JOIN resource_attribute AS resizeinfo
+    ON resizeinfo.resource_id = R.id
+    AND resizeinfo.type = 'provider'
+    AND lower(resizeinfo.attr_name) = 'resizeinfo'
+  LEFT JOIN resource_attribute AS loggingstatus
+    ON loggingstatus.resource_id = R.id
+    AND loggingstatus.type = 'provider'
+    AND lower(loggingstatus.attr_name) = 'loggingstatus'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,

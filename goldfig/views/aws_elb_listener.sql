@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elb_listener CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elb_listener AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -30,24 +18,30 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS protocol
-    ON protocol.id = R.id
-    AND protocol.attr_name = 'protocol'
-  LEFT JOIN attrs AS loadbalancerport
-    ON loadbalancerport.id = R.id
-    AND loadbalancerport.attr_name = 'loadbalancerport'
-  LEFT JOIN attrs AS instanceprotocol
-    ON instanceprotocol.id = R.id
-    AND instanceprotocol.attr_name = 'instanceprotocol'
-  LEFT JOIN attrs AS instanceport
-    ON instanceport.id = R.id
-    AND instanceport.attr_name = 'instanceport'
-  LEFT JOIN attrs AS sslcertificateid
-    ON sslcertificateid.id = R.id
-    AND sslcertificateid.attr_name = 'sslcertificateid'
-  LEFT JOIN attrs AS policynames
-    ON policynames.id = R.id
-    AND policynames.attr_name = 'policynames'
+  LEFT JOIN resource_attribute AS protocol
+    ON protocol.resource_id = R.id
+    AND protocol.type = 'provider'
+    AND lower(protocol.attr_name) = 'protocol'
+  LEFT JOIN resource_attribute AS loadbalancerport
+    ON loadbalancerport.resource_id = R.id
+    AND loadbalancerport.type = 'provider'
+    AND lower(loadbalancerport.attr_name) = 'loadbalancerport'
+  LEFT JOIN resource_attribute AS instanceprotocol
+    ON instanceprotocol.resource_id = R.id
+    AND instanceprotocol.type = 'provider'
+    AND lower(instanceprotocol.attr_name) = 'instanceprotocol'
+  LEFT JOIN resource_attribute AS instanceport
+    ON instanceport.resource_id = R.id
+    AND instanceport.type = 'provider'
+    AND lower(instanceport.attr_name) = 'instanceport'
+  LEFT JOIN resource_attribute AS sslcertificateid
+    ON sslcertificateid.resource_id = R.id
+    AND sslcertificateid.type = 'provider'
+    AND lower(sslcertificateid.attr_name) = 'sslcertificateid'
+  LEFT JOIN resource_attribute AS policynames
+    ON policynames.resource_id = R.id
+    AND policynames.type = 'provider'
+    AND lower(policynames.attr_name) = 'policynames'
   LEFT JOIN (
     SELECT
       _aws_elb_loadbalancer_relation.resource_id AS resource_id,
@@ -77,6 +71,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'listener'
+  AND R.service = 'elb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elb_listener;

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbinstance CASCADE;
 
 CREATE MATERIALIZED VIEW aws_rds_dbinstance AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -83,183 +71,242 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS dbinstanceidentifier
-    ON dbinstanceidentifier.id = R.id
-    AND dbinstanceidentifier.attr_name = 'dbinstanceidentifier'
-  LEFT JOIN attrs AS dbinstanceclass
-    ON dbinstanceclass.id = R.id
-    AND dbinstanceclass.attr_name = 'dbinstanceclass'
-  LEFT JOIN attrs AS engine
-    ON engine.id = R.id
-    AND engine.attr_name = 'engine'
-  LEFT JOIN attrs AS dbinstancestatus
-    ON dbinstancestatus.id = R.id
-    AND dbinstancestatus.attr_name = 'dbinstancestatus'
-  LEFT JOIN attrs AS masterusername
-    ON masterusername.id = R.id
-    AND masterusername.attr_name = 'masterusername'
-  LEFT JOIN attrs AS dbname
-    ON dbname.id = R.id
-    AND dbname.attr_name = 'dbname'
-  LEFT JOIN attrs AS endpoint
-    ON endpoint.id = R.id
-    AND endpoint.attr_name = 'endpoint'
-  LEFT JOIN attrs AS allocatedstorage
-    ON allocatedstorage.id = R.id
-    AND allocatedstorage.attr_name = 'allocatedstorage'
-  LEFT JOIN attrs AS instancecreatetime
-    ON instancecreatetime.id = R.id
-    AND instancecreatetime.attr_name = 'instancecreatetime'
-  LEFT JOIN attrs AS preferredbackupwindow
-    ON preferredbackupwindow.id = R.id
-    AND preferredbackupwindow.attr_name = 'preferredbackupwindow'
-  LEFT JOIN attrs AS backupretentionperiod
-    ON backupretentionperiod.id = R.id
-    AND backupretentionperiod.attr_name = 'backupretentionperiod'
-  LEFT JOIN attrs AS dbsecuritygroups
-    ON dbsecuritygroups.id = R.id
-    AND dbsecuritygroups.attr_name = 'dbsecuritygroups'
-  LEFT JOIN attrs AS vpcsecuritygroups
-    ON vpcsecuritygroups.id = R.id
-    AND vpcsecuritygroups.attr_name = 'vpcsecuritygroups'
-  LEFT JOIN attrs AS dbparametergroups
-    ON dbparametergroups.id = R.id
-    AND dbparametergroups.attr_name = 'dbparametergroups'
-  LEFT JOIN attrs AS availabilityzone
-    ON availabilityzone.id = R.id
-    AND availabilityzone.attr_name = 'availabilityzone'
-  LEFT JOIN attrs AS dbsubnetgroup
-    ON dbsubnetgroup.id = R.id
-    AND dbsubnetgroup.attr_name = 'dbsubnetgroup'
-  LEFT JOIN attrs AS preferredmaintenancewindow
-    ON preferredmaintenancewindow.id = R.id
-    AND preferredmaintenancewindow.attr_name = 'preferredmaintenancewindow'
-  LEFT JOIN attrs AS pendingmodifiedvalues
-    ON pendingmodifiedvalues.id = R.id
-    AND pendingmodifiedvalues.attr_name = 'pendingmodifiedvalues'
-  LEFT JOIN attrs AS latestrestorabletime
-    ON latestrestorabletime.id = R.id
-    AND latestrestorabletime.attr_name = 'latestrestorabletime'
-  LEFT JOIN attrs AS multiaz
-    ON multiaz.id = R.id
-    AND multiaz.attr_name = 'multiaz'
-  LEFT JOIN attrs AS engineversion
-    ON engineversion.id = R.id
-    AND engineversion.attr_name = 'engineversion'
-  LEFT JOIN attrs AS autominorversionupgrade
-    ON autominorversionupgrade.id = R.id
-    AND autominorversionupgrade.attr_name = 'autominorversionupgrade'
-  LEFT JOIN attrs AS readreplicasourcedbinstanceidentifier
-    ON readreplicasourcedbinstanceidentifier.id = R.id
-    AND readreplicasourcedbinstanceidentifier.attr_name = 'readreplicasourcedbinstanceidentifier'
-  LEFT JOIN attrs AS readreplicadbinstanceidentifiers
-    ON readreplicadbinstanceidentifiers.id = R.id
-    AND readreplicadbinstanceidentifiers.attr_name = 'readreplicadbinstanceidentifiers'
-  LEFT JOIN attrs AS readreplicadbclusteridentifiers
-    ON readreplicadbclusteridentifiers.id = R.id
-    AND readreplicadbclusteridentifiers.attr_name = 'readreplicadbclusteridentifiers'
-  LEFT JOIN attrs AS licensemodel
-    ON licensemodel.id = R.id
-    AND licensemodel.attr_name = 'licensemodel'
-  LEFT JOIN attrs AS iops
-    ON iops.id = R.id
-    AND iops.attr_name = 'iops'
-  LEFT JOIN attrs AS optiongroupmemberships
-    ON optiongroupmemberships.id = R.id
-    AND optiongroupmemberships.attr_name = 'optiongroupmemberships'
-  LEFT JOIN attrs AS charactersetname
-    ON charactersetname.id = R.id
-    AND charactersetname.attr_name = 'charactersetname'
-  LEFT JOIN attrs AS secondaryavailabilityzone
-    ON secondaryavailabilityzone.id = R.id
-    AND secondaryavailabilityzone.attr_name = 'secondaryavailabilityzone'
-  LEFT JOIN attrs AS publiclyaccessible
-    ON publiclyaccessible.id = R.id
-    AND publiclyaccessible.attr_name = 'publiclyaccessible'
-  LEFT JOIN attrs AS statusinfos
-    ON statusinfos.id = R.id
-    AND statusinfos.attr_name = 'statusinfos'
-  LEFT JOIN attrs AS storagetype
-    ON storagetype.id = R.id
-    AND storagetype.attr_name = 'storagetype'
-  LEFT JOIN attrs AS tdecredentialarn
-    ON tdecredentialarn.id = R.id
-    AND tdecredentialarn.attr_name = 'tdecredentialarn'
-  LEFT JOIN attrs AS dbinstanceport
-    ON dbinstanceport.id = R.id
-    AND dbinstanceport.attr_name = 'dbinstanceport'
-  LEFT JOIN attrs AS dbclusteridentifier
-    ON dbclusteridentifier.id = R.id
-    AND dbclusteridentifier.attr_name = 'dbclusteridentifier'
-  LEFT JOIN attrs AS storageencrypted
-    ON storageencrypted.id = R.id
-    AND storageencrypted.attr_name = 'storageencrypted'
-  LEFT JOIN attrs AS kmskeyid
-    ON kmskeyid.id = R.id
-    AND kmskeyid.attr_name = 'kmskeyid'
-  LEFT JOIN attrs AS dbiresourceid
-    ON dbiresourceid.id = R.id
-    AND dbiresourceid.attr_name = 'dbiresourceid'
-  LEFT JOIN attrs AS cacertificateidentifier
-    ON cacertificateidentifier.id = R.id
-    AND cacertificateidentifier.attr_name = 'cacertificateidentifier'
-  LEFT JOIN attrs AS domainmemberships
-    ON domainmemberships.id = R.id
-    AND domainmemberships.attr_name = 'domainmemberships'
-  LEFT JOIN attrs AS copytagstosnapshot
-    ON copytagstosnapshot.id = R.id
-    AND copytagstosnapshot.attr_name = 'copytagstosnapshot'
-  LEFT JOIN attrs AS monitoringinterval
-    ON monitoringinterval.id = R.id
-    AND monitoringinterval.attr_name = 'monitoringinterval'
-  LEFT JOIN attrs AS enhancedmonitoringresourcearn
-    ON enhancedmonitoringresourcearn.id = R.id
-    AND enhancedmonitoringresourcearn.attr_name = 'enhancedmonitoringresourcearn'
-  LEFT JOIN attrs AS monitoringrolearn
-    ON monitoringrolearn.id = R.id
-    AND monitoringrolearn.attr_name = 'monitoringrolearn'
-  LEFT JOIN attrs AS promotiontier
-    ON promotiontier.id = R.id
-    AND promotiontier.attr_name = 'promotiontier'
-  LEFT JOIN attrs AS dbinstancearn
-    ON dbinstancearn.id = R.id
-    AND dbinstancearn.attr_name = 'dbinstancearn'
-  LEFT JOIN attrs AS timezone
-    ON timezone.id = R.id
-    AND timezone.attr_name = 'timezone'
-  LEFT JOIN attrs AS iamdatabaseauthenticationenabled
-    ON iamdatabaseauthenticationenabled.id = R.id
-    AND iamdatabaseauthenticationenabled.attr_name = 'iamdatabaseauthenticationenabled'
-  LEFT JOIN attrs AS performanceinsightsenabled
-    ON performanceinsightsenabled.id = R.id
-    AND performanceinsightsenabled.attr_name = 'performanceinsightsenabled'
-  LEFT JOIN attrs AS performanceinsightskmskeyid
-    ON performanceinsightskmskeyid.id = R.id
-    AND performanceinsightskmskeyid.attr_name = 'performanceinsightskmskeyid'
-  LEFT JOIN attrs AS performanceinsightsretentionperiod
-    ON performanceinsightsretentionperiod.id = R.id
-    AND performanceinsightsretentionperiod.attr_name = 'performanceinsightsretentionperiod'
-  LEFT JOIN attrs AS enabledcloudwatchlogsexports
-    ON enabledcloudwatchlogsexports.id = R.id
-    AND enabledcloudwatchlogsexports.attr_name = 'enabledcloudwatchlogsexports'
-  LEFT JOIN attrs AS processorfeatures
-    ON processorfeatures.id = R.id
-    AND processorfeatures.attr_name = 'processorfeatures'
-  LEFT JOIN attrs AS deletionprotection
-    ON deletionprotection.id = R.id
-    AND deletionprotection.attr_name = 'deletionprotection'
-  LEFT JOIN attrs AS associatedroles
-    ON associatedroles.id = R.id
-    AND associatedroles.attr_name = 'associatedroles'
-  LEFT JOIN attrs AS listenerendpoint
-    ON listenerendpoint.id = R.id
-    AND listenerendpoint.attr_name = 'listenerendpoint'
-  LEFT JOIN attrs AS maxallocatedstorage
-    ON maxallocatedstorage.id = R.id
-    AND maxallocatedstorage.attr_name = 'maxallocatedstorage'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS dbinstanceidentifier
+    ON dbinstanceidentifier.resource_id = R.id
+    AND dbinstanceidentifier.type = 'provider'
+    AND lower(dbinstanceidentifier.attr_name) = 'dbinstanceidentifier'
+  LEFT JOIN resource_attribute AS dbinstanceclass
+    ON dbinstanceclass.resource_id = R.id
+    AND dbinstanceclass.type = 'provider'
+    AND lower(dbinstanceclass.attr_name) = 'dbinstanceclass'
+  LEFT JOIN resource_attribute AS engine
+    ON engine.resource_id = R.id
+    AND engine.type = 'provider'
+    AND lower(engine.attr_name) = 'engine'
+  LEFT JOIN resource_attribute AS dbinstancestatus
+    ON dbinstancestatus.resource_id = R.id
+    AND dbinstancestatus.type = 'provider'
+    AND lower(dbinstancestatus.attr_name) = 'dbinstancestatus'
+  LEFT JOIN resource_attribute AS masterusername
+    ON masterusername.resource_id = R.id
+    AND masterusername.type = 'provider'
+    AND lower(masterusername.attr_name) = 'masterusername'
+  LEFT JOIN resource_attribute AS dbname
+    ON dbname.resource_id = R.id
+    AND dbname.type = 'provider'
+    AND lower(dbname.attr_name) = 'dbname'
+  LEFT JOIN resource_attribute AS endpoint
+    ON endpoint.resource_id = R.id
+    AND endpoint.type = 'provider'
+    AND lower(endpoint.attr_name) = 'endpoint'
+  LEFT JOIN resource_attribute AS allocatedstorage
+    ON allocatedstorage.resource_id = R.id
+    AND allocatedstorage.type = 'provider'
+    AND lower(allocatedstorage.attr_name) = 'allocatedstorage'
+  LEFT JOIN resource_attribute AS instancecreatetime
+    ON instancecreatetime.resource_id = R.id
+    AND instancecreatetime.type = 'provider'
+    AND lower(instancecreatetime.attr_name) = 'instancecreatetime'
+  LEFT JOIN resource_attribute AS preferredbackupwindow
+    ON preferredbackupwindow.resource_id = R.id
+    AND preferredbackupwindow.type = 'provider'
+    AND lower(preferredbackupwindow.attr_name) = 'preferredbackupwindow'
+  LEFT JOIN resource_attribute AS backupretentionperiod
+    ON backupretentionperiod.resource_id = R.id
+    AND backupretentionperiod.type = 'provider'
+    AND lower(backupretentionperiod.attr_name) = 'backupretentionperiod'
+  LEFT JOIN resource_attribute AS dbsecuritygroups
+    ON dbsecuritygroups.resource_id = R.id
+    AND dbsecuritygroups.type = 'provider'
+    AND lower(dbsecuritygroups.attr_name) = 'dbsecuritygroups'
+  LEFT JOIN resource_attribute AS vpcsecuritygroups
+    ON vpcsecuritygroups.resource_id = R.id
+    AND vpcsecuritygroups.type = 'provider'
+    AND lower(vpcsecuritygroups.attr_name) = 'vpcsecuritygroups'
+  LEFT JOIN resource_attribute AS dbparametergroups
+    ON dbparametergroups.resource_id = R.id
+    AND dbparametergroups.type = 'provider'
+    AND lower(dbparametergroups.attr_name) = 'dbparametergroups'
+  LEFT JOIN resource_attribute AS availabilityzone
+    ON availabilityzone.resource_id = R.id
+    AND availabilityzone.type = 'provider'
+    AND lower(availabilityzone.attr_name) = 'availabilityzone'
+  LEFT JOIN resource_attribute AS dbsubnetgroup
+    ON dbsubnetgroup.resource_id = R.id
+    AND dbsubnetgroup.type = 'provider'
+    AND lower(dbsubnetgroup.attr_name) = 'dbsubnetgroup'
+  LEFT JOIN resource_attribute AS preferredmaintenancewindow
+    ON preferredmaintenancewindow.resource_id = R.id
+    AND preferredmaintenancewindow.type = 'provider'
+    AND lower(preferredmaintenancewindow.attr_name) = 'preferredmaintenancewindow'
+  LEFT JOIN resource_attribute AS pendingmodifiedvalues
+    ON pendingmodifiedvalues.resource_id = R.id
+    AND pendingmodifiedvalues.type = 'provider'
+    AND lower(pendingmodifiedvalues.attr_name) = 'pendingmodifiedvalues'
+  LEFT JOIN resource_attribute AS latestrestorabletime
+    ON latestrestorabletime.resource_id = R.id
+    AND latestrestorabletime.type = 'provider'
+    AND lower(latestrestorabletime.attr_name) = 'latestrestorabletime'
+  LEFT JOIN resource_attribute AS multiaz
+    ON multiaz.resource_id = R.id
+    AND multiaz.type = 'provider'
+    AND lower(multiaz.attr_name) = 'multiaz'
+  LEFT JOIN resource_attribute AS engineversion
+    ON engineversion.resource_id = R.id
+    AND engineversion.type = 'provider'
+    AND lower(engineversion.attr_name) = 'engineversion'
+  LEFT JOIN resource_attribute AS autominorversionupgrade
+    ON autominorversionupgrade.resource_id = R.id
+    AND autominorversionupgrade.type = 'provider'
+    AND lower(autominorversionupgrade.attr_name) = 'autominorversionupgrade'
+  LEFT JOIN resource_attribute AS readreplicasourcedbinstanceidentifier
+    ON readreplicasourcedbinstanceidentifier.resource_id = R.id
+    AND readreplicasourcedbinstanceidentifier.type = 'provider'
+    AND lower(readreplicasourcedbinstanceidentifier.attr_name) = 'readreplicasourcedbinstanceidentifier'
+  LEFT JOIN resource_attribute AS readreplicadbinstanceidentifiers
+    ON readreplicadbinstanceidentifiers.resource_id = R.id
+    AND readreplicadbinstanceidentifiers.type = 'provider'
+    AND lower(readreplicadbinstanceidentifiers.attr_name) = 'readreplicadbinstanceidentifiers'
+  LEFT JOIN resource_attribute AS readreplicadbclusteridentifiers
+    ON readreplicadbclusteridentifiers.resource_id = R.id
+    AND readreplicadbclusteridentifiers.type = 'provider'
+    AND lower(readreplicadbclusteridentifiers.attr_name) = 'readreplicadbclusteridentifiers'
+  LEFT JOIN resource_attribute AS licensemodel
+    ON licensemodel.resource_id = R.id
+    AND licensemodel.type = 'provider'
+    AND lower(licensemodel.attr_name) = 'licensemodel'
+  LEFT JOIN resource_attribute AS iops
+    ON iops.resource_id = R.id
+    AND iops.type = 'provider'
+    AND lower(iops.attr_name) = 'iops'
+  LEFT JOIN resource_attribute AS optiongroupmemberships
+    ON optiongroupmemberships.resource_id = R.id
+    AND optiongroupmemberships.type = 'provider'
+    AND lower(optiongroupmemberships.attr_name) = 'optiongroupmemberships'
+  LEFT JOIN resource_attribute AS charactersetname
+    ON charactersetname.resource_id = R.id
+    AND charactersetname.type = 'provider'
+    AND lower(charactersetname.attr_name) = 'charactersetname'
+  LEFT JOIN resource_attribute AS secondaryavailabilityzone
+    ON secondaryavailabilityzone.resource_id = R.id
+    AND secondaryavailabilityzone.type = 'provider'
+    AND lower(secondaryavailabilityzone.attr_name) = 'secondaryavailabilityzone'
+  LEFT JOIN resource_attribute AS publiclyaccessible
+    ON publiclyaccessible.resource_id = R.id
+    AND publiclyaccessible.type = 'provider'
+    AND lower(publiclyaccessible.attr_name) = 'publiclyaccessible'
+  LEFT JOIN resource_attribute AS statusinfos
+    ON statusinfos.resource_id = R.id
+    AND statusinfos.type = 'provider'
+    AND lower(statusinfos.attr_name) = 'statusinfos'
+  LEFT JOIN resource_attribute AS storagetype
+    ON storagetype.resource_id = R.id
+    AND storagetype.type = 'provider'
+    AND lower(storagetype.attr_name) = 'storagetype'
+  LEFT JOIN resource_attribute AS tdecredentialarn
+    ON tdecredentialarn.resource_id = R.id
+    AND tdecredentialarn.type = 'provider'
+    AND lower(tdecredentialarn.attr_name) = 'tdecredentialarn'
+  LEFT JOIN resource_attribute AS dbinstanceport
+    ON dbinstanceport.resource_id = R.id
+    AND dbinstanceport.type = 'provider'
+    AND lower(dbinstanceport.attr_name) = 'dbinstanceport'
+  LEFT JOIN resource_attribute AS dbclusteridentifier
+    ON dbclusteridentifier.resource_id = R.id
+    AND dbclusteridentifier.type = 'provider'
+    AND lower(dbclusteridentifier.attr_name) = 'dbclusteridentifier'
+  LEFT JOIN resource_attribute AS storageencrypted
+    ON storageencrypted.resource_id = R.id
+    AND storageencrypted.type = 'provider'
+    AND lower(storageencrypted.attr_name) = 'storageencrypted'
+  LEFT JOIN resource_attribute AS kmskeyid
+    ON kmskeyid.resource_id = R.id
+    AND kmskeyid.type = 'provider'
+    AND lower(kmskeyid.attr_name) = 'kmskeyid'
+  LEFT JOIN resource_attribute AS dbiresourceid
+    ON dbiresourceid.resource_id = R.id
+    AND dbiresourceid.type = 'provider'
+    AND lower(dbiresourceid.attr_name) = 'dbiresourceid'
+  LEFT JOIN resource_attribute AS cacertificateidentifier
+    ON cacertificateidentifier.resource_id = R.id
+    AND cacertificateidentifier.type = 'provider'
+    AND lower(cacertificateidentifier.attr_name) = 'cacertificateidentifier'
+  LEFT JOIN resource_attribute AS domainmemberships
+    ON domainmemberships.resource_id = R.id
+    AND domainmemberships.type = 'provider'
+    AND lower(domainmemberships.attr_name) = 'domainmemberships'
+  LEFT JOIN resource_attribute AS copytagstosnapshot
+    ON copytagstosnapshot.resource_id = R.id
+    AND copytagstosnapshot.type = 'provider'
+    AND lower(copytagstosnapshot.attr_name) = 'copytagstosnapshot'
+  LEFT JOIN resource_attribute AS monitoringinterval
+    ON monitoringinterval.resource_id = R.id
+    AND monitoringinterval.type = 'provider'
+    AND lower(monitoringinterval.attr_name) = 'monitoringinterval'
+  LEFT JOIN resource_attribute AS enhancedmonitoringresourcearn
+    ON enhancedmonitoringresourcearn.resource_id = R.id
+    AND enhancedmonitoringresourcearn.type = 'provider'
+    AND lower(enhancedmonitoringresourcearn.attr_name) = 'enhancedmonitoringresourcearn'
+  LEFT JOIN resource_attribute AS monitoringrolearn
+    ON monitoringrolearn.resource_id = R.id
+    AND monitoringrolearn.type = 'provider'
+    AND lower(monitoringrolearn.attr_name) = 'monitoringrolearn'
+  LEFT JOIN resource_attribute AS promotiontier
+    ON promotiontier.resource_id = R.id
+    AND promotiontier.type = 'provider'
+    AND lower(promotiontier.attr_name) = 'promotiontier'
+  LEFT JOIN resource_attribute AS dbinstancearn
+    ON dbinstancearn.resource_id = R.id
+    AND dbinstancearn.type = 'provider'
+    AND lower(dbinstancearn.attr_name) = 'dbinstancearn'
+  LEFT JOIN resource_attribute AS timezone
+    ON timezone.resource_id = R.id
+    AND timezone.type = 'provider'
+    AND lower(timezone.attr_name) = 'timezone'
+  LEFT JOIN resource_attribute AS iamdatabaseauthenticationenabled
+    ON iamdatabaseauthenticationenabled.resource_id = R.id
+    AND iamdatabaseauthenticationenabled.type = 'provider'
+    AND lower(iamdatabaseauthenticationenabled.attr_name) = 'iamdatabaseauthenticationenabled'
+  LEFT JOIN resource_attribute AS performanceinsightsenabled
+    ON performanceinsightsenabled.resource_id = R.id
+    AND performanceinsightsenabled.type = 'provider'
+    AND lower(performanceinsightsenabled.attr_name) = 'performanceinsightsenabled'
+  LEFT JOIN resource_attribute AS performanceinsightskmskeyid
+    ON performanceinsightskmskeyid.resource_id = R.id
+    AND performanceinsightskmskeyid.type = 'provider'
+    AND lower(performanceinsightskmskeyid.attr_name) = 'performanceinsightskmskeyid'
+  LEFT JOIN resource_attribute AS performanceinsightsretentionperiod
+    ON performanceinsightsretentionperiod.resource_id = R.id
+    AND performanceinsightsretentionperiod.type = 'provider'
+    AND lower(performanceinsightsretentionperiod.attr_name) = 'performanceinsightsretentionperiod'
+  LEFT JOIN resource_attribute AS enabledcloudwatchlogsexports
+    ON enabledcloudwatchlogsexports.resource_id = R.id
+    AND enabledcloudwatchlogsexports.type = 'provider'
+    AND lower(enabledcloudwatchlogsexports.attr_name) = 'enabledcloudwatchlogsexports'
+  LEFT JOIN resource_attribute AS processorfeatures
+    ON processorfeatures.resource_id = R.id
+    AND processorfeatures.type = 'provider'
+    AND lower(processorfeatures.attr_name) = 'processorfeatures'
+  LEFT JOIN resource_attribute AS deletionprotection
+    ON deletionprotection.resource_id = R.id
+    AND deletionprotection.type = 'provider'
+    AND lower(deletionprotection.attr_name) = 'deletionprotection'
+  LEFT JOIN resource_attribute AS associatedroles
+    ON associatedroles.resource_id = R.id
+    AND associatedroles.type = 'provider'
+    AND lower(associatedroles.attr_name) = 'associatedroles'
+  LEFT JOIN resource_attribute AS listenerendpoint
+    ON listenerendpoint.resource_id = R.id
+    AND listenerendpoint.type = 'provider'
+    AND lower(listenerendpoint.attr_name) = 'listenerendpoint'
+  LEFT JOIN resource_attribute AS maxallocatedstorage
+    ON maxallocatedstorage.resource_id = R.id
+    AND maxallocatedstorage.type = 'provider'
+    AND lower(maxallocatedstorage.attr_name) = 'maxallocatedstorage'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_rds_dbcluster_relation.resource_id AS resource_id,
@@ -289,6 +336,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'dbinstance'
+  AND R.service = 'rds'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_rds_dbinstance;

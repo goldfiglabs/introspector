@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_listener CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elbv2_listener AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -32,30 +20,38 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS listenerarn
-    ON listenerarn.id = R.id
-    AND listenerarn.attr_name = 'listenerarn'
-  LEFT JOIN attrs AS loadbalancerarn
-    ON loadbalancerarn.id = R.id
-    AND loadbalancerarn.attr_name = 'loadbalancerarn'
-  LEFT JOIN attrs AS port
-    ON port.id = R.id
-    AND port.attr_name = 'port'
-  LEFT JOIN attrs AS protocol
-    ON protocol.id = R.id
-    AND protocol.attr_name = 'protocol'
-  LEFT JOIN attrs AS certificates
-    ON certificates.id = R.id
-    AND certificates.attr_name = 'certificates'
-  LEFT JOIN attrs AS sslpolicy
-    ON sslpolicy.id = R.id
-    AND sslpolicy.attr_name = 'sslpolicy'
-  LEFT JOIN attrs AS defaultactions
-    ON defaultactions.id = R.id
-    AND defaultactions.attr_name = 'defaultactions'
-  LEFT JOIN attrs AS alpnpolicy
-    ON alpnpolicy.id = R.id
-    AND alpnpolicy.attr_name = 'alpnpolicy'
+  LEFT JOIN resource_attribute AS listenerarn
+    ON listenerarn.resource_id = R.id
+    AND listenerarn.type = 'provider'
+    AND lower(listenerarn.attr_name) = 'listenerarn'
+  LEFT JOIN resource_attribute AS loadbalancerarn
+    ON loadbalancerarn.resource_id = R.id
+    AND loadbalancerarn.type = 'provider'
+    AND lower(loadbalancerarn.attr_name) = 'loadbalancerarn'
+  LEFT JOIN resource_attribute AS port
+    ON port.resource_id = R.id
+    AND port.type = 'provider'
+    AND lower(port.attr_name) = 'port'
+  LEFT JOIN resource_attribute AS protocol
+    ON protocol.resource_id = R.id
+    AND protocol.type = 'provider'
+    AND lower(protocol.attr_name) = 'protocol'
+  LEFT JOIN resource_attribute AS certificates
+    ON certificates.resource_id = R.id
+    AND certificates.type = 'provider'
+    AND lower(certificates.attr_name) = 'certificates'
+  LEFT JOIN resource_attribute AS sslpolicy
+    ON sslpolicy.resource_id = R.id
+    AND sslpolicy.type = 'provider'
+    AND lower(sslpolicy.attr_name) = 'sslpolicy'
+  LEFT JOIN resource_attribute AS defaultactions
+    ON defaultactions.resource_id = R.id
+    AND defaultactions.type = 'provider'
+    AND lower(defaultactions.attr_name) = 'defaultactions'
+  LEFT JOIN resource_attribute AS alpnpolicy
+    ON alpnpolicy.resource_id = R.id
+    AND alpnpolicy.type = 'provider'
+    AND lower(alpnpolicy.attr_name) = 'alpnpolicy'
   LEFT JOIN (
     SELECT
       _aws_elbv2_loadbalancer_relation.resource_id AS resource_id,

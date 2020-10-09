@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_policy CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_policy AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -39,51 +27,66 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS policyname
-    ON policyname.id = R.id
-    AND policyname.attr_name = 'policyname'
-  LEFT JOIN attrs AS policyid
-    ON policyid.id = R.id
-    AND policyid.attr_name = 'policyid'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS path
-    ON path.id = R.id
-    AND path.attr_name = 'path'
-  LEFT JOIN attrs AS defaultversionid
-    ON defaultversionid.id = R.id
-    AND defaultversionid.attr_name = 'defaultversionid'
-  LEFT JOIN attrs AS attachmentcount
-    ON attachmentcount.id = R.id
-    AND attachmentcount.attr_name = 'attachmentcount'
-  LEFT JOIN attrs AS permissionsboundaryusagecount
-    ON permissionsboundaryusagecount.id = R.id
-    AND permissionsboundaryusagecount.attr_name = 'permissionsboundaryusagecount'
-  LEFT JOIN attrs AS isattachable
-    ON isattachable.id = R.id
-    AND isattachable.attr_name = 'isattachable'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS createdate
-    ON createdate.id = R.id
-    AND createdate.attr_name = 'createdate'
-  LEFT JOIN attrs AS updatedate
-    ON updatedate.id = R.id
-    AND updatedate.attr_name = 'updatedate'
-  LEFT JOIN attrs AS policygroups
-    ON policygroups.id = R.id
-    AND policygroups.attr_name = 'policygroups'
-  LEFT JOIN attrs AS policyusers
-    ON policyusers.id = R.id
-    AND policyusers.attr_name = 'policyusers'
-  LEFT JOIN attrs AS policyroles
-    ON policyroles.id = R.id
-    AND policyroles.attr_name = 'policyroles'
-  LEFT JOIN attrs AS versions
-    ON versions.id = R.id
-    AND versions.attr_name = 'versions'
+  LEFT JOIN resource_attribute AS policyname
+    ON policyname.resource_id = R.id
+    AND policyname.type = 'provider'
+    AND lower(policyname.attr_name) = 'policyname'
+  LEFT JOIN resource_attribute AS policyid
+    ON policyid.resource_id = R.id
+    AND policyid.type = 'provider'
+    AND lower(policyid.attr_name) = 'policyid'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS path
+    ON path.resource_id = R.id
+    AND path.type = 'provider'
+    AND lower(path.attr_name) = 'path'
+  LEFT JOIN resource_attribute AS defaultversionid
+    ON defaultversionid.resource_id = R.id
+    AND defaultversionid.type = 'provider'
+    AND lower(defaultversionid.attr_name) = 'defaultversionid'
+  LEFT JOIN resource_attribute AS attachmentcount
+    ON attachmentcount.resource_id = R.id
+    AND attachmentcount.type = 'provider'
+    AND lower(attachmentcount.attr_name) = 'attachmentcount'
+  LEFT JOIN resource_attribute AS permissionsboundaryusagecount
+    ON permissionsboundaryusagecount.resource_id = R.id
+    AND permissionsboundaryusagecount.type = 'provider'
+    AND lower(permissionsboundaryusagecount.attr_name) = 'permissionsboundaryusagecount'
+  LEFT JOIN resource_attribute AS isattachable
+    ON isattachable.resource_id = R.id
+    AND isattachable.type = 'provider'
+    AND lower(isattachable.attr_name) = 'isattachable'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS createdate
+    ON createdate.resource_id = R.id
+    AND createdate.type = 'provider'
+    AND lower(createdate.attr_name) = 'createdate'
+  LEFT JOIN resource_attribute AS updatedate
+    ON updatedate.resource_id = R.id
+    AND updatedate.type = 'provider'
+    AND lower(updatedate.attr_name) = 'updatedate'
+  LEFT JOIN resource_attribute AS policygroups
+    ON policygroups.resource_id = R.id
+    AND policygroups.type = 'provider'
+    AND lower(policygroups.attr_name) = 'policygroups'
+  LEFT JOIN resource_attribute AS policyusers
+    ON policyusers.resource_id = R.id
+    AND policyusers.type = 'provider'
+    AND lower(policyusers.attr_name) = 'policyusers'
+  LEFT JOIN resource_attribute AS policyroles
+    ON policyroles.resource_id = R.id
+    AND policyroles.type = 'provider'
+    AND lower(policyroles.attr_name) = 'policyroles'
+  LEFT JOIN resource_attribute AS versions
+    ON versions.resource_id = R.id
+    AND versions.type = 'provider'
+    AND lower(versions.attr_name) = 'versions'
   LEFT JOIN (
     SELECT
       _aws_iam_policyversion_relation.resource_id AS resource_id,
@@ -113,6 +116,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'policy'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_policy;

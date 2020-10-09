@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_loadbalancer CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elbv2_loadbalancer AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -46,72 +34,94 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS loadbalancerarn
-    ON loadbalancerarn.id = R.id
-    AND loadbalancerarn.attr_name = 'loadbalancerarn'
-  LEFT JOIN attrs AS dnsname
-    ON dnsname.id = R.id
-    AND dnsname.attr_name = 'dnsname'
-  LEFT JOIN attrs AS canonicalhostedzoneid
-    ON canonicalhostedzoneid.id = R.id
-    AND canonicalhostedzoneid.attr_name = 'canonicalhostedzoneid'
-  LEFT JOIN attrs AS createdtime
-    ON createdtime.id = R.id
-    AND createdtime.attr_name = 'createdtime'
-  LEFT JOIN attrs AS loadbalancername
-    ON loadbalancername.id = R.id
-    AND loadbalancername.attr_name = 'loadbalancername'
-  LEFT JOIN attrs AS scheme
-    ON scheme.id = R.id
-    AND scheme.attr_name = 'scheme'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS state
-    ON state.id = R.id
-    AND state.attr_name = 'state'
-  LEFT JOIN attrs AS type
-    ON type.id = R.id
-    AND type.attr_name = 'type'
-  LEFT JOIN attrs AS availabilityzones
-    ON availabilityzones.id = R.id
-    AND availabilityzones.attr_name = 'availabilityzones'
-  LEFT JOIN attrs AS securitygroups
-    ON securitygroups.id = R.id
-    AND securitygroups.attr_name = 'securitygroups'
-  LEFT JOIN attrs AS ipaddresstype
-    ON ipaddresstype.id = R.id
-    AND ipaddresstype.attr_name = 'ipaddresstype'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS access_logs_s3_enabled
-    ON access_logs_s3_enabled.id = R.id
-    AND access_logs_s3_enabled.attr_name = 'access_logs_s3_enabled'
-  LEFT JOIN attrs AS access_logs_s3_bucket
-    ON access_logs_s3_bucket.id = R.id
-    AND access_logs_s3_bucket.attr_name = 'access_logs_s3_bucket'
-  LEFT JOIN attrs AS access_logs_s3_prefix
-    ON access_logs_s3_prefix.id = R.id
-    AND access_logs_s3_prefix.attr_name = 'access_logs_s3_prefix'
-  LEFT JOIN attrs AS deletion_protection_enabled
-    ON deletion_protection_enabled.id = R.id
-    AND deletion_protection_enabled.attr_name = 'deletion_protection_enabled'
-  LEFT JOIN attrs AS idle_timeout_timeout_seconds
-    ON idle_timeout_timeout_seconds.id = R.id
-    AND idle_timeout_timeout_seconds.attr_name = 'idle_timeout_timeout_seconds'
-  LEFT JOIN attrs AS routing_http_desync_mitigation_mode
-    ON routing_http_desync_mitigation_mode.id = R.id
-    AND routing_http_desync_mitigation_mode.attr_name = 'routing_http_desync_mitigation_mode'
-  LEFT JOIN attrs AS routing_http_drop_invalid_header_fields_enabled
-    ON routing_http_drop_invalid_header_fields_enabled.id = R.id
-    AND routing_http_drop_invalid_header_fields_enabled.attr_name = 'routing_http_drop_invalid_header_fields_enabled'
-  LEFT JOIN attrs AS routing_http2_enabled
-    ON routing_http2_enabled.id = R.id
-    AND routing_http2_enabled.attr_name = 'routing_http2_enabled'
-  LEFT JOIN attrs AS load_balancing_cross_zone_enabled
-    ON load_balancing_cross_zone_enabled.id = R.id
-    AND load_balancing_cross_zone_enabled.attr_name = 'load_balancing_cross_zone_enabled'
+  LEFT JOIN resource_attribute AS loadbalancerarn
+    ON loadbalancerarn.resource_id = R.id
+    AND loadbalancerarn.type = 'provider'
+    AND lower(loadbalancerarn.attr_name) = 'loadbalancerarn'
+  LEFT JOIN resource_attribute AS dnsname
+    ON dnsname.resource_id = R.id
+    AND dnsname.type = 'provider'
+    AND lower(dnsname.attr_name) = 'dnsname'
+  LEFT JOIN resource_attribute AS canonicalhostedzoneid
+    ON canonicalhostedzoneid.resource_id = R.id
+    AND canonicalhostedzoneid.type = 'provider'
+    AND lower(canonicalhostedzoneid.attr_name) = 'canonicalhostedzoneid'
+  LEFT JOIN resource_attribute AS createdtime
+    ON createdtime.resource_id = R.id
+    AND createdtime.type = 'provider'
+    AND lower(createdtime.attr_name) = 'createdtime'
+  LEFT JOIN resource_attribute AS loadbalancername
+    ON loadbalancername.resource_id = R.id
+    AND loadbalancername.type = 'provider'
+    AND lower(loadbalancername.attr_name) = 'loadbalancername'
+  LEFT JOIN resource_attribute AS scheme
+    ON scheme.resource_id = R.id
+    AND scheme.type = 'provider'
+    AND lower(scheme.attr_name) = 'scheme'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS state
+    ON state.resource_id = R.id
+    AND state.type = 'provider'
+    AND lower(state.attr_name) = 'state'
+  LEFT JOIN resource_attribute AS type
+    ON type.resource_id = R.id
+    AND type.type = 'provider'
+    AND lower(type.attr_name) = 'type'
+  LEFT JOIN resource_attribute AS availabilityzones
+    ON availabilityzones.resource_id = R.id
+    AND availabilityzones.type = 'provider'
+    AND lower(availabilityzones.attr_name) = 'availabilityzones'
+  LEFT JOIN resource_attribute AS securitygroups
+    ON securitygroups.resource_id = R.id
+    AND securitygroups.type = 'provider'
+    AND lower(securitygroups.attr_name) = 'securitygroups'
+  LEFT JOIN resource_attribute AS ipaddresstype
+    ON ipaddresstype.resource_id = R.id
+    AND ipaddresstype.type = 'provider'
+    AND lower(ipaddresstype.attr_name) = 'ipaddresstype'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS access_logs_s3_enabled
+    ON access_logs_s3_enabled.resource_id = R.id
+    AND access_logs_s3_enabled.type = 'provider'
+    AND lower(access_logs_s3_enabled.attr_name) = 'access_logs_s3_enabled'
+  LEFT JOIN resource_attribute AS access_logs_s3_bucket
+    ON access_logs_s3_bucket.resource_id = R.id
+    AND access_logs_s3_bucket.type = 'provider'
+    AND lower(access_logs_s3_bucket.attr_name) = 'access_logs_s3_bucket'
+  LEFT JOIN resource_attribute AS access_logs_s3_prefix
+    ON access_logs_s3_prefix.resource_id = R.id
+    AND access_logs_s3_prefix.type = 'provider'
+    AND lower(access_logs_s3_prefix.attr_name) = 'access_logs_s3_prefix'
+  LEFT JOIN resource_attribute AS deletion_protection_enabled
+    ON deletion_protection_enabled.resource_id = R.id
+    AND deletion_protection_enabled.type = 'provider'
+    AND lower(deletion_protection_enabled.attr_name) = 'deletion_protection_enabled'
+  LEFT JOIN resource_attribute AS idle_timeout_timeout_seconds
+    ON idle_timeout_timeout_seconds.resource_id = R.id
+    AND idle_timeout_timeout_seconds.type = 'provider'
+    AND lower(idle_timeout_timeout_seconds.attr_name) = 'idle_timeout_timeout_seconds'
+  LEFT JOIN resource_attribute AS routing_http_desync_mitigation_mode
+    ON routing_http_desync_mitigation_mode.resource_id = R.id
+    AND routing_http_desync_mitigation_mode.type = 'provider'
+    AND lower(routing_http_desync_mitigation_mode.attr_name) = 'routing_http_desync_mitigation_mode'
+  LEFT JOIN resource_attribute AS routing_http_drop_invalid_header_fields_enabled
+    ON routing_http_drop_invalid_header_fields_enabled.resource_id = R.id
+    AND routing_http_drop_invalid_header_fields_enabled.type = 'provider'
+    AND lower(routing_http_drop_invalid_header_fields_enabled.attr_name) = 'routing_http_drop_invalid_header_fields_enabled'
+  LEFT JOIN resource_attribute AS routing_http2_enabled
+    ON routing_http2_enabled.resource_id = R.id
+    AND routing_http2_enabled.type = 'provider'
+    AND lower(routing_http2_enabled.attr_name) = 'routing_http2_enabled'
+  LEFT JOIN resource_attribute AS load_balancing_cross_zone_enabled
+    ON load_balancing_cross_zone_enabled.resource_id = R.id
+    AND load_balancing_cross_zone_enabled.type = 'provider'
+    AND lower(load_balancing_cross_zone_enabled.attr_name) = 'load_balancing_cross_zone_enabled'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,

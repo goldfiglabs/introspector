@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_instance AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -73,147 +61,194 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS amilaunchindex
-    ON amilaunchindex.id = R.id
-    AND amilaunchindex.attr_name = 'amilaunchindex'
-  LEFT JOIN attrs AS imageid
-    ON imageid.id = R.id
-    AND imageid.attr_name = 'imageid'
-  LEFT JOIN attrs AS instanceid
-    ON instanceid.id = R.id
-    AND instanceid.attr_name = 'instanceid'
-  LEFT JOIN attrs AS instancetype
-    ON instancetype.id = R.id
-    AND instancetype.attr_name = 'instancetype'
-  LEFT JOIN attrs AS kernelid
-    ON kernelid.id = R.id
-    AND kernelid.attr_name = 'kernelid'
-  LEFT JOIN attrs AS keyname
-    ON keyname.id = R.id
-    AND keyname.attr_name = 'keyname'
-  LEFT JOIN attrs AS launchtime
-    ON launchtime.id = R.id
-    AND launchtime.attr_name = 'launchtime'
-  LEFT JOIN attrs AS monitoring
-    ON monitoring.id = R.id
-    AND monitoring.attr_name = 'monitoring'
-  LEFT JOIN attrs AS placement
-    ON placement.id = R.id
-    AND placement.attr_name = 'placement'
-  LEFT JOIN attrs AS platform
-    ON platform.id = R.id
-    AND platform.attr_name = 'platform'
-  LEFT JOIN attrs AS privatednsname
-    ON privatednsname.id = R.id
-    AND privatednsname.attr_name = 'privatednsname'
-  LEFT JOIN attrs AS privateipaddress
-    ON privateipaddress.id = R.id
-    AND privateipaddress.attr_name = 'privateipaddress'
-  LEFT JOIN attrs AS productcodes
-    ON productcodes.id = R.id
-    AND productcodes.attr_name = 'productcodes'
-  LEFT JOIN attrs AS publicdnsname
-    ON publicdnsname.id = R.id
-    AND publicdnsname.attr_name = 'publicdnsname'
-  LEFT JOIN attrs AS publicipaddress
-    ON publicipaddress.id = R.id
-    AND publicipaddress.attr_name = 'publicipaddress'
-  LEFT JOIN attrs AS ramdiskid
-    ON ramdiskid.id = R.id
-    AND ramdiskid.attr_name = 'ramdiskid'
-  LEFT JOIN attrs AS state
-    ON state.id = R.id
-    AND state.attr_name = 'state'
-  LEFT JOIN attrs AS statetransitionreason
-    ON statetransitionreason.id = R.id
-    AND statetransitionreason.attr_name = 'statetransitionreason'
-  LEFT JOIN attrs AS subnetid
-    ON subnetid.id = R.id
-    AND subnetid.attr_name = 'subnetid'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS architecture
-    ON architecture.id = R.id
-    AND architecture.attr_name = 'architecture'
-  LEFT JOIN attrs AS blockdevicemappings
-    ON blockdevicemappings.id = R.id
-    AND blockdevicemappings.attr_name = 'blockdevicemappings'
-  LEFT JOIN attrs AS clienttoken
-    ON clienttoken.id = R.id
-    AND clienttoken.attr_name = 'clienttoken'
-  LEFT JOIN attrs AS ebsoptimized
-    ON ebsoptimized.id = R.id
-    AND ebsoptimized.attr_name = 'ebsoptimized'
-  LEFT JOIN attrs AS enasupport
-    ON enasupport.id = R.id
-    AND enasupport.attr_name = 'enasupport'
-  LEFT JOIN attrs AS hypervisor
-    ON hypervisor.id = R.id
-    AND hypervisor.attr_name = 'hypervisor'
-  LEFT JOIN attrs AS iaminstanceprofile
-    ON iaminstanceprofile.id = R.id
-    AND iaminstanceprofile.attr_name = 'iaminstanceprofile'
-  LEFT JOIN attrs AS instancelifecycle
-    ON instancelifecycle.id = R.id
-    AND instancelifecycle.attr_name = 'instancelifecycle'
-  LEFT JOIN attrs AS elasticgpuassociations
-    ON elasticgpuassociations.id = R.id
-    AND elasticgpuassociations.attr_name = 'elasticgpuassociations'
-  LEFT JOIN attrs AS elasticinferenceacceleratorassociations
-    ON elasticinferenceacceleratorassociations.id = R.id
-    AND elasticinferenceacceleratorassociations.attr_name = 'elasticinferenceacceleratorassociations'
-  LEFT JOIN attrs AS networkinterfaces
-    ON networkinterfaces.id = R.id
-    AND networkinterfaces.attr_name = 'networkinterfaces'
-  LEFT JOIN attrs AS outpostarn
-    ON outpostarn.id = R.id
-    AND outpostarn.attr_name = 'outpostarn'
-  LEFT JOIN attrs AS rootdevicename
-    ON rootdevicename.id = R.id
-    AND rootdevicename.attr_name = 'rootdevicename'
-  LEFT JOIN attrs AS rootdevicetype
-    ON rootdevicetype.id = R.id
-    AND rootdevicetype.attr_name = 'rootdevicetype'
-  LEFT JOIN attrs AS securitygroups
-    ON securitygroups.id = R.id
-    AND securitygroups.attr_name = 'securitygroups'
-  LEFT JOIN attrs AS sourcedestcheck
-    ON sourcedestcheck.id = R.id
-    AND sourcedestcheck.attr_name = 'sourcedestcheck'
-  LEFT JOIN attrs AS spotinstancerequestid
-    ON spotinstancerequestid.id = R.id
-    AND spotinstancerequestid.attr_name = 'spotinstancerequestid'
-  LEFT JOIN attrs AS sriovnetsupport
-    ON sriovnetsupport.id = R.id
-    AND sriovnetsupport.attr_name = 'sriovnetsupport'
-  LEFT JOIN attrs AS statereason
-    ON statereason.id = R.id
-    AND statereason.attr_name = 'statereason'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS virtualizationtype
-    ON virtualizationtype.id = R.id
-    AND virtualizationtype.attr_name = 'virtualizationtype'
-  LEFT JOIN attrs AS cpuoptions
-    ON cpuoptions.id = R.id
-    AND cpuoptions.attr_name = 'cpuoptions'
-  LEFT JOIN attrs AS capacityreservationid
-    ON capacityreservationid.id = R.id
-    AND capacityreservationid.attr_name = 'capacityreservationid'
-  LEFT JOIN attrs AS capacityreservationspecification
-    ON capacityreservationspecification.id = R.id
-    AND capacityreservationspecification.attr_name = 'capacityreservationspecification'
-  LEFT JOIN attrs AS hibernationoptions
-    ON hibernationoptions.id = R.id
-    AND hibernationoptions.attr_name = 'hibernationoptions'
-  LEFT JOIN attrs AS licenses
-    ON licenses.id = R.id
-    AND licenses.attr_name = 'licenses'
-  LEFT JOIN attrs AS metadataoptions
-    ON metadataoptions.id = R.id
-    AND metadataoptions.attr_name = 'metadataoptions'
+  LEFT JOIN resource_attribute AS amilaunchindex
+    ON amilaunchindex.resource_id = R.id
+    AND amilaunchindex.type = 'provider'
+    AND lower(amilaunchindex.attr_name) = 'amilaunchindex'
+  LEFT JOIN resource_attribute AS imageid
+    ON imageid.resource_id = R.id
+    AND imageid.type = 'provider'
+    AND lower(imageid.attr_name) = 'imageid'
+  LEFT JOIN resource_attribute AS instanceid
+    ON instanceid.resource_id = R.id
+    AND instanceid.type = 'provider'
+    AND lower(instanceid.attr_name) = 'instanceid'
+  LEFT JOIN resource_attribute AS instancetype
+    ON instancetype.resource_id = R.id
+    AND instancetype.type = 'provider'
+    AND lower(instancetype.attr_name) = 'instancetype'
+  LEFT JOIN resource_attribute AS kernelid
+    ON kernelid.resource_id = R.id
+    AND kernelid.type = 'provider'
+    AND lower(kernelid.attr_name) = 'kernelid'
+  LEFT JOIN resource_attribute AS keyname
+    ON keyname.resource_id = R.id
+    AND keyname.type = 'provider'
+    AND lower(keyname.attr_name) = 'keyname'
+  LEFT JOIN resource_attribute AS launchtime
+    ON launchtime.resource_id = R.id
+    AND launchtime.type = 'provider'
+    AND lower(launchtime.attr_name) = 'launchtime'
+  LEFT JOIN resource_attribute AS monitoring
+    ON monitoring.resource_id = R.id
+    AND monitoring.type = 'provider'
+    AND lower(monitoring.attr_name) = 'monitoring'
+  LEFT JOIN resource_attribute AS placement
+    ON placement.resource_id = R.id
+    AND placement.type = 'provider'
+    AND lower(placement.attr_name) = 'placement'
+  LEFT JOIN resource_attribute AS platform
+    ON platform.resource_id = R.id
+    AND platform.type = 'provider'
+    AND lower(platform.attr_name) = 'platform'
+  LEFT JOIN resource_attribute AS privatednsname
+    ON privatednsname.resource_id = R.id
+    AND privatednsname.type = 'provider'
+    AND lower(privatednsname.attr_name) = 'privatednsname'
+  LEFT JOIN resource_attribute AS privateipaddress
+    ON privateipaddress.resource_id = R.id
+    AND privateipaddress.type = 'provider'
+    AND lower(privateipaddress.attr_name) = 'privateipaddress'
+  LEFT JOIN resource_attribute AS productcodes
+    ON productcodes.resource_id = R.id
+    AND productcodes.type = 'provider'
+    AND lower(productcodes.attr_name) = 'productcodes'
+  LEFT JOIN resource_attribute AS publicdnsname
+    ON publicdnsname.resource_id = R.id
+    AND publicdnsname.type = 'provider'
+    AND lower(publicdnsname.attr_name) = 'publicdnsname'
+  LEFT JOIN resource_attribute AS publicipaddress
+    ON publicipaddress.resource_id = R.id
+    AND publicipaddress.type = 'provider'
+    AND lower(publicipaddress.attr_name) = 'publicipaddress'
+  LEFT JOIN resource_attribute AS ramdiskid
+    ON ramdiskid.resource_id = R.id
+    AND ramdiskid.type = 'provider'
+    AND lower(ramdiskid.attr_name) = 'ramdiskid'
+  LEFT JOIN resource_attribute AS state
+    ON state.resource_id = R.id
+    AND state.type = 'provider'
+    AND lower(state.attr_name) = 'state'
+  LEFT JOIN resource_attribute AS statetransitionreason
+    ON statetransitionreason.resource_id = R.id
+    AND statetransitionreason.type = 'provider'
+    AND lower(statetransitionreason.attr_name) = 'statetransitionreason'
+  LEFT JOIN resource_attribute AS subnetid
+    ON subnetid.resource_id = R.id
+    AND subnetid.type = 'provider'
+    AND lower(subnetid.attr_name) = 'subnetid'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS architecture
+    ON architecture.resource_id = R.id
+    AND architecture.type = 'provider'
+    AND lower(architecture.attr_name) = 'architecture'
+  LEFT JOIN resource_attribute AS blockdevicemappings
+    ON blockdevicemappings.resource_id = R.id
+    AND blockdevicemappings.type = 'provider'
+    AND lower(blockdevicemappings.attr_name) = 'blockdevicemappings'
+  LEFT JOIN resource_attribute AS clienttoken
+    ON clienttoken.resource_id = R.id
+    AND clienttoken.type = 'provider'
+    AND lower(clienttoken.attr_name) = 'clienttoken'
+  LEFT JOIN resource_attribute AS ebsoptimized
+    ON ebsoptimized.resource_id = R.id
+    AND ebsoptimized.type = 'provider'
+    AND lower(ebsoptimized.attr_name) = 'ebsoptimized'
+  LEFT JOIN resource_attribute AS enasupport
+    ON enasupport.resource_id = R.id
+    AND enasupport.type = 'provider'
+    AND lower(enasupport.attr_name) = 'enasupport'
+  LEFT JOIN resource_attribute AS hypervisor
+    ON hypervisor.resource_id = R.id
+    AND hypervisor.type = 'provider'
+    AND lower(hypervisor.attr_name) = 'hypervisor'
+  LEFT JOIN resource_attribute AS iaminstanceprofile
+    ON iaminstanceprofile.resource_id = R.id
+    AND iaminstanceprofile.type = 'provider'
+    AND lower(iaminstanceprofile.attr_name) = 'iaminstanceprofile'
+  LEFT JOIN resource_attribute AS instancelifecycle
+    ON instancelifecycle.resource_id = R.id
+    AND instancelifecycle.type = 'provider'
+    AND lower(instancelifecycle.attr_name) = 'instancelifecycle'
+  LEFT JOIN resource_attribute AS elasticgpuassociations
+    ON elasticgpuassociations.resource_id = R.id
+    AND elasticgpuassociations.type = 'provider'
+    AND lower(elasticgpuassociations.attr_name) = 'elasticgpuassociations'
+  LEFT JOIN resource_attribute AS elasticinferenceacceleratorassociations
+    ON elasticinferenceacceleratorassociations.resource_id = R.id
+    AND elasticinferenceacceleratorassociations.type = 'provider'
+    AND lower(elasticinferenceacceleratorassociations.attr_name) = 'elasticinferenceacceleratorassociations'
+  LEFT JOIN resource_attribute AS networkinterfaces
+    ON networkinterfaces.resource_id = R.id
+    AND networkinterfaces.type = 'provider'
+    AND lower(networkinterfaces.attr_name) = 'networkinterfaces'
+  LEFT JOIN resource_attribute AS outpostarn
+    ON outpostarn.resource_id = R.id
+    AND outpostarn.type = 'provider'
+    AND lower(outpostarn.attr_name) = 'outpostarn'
+  LEFT JOIN resource_attribute AS rootdevicename
+    ON rootdevicename.resource_id = R.id
+    AND rootdevicename.type = 'provider'
+    AND lower(rootdevicename.attr_name) = 'rootdevicename'
+  LEFT JOIN resource_attribute AS rootdevicetype
+    ON rootdevicetype.resource_id = R.id
+    AND rootdevicetype.type = 'provider'
+    AND lower(rootdevicetype.attr_name) = 'rootdevicetype'
+  LEFT JOIN resource_attribute AS securitygroups
+    ON securitygroups.resource_id = R.id
+    AND securitygroups.type = 'provider'
+    AND lower(securitygroups.attr_name) = 'securitygroups'
+  LEFT JOIN resource_attribute AS sourcedestcheck
+    ON sourcedestcheck.resource_id = R.id
+    AND sourcedestcheck.type = 'provider'
+    AND lower(sourcedestcheck.attr_name) = 'sourcedestcheck'
+  LEFT JOIN resource_attribute AS spotinstancerequestid
+    ON spotinstancerequestid.resource_id = R.id
+    AND spotinstancerequestid.type = 'provider'
+    AND lower(spotinstancerequestid.attr_name) = 'spotinstancerequestid'
+  LEFT JOIN resource_attribute AS sriovnetsupport
+    ON sriovnetsupport.resource_id = R.id
+    AND sriovnetsupport.type = 'provider'
+    AND lower(sriovnetsupport.attr_name) = 'sriovnetsupport'
+  LEFT JOIN resource_attribute AS statereason
+    ON statereason.resource_id = R.id
+    AND statereason.type = 'provider'
+    AND lower(statereason.attr_name) = 'statereason'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS virtualizationtype
+    ON virtualizationtype.resource_id = R.id
+    AND virtualizationtype.type = 'provider'
+    AND lower(virtualizationtype.attr_name) = 'virtualizationtype'
+  LEFT JOIN resource_attribute AS cpuoptions
+    ON cpuoptions.resource_id = R.id
+    AND cpuoptions.type = 'provider'
+    AND lower(cpuoptions.attr_name) = 'cpuoptions'
+  LEFT JOIN resource_attribute AS capacityreservationid
+    ON capacityreservationid.resource_id = R.id
+    AND capacityreservationid.type = 'provider'
+    AND lower(capacityreservationid.attr_name) = 'capacityreservationid'
+  LEFT JOIN resource_attribute AS capacityreservationspecification
+    ON capacityreservationspecification.resource_id = R.id
+    AND capacityreservationspecification.type = 'provider'
+    AND lower(capacityreservationspecification.attr_name) = 'capacityreservationspecification'
+  LEFT JOIN resource_attribute AS hibernationoptions
+    ON hibernationoptions.resource_id = R.id
+    AND hibernationoptions.type = 'provider'
+    AND lower(hibernationoptions.attr_name) = 'hibernationoptions'
+  LEFT JOIN resource_attribute AS licenses
+    ON licenses.resource_id = R.id
+    AND licenses.type = 'provider'
+    AND lower(licenses.attr_name) = 'licenses'
+  LEFT JOIN resource_attribute AS metadataoptions
+    ON metadataoptions.resource_id = R.id
+    AND metadataoptions.type = 'provider'
+    AND lower(metadataoptions.attr_name) = 'metadataoptions'
   LEFT JOIN (
     SELECT
       _aws_ec2_image_relation.resource_id AS resource_id,
@@ -269,6 +304,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'instance'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_instance;

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_policyversion CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_policyversion AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -28,18 +16,22 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS document
-    ON document.id = R.id
-    AND document.attr_name = 'document'
-  LEFT JOIN attrs AS versionid
-    ON versionid.id = R.id
-    AND versionid.attr_name = 'versionid'
-  LEFT JOIN attrs AS isdefaultversion
-    ON isdefaultversion.id = R.id
-    AND isdefaultversion.attr_name = 'isdefaultversion'
-  LEFT JOIN attrs AS createdate
-    ON createdate.id = R.id
-    AND createdate.attr_name = 'createdate'
+  LEFT JOIN resource_attribute AS document
+    ON document.resource_id = R.id
+    AND document.type = 'provider'
+    AND lower(document.attr_name) = 'document'
+  LEFT JOIN resource_attribute AS versionid
+    ON versionid.resource_id = R.id
+    AND versionid.type = 'provider'
+    AND lower(versionid.attr_name) = 'versionid'
+  LEFT JOIN resource_attribute AS isdefaultversion
+    ON isdefaultversion.resource_id = R.id
+    AND isdefaultversion.type = 'provider'
+    AND lower(isdefaultversion.attr_name) = 'isdefaultversion'
+  LEFT JOIN resource_attribute AS createdate
+    ON createdate.resource_id = R.id
+    AND createdate.type = 'provider'
+    AND lower(createdate.attr_name) = 'createdate'
   LEFT JOIN (
     SELECT
       _aws_iam_policy_relation.resource_id AS resource_id,
@@ -69,6 +61,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'policyversion'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_policyversion;

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_vpc CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_vpc AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -33,36 +21,46 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS cidrblock
-    ON cidrblock.id = R.id
-    AND cidrblock.attr_name = 'cidrblock'
-  LEFT JOIN attrs AS dhcpoptionsid
-    ON dhcpoptionsid.id = R.id
-    AND dhcpoptionsid.attr_name = 'dhcpoptionsid'
-  LEFT JOIN attrs AS state
-    ON state.id = R.id
-    AND state.attr_name = 'state'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS ownerid
-    ON ownerid.id = R.id
-    AND ownerid.attr_name = 'ownerid'
-  LEFT JOIN attrs AS instancetenancy
-    ON instancetenancy.id = R.id
-    AND instancetenancy.attr_name = 'instancetenancy'
-  LEFT JOIN attrs AS ipv6cidrblockassociationset
-    ON ipv6cidrblockassociationset.id = R.id
-    AND ipv6cidrblockassociationset.attr_name = 'ipv6cidrblockassociationset'
-  LEFT JOIN attrs AS cidrblockassociationset
-    ON cidrblockassociationset.id = R.id
-    AND cidrblockassociationset.attr_name = 'cidrblockassociationset'
-  LEFT JOIN attrs AS isdefault
-    ON isdefault.id = R.id
-    AND isdefault.attr_name = 'isdefault'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS cidrblock
+    ON cidrblock.resource_id = R.id
+    AND cidrblock.type = 'provider'
+    AND lower(cidrblock.attr_name) = 'cidrblock'
+  LEFT JOIN resource_attribute AS dhcpoptionsid
+    ON dhcpoptionsid.resource_id = R.id
+    AND dhcpoptionsid.type = 'provider'
+    AND lower(dhcpoptionsid.attr_name) = 'dhcpoptionsid'
+  LEFT JOIN resource_attribute AS state
+    ON state.resource_id = R.id
+    AND state.type = 'provider'
+    AND lower(state.attr_name) = 'state'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS ownerid
+    ON ownerid.resource_id = R.id
+    AND ownerid.type = 'provider'
+    AND lower(ownerid.attr_name) = 'ownerid'
+  LEFT JOIN resource_attribute AS instancetenancy
+    ON instancetenancy.resource_id = R.id
+    AND instancetenancy.type = 'provider'
+    AND lower(instancetenancy.attr_name) = 'instancetenancy'
+  LEFT JOIN resource_attribute AS ipv6cidrblockassociationset
+    ON ipv6cidrblockassociationset.resource_id = R.id
+    AND ipv6cidrblockassociationset.type = 'provider'
+    AND lower(ipv6cidrblockassociationset.attr_name) = 'ipv6cidrblockassociationset'
+  LEFT JOIN resource_attribute AS cidrblockassociationset
+    ON cidrblockassociationset.resource_id = R.id
+    AND cidrblockassociationset.type = 'provider'
+    AND lower(cidrblockassociationset.attr_name) = 'cidrblockassociationset'
+  LEFT JOIN resource_attribute AS isdefault
+    ON isdefault.resource_id = R.id
+    AND isdefault.type = 'provider'
+    AND lower(isdefault.attr_name) = 'isdefault'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -79,6 +77,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'vpc'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_vpc;

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_config_configurationrecorder CASCADE;
 
 CREATE MATERIALIZED VIEW aws_config_configurationrecorder AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -36,42 +24,54 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS rolearn
-    ON rolearn.id = R.id
-    AND rolearn.attr_name = 'rolearn'
-  LEFT JOIN attrs AS allsupported
-    ON allsupported.id = R.id
-    AND allsupported.attr_name = 'allsupported'
-  LEFT JOIN attrs AS includeglobalresourcetypes
-    ON includeglobalresourcetypes.id = R.id
-    AND includeglobalresourcetypes.attr_name = 'includeglobalresourcetypes'
-  LEFT JOIN attrs AS resourcetypes
-    ON resourcetypes.id = R.id
-    AND resourcetypes.attr_name = 'resourcetypes'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS laststarttime
-    ON laststarttime.id = R.id
-    AND laststarttime.attr_name = 'laststarttime'
-  LEFT JOIN attrs AS laststoptime
-    ON laststoptime.id = R.id
-    AND laststoptime.attr_name = 'laststoptime'
-  LEFT JOIN attrs AS recording
-    ON recording.id = R.id
-    AND recording.attr_name = 'recording'
-  LEFT JOIN attrs AS laststatus
-    ON laststatus.id = R.id
-    AND laststatus.attr_name = 'laststatus'
-  LEFT JOIN attrs AS lasterrorcode
-    ON lasterrorcode.id = R.id
-    AND lasterrorcode.attr_name = 'lasterrorcode'
-  LEFT JOIN attrs AS lasterrormessage
-    ON lasterrormessage.id = R.id
-    AND lasterrormessage.attr_name = 'lasterrormessage'
-  LEFT JOIN attrs AS laststatuschangetime
-    ON laststatuschangetime.id = R.id
-    AND laststatuschangetime.attr_name = 'laststatuschangetime'
+  LEFT JOIN resource_attribute AS rolearn
+    ON rolearn.resource_id = R.id
+    AND rolearn.type = 'provider'
+    AND lower(rolearn.attr_name) = 'rolearn'
+  LEFT JOIN resource_attribute AS allsupported
+    ON allsupported.resource_id = R.id
+    AND allsupported.type = 'provider'
+    AND lower(allsupported.attr_name) = 'allsupported'
+  LEFT JOIN resource_attribute AS includeglobalresourcetypes
+    ON includeglobalresourcetypes.resource_id = R.id
+    AND includeglobalresourcetypes.type = 'provider'
+    AND lower(includeglobalresourcetypes.attr_name) = 'includeglobalresourcetypes'
+  LEFT JOIN resource_attribute AS resourcetypes
+    ON resourcetypes.resource_id = R.id
+    AND resourcetypes.type = 'provider'
+    AND lower(resourcetypes.attr_name) = 'resourcetypes'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS laststarttime
+    ON laststarttime.resource_id = R.id
+    AND laststarttime.type = 'provider'
+    AND lower(laststarttime.attr_name) = 'laststarttime'
+  LEFT JOIN resource_attribute AS laststoptime
+    ON laststoptime.resource_id = R.id
+    AND laststoptime.type = 'provider'
+    AND lower(laststoptime.attr_name) = 'laststoptime'
+  LEFT JOIN resource_attribute AS recording
+    ON recording.resource_id = R.id
+    AND recording.type = 'provider'
+    AND lower(recording.attr_name) = 'recording'
+  LEFT JOIN resource_attribute AS laststatus
+    ON laststatus.resource_id = R.id
+    AND laststatus.type = 'provider'
+    AND lower(laststatus.attr_name) = 'laststatus'
+  LEFT JOIN resource_attribute AS lasterrorcode
+    ON lasterrorcode.resource_id = R.id
+    AND lasterrorcode.type = 'provider'
+    AND lower(lasterrorcode.attr_name) = 'lasterrorcode'
+  LEFT JOIN resource_attribute AS lasterrormessage
+    ON lasterrormessage.resource_id = R.id
+    AND lasterrormessage.type = 'provider'
+    AND lower(lasterrormessage.attr_name) = 'lasterrormessage'
+  LEFT JOIN resource_attribute AS laststatuschangetime
+    ON laststatuschangetime.resource_id = R.id
+    AND laststatuschangetime.type = 'provider'
+    AND lower(laststatuschangetime.attr_name) = 'laststatuschangetime'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -101,6 +101,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'configurationrecorder'
+  AND R.service = 'config'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_config_configurationrecorder;

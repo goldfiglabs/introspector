@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_s3_bucket CASCADE;
 
 CREATE MATERIALIZED VIEW aws_s3_bucket AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -43,66 +31,86 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS creationdate
-    ON creationdate.id = R.id
-    AND creationdate.attr_name = 'creationdate'
-  LEFT JOIN attrs AS analyticsconfigurations
-    ON analyticsconfigurations.id = R.id
-    AND analyticsconfigurations.attr_name = 'analyticsconfigurations'
-  LEFT JOIN attrs AS inventoryconfigurations
-    ON inventoryconfigurations.id = R.id
-    AND inventoryconfigurations.attr_name = 'inventoryconfigurations'
-  LEFT JOIN attrs AS metricsconfigurations
-    ON metricsconfigurations.id = R.id
-    AND metricsconfigurations.attr_name = 'metricsconfigurations'
-  LEFT JOIN attrs AS accelerateconfiguration
-    ON accelerateconfiguration.id = R.id
-    AND accelerateconfiguration.attr_name = 'accelerateconfiguration'
-  LEFT JOIN attrs AS acl
-    ON acl.id = R.id
-    AND acl.attr_name = 'acl'
-  LEFT JOIN attrs AS cors
-    ON cors.id = R.id
-    AND cors.attr_name = 'cors'
-  LEFT JOIN attrs AS encryption
-    ON encryption.id = R.id
-    AND encryption.attr_name = 'encryption'
-  LEFT JOIN attrs AS lifecycleconfiguration
-    ON lifecycleconfiguration.id = R.id
-    AND lifecycleconfiguration.attr_name = 'lifecycleconfiguration'
-  LEFT JOIN attrs AS location
-    ON location.id = R.id
-    AND location.attr_name = 'location'
-  LEFT JOIN attrs AS logging
-    ON logging.id = R.id
-    AND logging.attr_name = 'logging'
-  LEFT JOIN attrs AS notificationconfiguration
-    ON notificationconfiguration.id = R.id
-    AND notificationconfiguration.attr_name = 'notificationconfiguration'
-  LEFT JOIN attrs AS policy
-    ON policy.id = R.id
-    AND policy.attr_name = 'policy'
-  LEFT JOIN attrs AS policystatus
-    ON policystatus.id = R.id
-    AND policystatus.attr_name = 'policystatus'
-  LEFT JOIN attrs AS replication
-    ON replication.id = R.id
-    AND replication.attr_name = 'replication'
-  LEFT JOIN attrs AS requestpayment
-    ON requestpayment.id = R.id
-    AND requestpayment.attr_name = 'requestpayment'
-  LEFT JOIN attrs AS tagging
-    ON tagging.id = R.id
-    AND tagging.attr_name = 'tagging'
-  LEFT JOIN attrs AS versioning
-    ON versioning.id = R.id
-    AND versioning.attr_name = 'versioning'
-  LEFT JOIN attrs AS website
-    ON website.id = R.id
-    AND website.attr_name = 'website'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS creationdate
+    ON creationdate.resource_id = R.id
+    AND creationdate.type = 'provider'
+    AND lower(creationdate.attr_name) = 'creationdate'
+  LEFT JOIN resource_attribute AS analyticsconfigurations
+    ON analyticsconfigurations.resource_id = R.id
+    AND analyticsconfigurations.type = 'provider'
+    AND lower(analyticsconfigurations.attr_name) = 'analyticsconfigurations'
+  LEFT JOIN resource_attribute AS inventoryconfigurations
+    ON inventoryconfigurations.resource_id = R.id
+    AND inventoryconfigurations.type = 'provider'
+    AND lower(inventoryconfigurations.attr_name) = 'inventoryconfigurations'
+  LEFT JOIN resource_attribute AS metricsconfigurations
+    ON metricsconfigurations.resource_id = R.id
+    AND metricsconfigurations.type = 'provider'
+    AND lower(metricsconfigurations.attr_name) = 'metricsconfigurations'
+  LEFT JOIN resource_attribute AS accelerateconfiguration
+    ON accelerateconfiguration.resource_id = R.id
+    AND accelerateconfiguration.type = 'provider'
+    AND lower(accelerateconfiguration.attr_name) = 'accelerateconfiguration'
+  LEFT JOIN resource_attribute AS acl
+    ON acl.resource_id = R.id
+    AND acl.type = 'provider'
+    AND lower(acl.attr_name) = 'acl'
+  LEFT JOIN resource_attribute AS cors
+    ON cors.resource_id = R.id
+    AND cors.type = 'provider'
+    AND lower(cors.attr_name) = 'cors'
+  LEFT JOIN resource_attribute AS encryption
+    ON encryption.resource_id = R.id
+    AND encryption.type = 'provider'
+    AND lower(encryption.attr_name) = 'encryption'
+  LEFT JOIN resource_attribute AS lifecycleconfiguration
+    ON lifecycleconfiguration.resource_id = R.id
+    AND lifecycleconfiguration.type = 'provider'
+    AND lower(lifecycleconfiguration.attr_name) = 'lifecycleconfiguration'
+  LEFT JOIN resource_attribute AS location
+    ON location.resource_id = R.id
+    AND location.type = 'provider'
+    AND lower(location.attr_name) = 'location'
+  LEFT JOIN resource_attribute AS logging
+    ON logging.resource_id = R.id
+    AND logging.type = 'provider'
+    AND lower(logging.attr_name) = 'logging'
+  LEFT JOIN resource_attribute AS notificationconfiguration
+    ON notificationconfiguration.resource_id = R.id
+    AND notificationconfiguration.type = 'provider'
+    AND lower(notificationconfiguration.attr_name) = 'notificationconfiguration'
+  LEFT JOIN resource_attribute AS policy
+    ON policy.resource_id = R.id
+    AND policy.type = 'provider'
+    AND lower(policy.attr_name) = 'policy'
+  LEFT JOIN resource_attribute AS policystatus
+    ON policystatus.resource_id = R.id
+    AND policystatus.type = 'provider'
+    AND lower(policystatus.attr_name) = 'policystatus'
+  LEFT JOIN resource_attribute AS replication
+    ON replication.resource_id = R.id
+    AND replication.type = 'provider'
+    AND lower(replication.attr_name) = 'replication'
+  LEFT JOIN resource_attribute AS requestpayment
+    ON requestpayment.resource_id = R.id
+    AND requestpayment.type = 'provider'
+    AND lower(requestpayment.attr_name) = 'requestpayment'
+  LEFT JOIN resource_attribute AS tagging
+    ON tagging.resource_id = R.id
+    AND tagging.type = 'provider'
+    AND lower(tagging.attr_name) = 'tagging'
+  LEFT JOIN resource_attribute AS versioning
+    ON versioning.resource_id = R.id
+    AND versioning.type = 'provider'
+    AND lower(versioning.attr_name) = 'versioning'
+  LEFT JOIN resource_attribute AS website
+    ON website.resource_id = R.id
+    AND website.type = 'provider'
+    AND lower(website.attr_name) = 'website'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -119,6 +127,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'bucket'
+  AND R.service = 's3'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_s3_bucket;

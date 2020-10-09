@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_apigatewayv2_api CASCADE;
 
 CREATE MATERIALIZED VIEW aws_apigatewayv2_api AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -38,51 +26,66 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS apiendpoint
-    ON apiendpoint.id = R.id
-    AND apiendpoint.attr_name = 'apiendpoint'
-  LEFT JOIN attrs AS apiid
-    ON apiid.id = R.id
-    AND apiid.attr_name = 'apiid'
-  LEFT JOIN attrs AS apikeyselectionexpression
-    ON apikeyselectionexpression.id = R.id
-    AND apikeyselectionexpression.attr_name = 'apikeyselectionexpression'
-  LEFT JOIN attrs AS corsconfiguration
-    ON corsconfiguration.id = R.id
-    AND corsconfiguration.attr_name = 'corsconfiguration'
-  LEFT JOIN attrs AS createddate
-    ON createddate.id = R.id
-    AND createddate.attr_name = 'createddate'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS disableschemavalidation
-    ON disableschemavalidation.id = R.id
-    AND disableschemavalidation.attr_name = 'disableschemavalidation'
-  LEFT JOIN attrs AS importinfo
-    ON importinfo.id = R.id
-    AND importinfo.attr_name = 'importinfo'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS protocoltype
-    ON protocoltype.id = R.id
-    AND protocoltype.attr_name = 'protocoltype'
-  LEFT JOIN attrs AS routeselectionexpression
-    ON routeselectionexpression.id = R.id
-    AND routeselectionexpression.attr_name = 'routeselectionexpression'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS version
-    ON version.id = R.id
-    AND version.attr_name = 'version'
-  LEFT JOIN attrs AS warnings
-    ON warnings.id = R.id
-    AND warnings.attr_name = 'warnings'
-  LEFT JOIN attrs AS stages
-    ON stages.id = R.id
-    AND stages.attr_name = 'stages'
+  LEFT JOIN resource_attribute AS apiendpoint
+    ON apiendpoint.resource_id = R.id
+    AND apiendpoint.type = 'provider'
+    AND lower(apiendpoint.attr_name) = 'apiendpoint'
+  LEFT JOIN resource_attribute AS apiid
+    ON apiid.resource_id = R.id
+    AND apiid.type = 'provider'
+    AND lower(apiid.attr_name) = 'apiid'
+  LEFT JOIN resource_attribute AS apikeyselectionexpression
+    ON apikeyselectionexpression.resource_id = R.id
+    AND apikeyselectionexpression.type = 'provider'
+    AND lower(apikeyselectionexpression.attr_name) = 'apikeyselectionexpression'
+  LEFT JOIN resource_attribute AS corsconfiguration
+    ON corsconfiguration.resource_id = R.id
+    AND corsconfiguration.type = 'provider'
+    AND lower(corsconfiguration.attr_name) = 'corsconfiguration'
+  LEFT JOIN resource_attribute AS createddate
+    ON createddate.resource_id = R.id
+    AND createddate.type = 'provider'
+    AND lower(createddate.attr_name) = 'createddate'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS disableschemavalidation
+    ON disableschemavalidation.resource_id = R.id
+    AND disableschemavalidation.type = 'provider'
+    AND lower(disableschemavalidation.attr_name) = 'disableschemavalidation'
+  LEFT JOIN resource_attribute AS importinfo
+    ON importinfo.resource_id = R.id
+    AND importinfo.type = 'provider'
+    AND lower(importinfo.attr_name) = 'importinfo'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS protocoltype
+    ON protocoltype.resource_id = R.id
+    AND protocoltype.type = 'provider'
+    AND lower(protocoltype.attr_name) = 'protocoltype'
+  LEFT JOIN resource_attribute AS routeselectionexpression
+    ON routeselectionexpression.resource_id = R.id
+    AND routeselectionexpression.type = 'provider'
+    AND lower(routeselectionexpression.attr_name) = 'routeselectionexpression'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS version
+    ON version.resource_id = R.id
+    AND version.type = 'provider'
+    AND lower(version.attr_name) = 'version'
+  LEFT JOIN resource_attribute AS warnings
+    ON warnings.resource_id = R.id
+    AND warnings.type = 'provider'
+    AND lower(warnings.attr_name) = 'warnings'
+  LEFT JOIN resource_attribute AS stages
+    ON stages.resource_id = R.id
+    AND stages.type = 'provider'
+    AND lower(stages.attr_name) = 'stages'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -99,6 +102,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'api'
+  AND R.service = 'apigatewayv2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_apigatewayv2_api;

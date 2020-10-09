@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_securitygroup CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_securitygroup AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -32,30 +20,38 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS groupname
-    ON groupname.id = R.id
-    AND groupname.attr_name = 'groupname'
-  LEFT JOIN attrs AS ippermissions
-    ON ippermissions.id = R.id
-    AND ippermissions.attr_name = 'ippermissions'
-  LEFT JOIN attrs AS ownerid
-    ON ownerid.id = R.id
-    AND ownerid.attr_name = 'ownerid'
-  LEFT JOIN attrs AS groupid
-    ON groupid.id = R.id
-    AND groupid.attr_name = 'groupid'
-  LEFT JOIN attrs AS ippermissionsegress
-    ON ippermissionsegress.id = R.id
-    AND ippermissionsegress.attr_name = 'ippermissionsegress'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS groupname
+    ON groupname.resource_id = R.id
+    AND groupname.type = 'provider'
+    AND lower(groupname.attr_name) = 'groupname'
+  LEFT JOIN resource_attribute AS ippermissions
+    ON ippermissions.resource_id = R.id
+    AND ippermissions.type = 'provider'
+    AND lower(ippermissions.attr_name) = 'ippermissions'
+  LEFT JOIN resource_attribute AS ownerid
+    ON ownerid.resource_id = R.id
+    AND ownerid.type = 'provider'
+    AND lower(ownerid.attr_name) = 'ownerid'
+  LEFT JOIN resource_attribute AS groupid
+    ON groupid.resource_id = R.id
+    AND groupid.type = 'provider'
+    AND lower(groupid.attr_name) = 'groupid'
+  LEFT JOIN resource_attribute AS ippermissionsegress
+    ON ippermissionsegress.resource_id = R.id
+    AND ippermissionsegress.type = 'provider'
+    AND lower(ippermissionsegress.attr_name) = 'ippermissionsegress'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -85,6 +81,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'securitygroup'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_securitygroup;

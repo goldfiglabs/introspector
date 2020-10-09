@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbcluster CASCADE;
 
 CREATE MATERIALIZED VIEW aws_rds_dbcluster AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -78,171 +66,226 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS allocatedstorage
-    ON allocatedstorage.id = R.id
-    AND allocatedstorage.attr_name = 'allocatedstorage'
-  LEFT JOIN attrs AS availabilityzones
-    ON availabilityzones.id = R.id
-    AND availabilityzones.attr_name = 'availabilityzones'
-  LEFT JOIN attrs AS backupretentionperiod
-    ON backupretentionperiod.id = R.id
-    AND backupretentionperiod.attr_name = 'backupretentionperiod'
-  LEFT JOIN attrs AS charactersetname
-    ON charactersetname.id = R.id
-    AND charactersetname.attr_name = 'charactersetname'
-  LEFT JOIN attrs AS databasename
-    ON databasename.id = R.id
-    AND databasename.attr_name = 'databasename'
-  LEFT JOIN attrs AS dbclusteridentifier
-    ON dbclusteridentifier.id = R.id
-    AND dbclusteridentifier.attr_name = 'dbclusteridentifier'
-  LEFT JOIN attrs AS dbclusterparametergroup
-    ON dbclusterparametergroup.id = R.id
-    AND dbclusterparametergroup.attr_name = 'dbclusterparametergroup'
-  LEFT JOIN attrs AS dbsubnetgroup
-    ON dbsubnetgroup.id = R.id
-    AND dbsubnetgroup.attr_name = 'dbsubnetgroup'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS percentprogress
-    ON percentprogress.id = R.id
-    AND percentprogress.attr_name = 'percentprogress'
-  LEFT JOIN attrs AS earliestrestorabletime
-    ON earliestrestorabletime.id = R.id
-    AND earliestrestorabletime.attr_name = 'earliestrestorabletime'
-  LEFT JOIN attrs AS endpoint
-    ON endpoint.id = R.id
-    AND endpoint.attr_name = 'endpoint'
-  LEFT JOIN attrs AS readerendpoint
-    ON readerendpoint.id = R.id
-    AND readerendpoint.attr_name = 'readerendpoint'
-  LEFT JOIN attrs AS customendpoints
-    ON customendpoints.id = R.id
-    AND customendpoints.attr_name = 'customendpoints'
-  LEFT JOIN attrs AS multiaz
-    ON multiaz.id = R.id
-    AND multiaz.attr_name = 'multiaz'
-  LEFT JOIN attrs AS engine
-    ON engine.id = R.id
-    AND engine.attr_name = 'engine'
-  LEFT JOIN attrs AS engineversion
-    ON engineversion.id = R.id
-    AND engineversion.attr_name = 'engineversion'
-  LEFT JOIN attrs AS latestrestorabletime
-    ON latestrestorabletime.id = R.id
-    AND latestrestorabletime.attr_name = 'latestrestorabletime'
-  LEFT JOIN attrs AS port
-    ON port.id = R.id
-    AND port.attr_name = 'port'
-  LEFT JOIN attrs AS masterusername
-    ON masterusername.id = R.id
-    AND masterusername.attr_name = 'masterusername'
-  LEFT JOIN attrs AS dbclusteroptiongroupmemberships
-    ON dbclusteroptiongroupmemberships.id = R.id
-    AND dbclusteroptiongroupmemberships.attr_name = 'dbclusteroptiongroupmemberships'
-  LEFT JOIN attrs AS preferredbackupwindow
-    ON preferredbackupwindow.id = R.id
-    AND preferredbackupwindow.attr_name = 'preferredbackupwindow'
-  LEFT JOIN attrs AS preferredmaintenancewindow
-    ON preferredmaintenancewindow.id = R.id
-    AND preferredmaintenancewindow.attr_name = 'preferredmaintenancewindow'
-  LEFT JOIN attrs AS replicationsourceidentifier
-    ON replicationsourceidentifier.id = R.id
-    AND replicationsourceidentifier.attr_name = 'replicationsourceidentifier'
-  LEFT JOIN attrs AS readreplicaidentifiers
-    ON readreplicaidentifiers.id = R.id
-    AND readreplicaidentifiers.attr_name = 'readreplicaidentifiers'
-  LEFT JOIN attrs AS dbclustermembers
-    ON dbclustermembers.id = R.id
-    AND dbclustermembers.attr_name = 'dbclustermembers'
-  LEFT JOIN attrs AS vpcsecuritygroups
-    ON vpcsecuritygroups.id = R.id
-    AND vpcsecuritygroups.attr_name = 'vpcsecuritygroups'
-  LEFT JOIN attrs AS hostedzoneid
-    ON hostedzoneid.id = R.id
-    AND hostedzoneid.attr_name = 'hostedzoneid'
-  LEFT JOIN attrs AS storageencrypted
-    ON storageencrypted.id = R.id
-    AND storageencrypted.attr_name = 'storageencrypted'
-  LEFT JOIN attrs AS kmskeyid
-    ON kmskeyid.id = R.id
-    AND kmskeyid.attr_name = 'kmskeyid'
-  LEFT JOIN attrs AS dbclusterresourceid
-    ON dbclusterresourceid.id = R.id
-    AND dbclusterresourceid.attr_name = 'dbclusterresourceid'
-  LEFT JOIN attrs AS dbclusterarn
-    ON dbclusterarn.id = R.id
-    AND dbclusterarn.attr_name = 'dbclusterarn'
-  LEFT JOIN attrs AS associatedroles
-    ON associatedroles.id = R.id
-    AND associatedroles.attr_name = 'associatedroles'
-  LEFT JOIN attrs AS iamdatabaseauthenticationenabled
-    ON iamdatabaseauthenticationenabled.id = R.id
-    AND iamdatabaseauthenticationenabled.attr_name = 'iamdatabaseauthenticationenabled'
-  LEFT JOIN attrs AS clonegroupid
-    ON clonegroupid.id = R.id
-    AND clonegroupid.attr_name = 'clonegroupid'
-  LEFT JOIN attrs AS clustercreatetime
-    ON clustercreatetime.id = R.id
-    AND clustercreatetime.attr_name = 'clustercreatetime'
-  LEFT JOIN attrs AS earliestbacktracktime
-    ON earliestbacktracktime.id = R.id
-    AND earliestbacktracktime.attr_name = 'earliestbacktracktime'
-  LEFT JOIN attrs AS backtrackwindow
-    ON backtrackwindow.id = R.id
-    AND backtrackwindow.attr_name = 'backtrackwindow'
-  LEFT JOIN attrs AS backtrackconsumedchangerecords
-    ON backtrackconsumedchangerecords.id = R.id
-    AND backtrackconsumedchangerecords.attr_name = 'backtrackconsumedchangerecords'
-  LEFT JOIN attrs AS enabledcloudwatchlogsexports
-    ON enabledcloudwatchlogsexports.id = R.id
-    AND enabledcloudwatchlogsexports.attr_name = 'enabledcloudwatchlogsexports'
-  LEFT JOIN attrs AS capacity
-    ON capacity.id = R.id
-    AND capacity.attr_name = 'capacity'
-  LEFT JOIN attrs AS enginemode
-    ON enginemode.id = R.id
-    AND enginemode.attr_name = 'enginemode'
-  LEFT JOIN attrs AS scalingconfigurationinfo
-    ON scalingconfigurationinfo.id = R.id
-    AND scalingconfigurationinfo.attr_name = 'scalingconfigurationinfo'
-  LEFT JOIN attrs AS deletionprotection
-    ON deletionprotection.id = R.id
-    AND deletionprotection.attr_name = 'deletionprotection'
-  LEFT JOIN attrs AS httpendpointenabled
-    ON httpendpointenabled.id = R.id
-    AND httpendpointenabled.attr_name = 'httpendpointenabled'
-  LEFT JOIN attrs AS activitystreammode
-    ON activitystreammode.id = R.id
-    AND activitystreammode.attr_name = 'activitystreammode'
-  LEFT JOIN attrs AS activitystreamstatus
-    ON activitystreamstatus.id = R.id
-    AND activitystreamstatus.attr_name = 'activitystreamstatus'
-  LEFT JOIN attrs AS activitystreamkmskeyid
-    ON activitystreamkmskeyid.id = R.id
-    AND activitystreamkmskeyid.attr_name = 'activitystreamkmskeyid'
-  LEFT JOIN attrs AS activitystreamkinesisstreamname
-    ON activitystreamkinesisstreamname.id = R.id
-    AND activitystreamkinesisstreamname.attr_name = 'activitystreamkinesisstreamname'
-  LEFT JOIN attrs AS copytagstosnapshot
-    ON copytagstosnapshot.id = R.id
-    AND copytagstosnapshot.attr_name = 'copytagstosnapshot'
-  LEFT JOIN attrs AS crossaccountclone
-    ON crossaccountclone.id = R.id
-    AND crossaccountclone.attr_name = 'crossaccountclone'
-  LEFT JOIN attrs AS domainmemberships
-    ON domainmemberships.id = R.id
-    AND domainmemberships.attr_name = 'domainmemberships'
-  LEFT JOIN attrs AS globalwriteforwardingstatus
-    ON globalwriteforwardingstatus.id = R.id
-    AND globalwriteforwardingstatus.attr_name = 'globalwriteforwardingstatus'
-  LEFT JOIN attrs AS globalwriteforwardingrequested
-    ON globalwriteforwardingrequested.id = R.id
-    AND globalwriteforwardingrequested.attr_name = 'globalwriteforwardingrequested'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS allocatedstorage
+    ON allocatedstorage.resource_id = R.id
+    AND allocatedstorage.type = 'provider'
+    AND lower(allocatedstorage.attr_name) = 'allocatedstorage'
+  LEFT JOIN resource_attribute AS availabilityzones
+    ON availabilityzones.resource_id = R.id
+    AND availabilityzones.type = 'provider'
+    AND lower(availabilityzones.attr_name) = 'availabilityzones'
+  LEFT JOIN resource_attribute AS backupretentionperiod
+    ON backupretentionperiod.resource_id = R.id
+    AND backupretentionperiod.type = 'provider'
+    AND lower(backupretentionperiod.attr_name) = 'backupretentionperiod'
+  LEFT JOIN resource_attribute AS charactersetname
+    ON charactersetname.resource_id = R.id
+    AND charactersetname.type = 'provider'
+    AND lower(charactersetname.attr_name) = 'charactersetname'
+  LEFT JOIN resource_attribute AS databasename
+    ON databasename.resource_id = R.id
+    AND databasename.type = 'provider'
+    AND lower(databasename.attr_name) = 'databasename'
+  LEFT JOIN resource_attribute AS dbclusteridentifier
+    ON dbclusteridentifier.resource_id = R.id
+    AND dbclusteridentifier.type = 'provider'
+    AND lower(dbclusteridentifier.attr_name) = 'dbclusteridentifier'
+  LEFT JOIN resource_attribute AS dbclusterparametergroup
+    ON dbclusterparametergroup.resource_id = R.id
+    AND dbclusterparametergroup.type = 'provider'
+    AND lower(dbclusterparametergroup.attr_name) = 'dbclusterparametergroup'
+  LEFT JOIN resource_attribute AS dbsubnetgroup
+    ON dbsubnetgroup.resource_id = R.id
+    AND dbsubnetgroup.type = 'provider'
+    AND lower(dbsubnetgroup.attr_name) = 'dbsubnetgroup'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS percentprogress
+    ON percentprogress.resource_id = R.id
+    AND percentprogress.type = 'provider'
+    AND lower(percentprogress.attr_name) = 'percentprogress'
+  LEFT JOIN resource_attribute AS earliestrestorabletime
+    ON earliestrestorabletime.resource_id = R.id
+    AND earliestrestorabletime.type = 'provider'
+    AND lower(earliestrestorabletime.attr_name) = 'earliestrestorabletime'
+  LEFT JOIN resource_attribute AS endpoint
+    ON endpoint.resource_id = R.id
+    AND endpoint.type = 'provider'
+    AND lower(endpoint.attr_name) = 'endpoint'
+  LEFT JOIN resource_attribute AS readerendpoint
+    ON readerendpoint.resource_id = R.id
+    AND readerendpoint.type = 'provider'
+    AND lower(readerendpoint.attr_name) = 'readerendpoint'
+  LEFT JOIN resource_attribute AS customendpoints
+    ON customendpoints.resource_id = R.id
+    AND customendpoints.type = 'provider'
+    AND lower(customendpoints.attr_name) = 'customendpoints'
+  LEFT JOIN resource_attribute AS multiaz
+    ON multiaz.resource_id = R.id
+    AND multiaz.type = 'provider'
+    AND lower(multiaz.attr_name) = 'multiaz'
+  LEFT JOIN resource_attribute AS engine
+    ON engine.resource_id = R.id
+    AND engine.type = 'provider'
+    AND lower(engine.attr_name) = 'engine'
+  LEFT JOIN resource_attribute AS engineversion
+    ON engineversion.resource_id = R.id
+    AND engineversion.type = 'provider'
+    AND lower(engineversion.attr_name) = 'engineversion'
+  LEFT JOIN resource_attribute AS latestrestorabletime
+    ON latestrestorabletime.resource_id = R.id
+    AND latestrestorabletime.type = 'provider'
+    AND lower(latestrestorabletime.attr_name) = 'latestrestorabletime'
+  LEFT JOIN resource_attribute AS port
+    ON port.resource_id = R.id
+    AND port.type = 'provider'
+    AND lower(port.attr_name) = 'port'
+  LEFT JOIN resource_attribute AS masterusername
+    ON masterusername.resource_id = R.id
+    AND masterusername.type = 'provider'
+    AND lower(masterusername.attr_name) = 'masterusername'
+  LEFT JOIN resource_attribute AS dbclusteroptiongroupmemberships
+    ON dbclusteroptiongroupmemberships.resource_id = R.id
+    AND dbclusteroptiongroupmemberships.type = 'provider'
+    AND lower(dbclusteroptiongroupmemberships.attr_name) = 'dbclusteroptiongroupmemberships'
+  LEFT JOIN resource_attribute AS preferredbackupwindow
+    ON preferredbackupwindow.resource_id = R.id
+    AND preferredbackupwindow.type = 'provider'
+    AND lower(preferredbackupwindow.attr_name) = 'preferredbackupwindow'
+  LEFT JOIN resource_attribute AS preferredmaintenancewindow
+    ON preferredmaintenancewindow.resource_id = R.id
+    AND preferredmaintenancewindow.type = 'provider'
+    AND lower(preferredmaintenancewindow.attr_name) = 'preferredmaintenancewindow'
+  LEFT JOIN resource_attribute AS replicationsourceidentifier
+    ON replicationsourceidentifier.resource_id = R.id
+    AND replicationsourceidentifier.type = 'provider'
+    AND lower(replicationsourceidentifier.attr_name) = 'replicationsourceidentifier'
+  LEFT JOIN resource_attribute AS readreplicaidentifiers
+    ON readreplicaidentifiers.resource_id = R.id
+    AND readreplicaidentifiers.type = 'provider'
+    AND lower(readreplicaidentifiers.attr_name) = 'readreplicaidentifiers'
+  LEFT JOIN resource_attribute AS dbclustermembers
+    ON dbclustermembers.resource_id = R.id
+    AND dbclustermembers.type = 'provider'
+    AND lower(dbclustermembers.attr_name) = 'dbclustermembers'
+  LEFT JOIN resource_attribute AS vpcsecuritygroups
+    ON vpcsecuritygroups.resource_id = R.id
+    AND vpcsecuritygroups.type = 'provider'
+    AND lower(vpcsecuritygroups.attr_name) = 'vpcsecuritygroups'
+  LEFT JOIN resource_attribute AS hostedzoneid
+    ON hostedzoneid.resource_id = R.id
+    AND hostedzoneid.type = 'provider'
+    AND lower(hostedzoneid.attr_name) = 'hostedzoneid'
+  LEFT JOIN resource_attribute AS storageencrypted
+    ON storageencrypted.resource_id = R.id
+    AND storageencrypted.type = 'provider'
+    AND lower(storageencrypted.attr_name) = 'storageencrypted'
+  LEFT JOIN resource_attribute AS kmskeyid
+    ON kmskeyid.resource_id = R.id
+    AND kmskeyid.type = 'provider'
+    AND lower(kmskeyid.attr_name) = 'kmskeyid'
+  LEFT JOIN resource_attribute AS dbclusterresourceid
+    ON dbclusterresourceid.resource_id = R.id
+    AND dbclusterresourceid.type = 'provider'
+    AND lower(dbclusterresourceid.attr_name) = 'dbclusterresourceid'
+  LEFT JOIN resource_attribute AS dbclusterarn
+    ON dbclusterarn.resource_id = R.id
+    AND dbclusterarn.type = 'provider'
+    AND lower(dbclusterarn.attr_name) = 'dbclusterarn'
+  LEFT JOIN resource_attribute AS associatedroles
+    ON associatedroles.resource_id = R.id
+    AND associatedroles.type = 'provider'
+    AND lower(associatedroles.attr_name) = 'associatedroles'
+  LEFT JOIN resource_attribute AS iamdatabaseauthenticationenabled
+    ON iamdatabaseauthenticationenabled.resource_id = R.id
+    AND iamdatabaseauthenticationenabled.type = 'provider'
+    AND lower(iamdatabaseauthenticationenabled.attr_name) = 'iamdatabaseauthenticationenabled'
+  LEFT JOIN resource_attribute AS clonegroupid
+    ON clonegroupid.resource_id = R.id
+    AND clonegroupid.type = 'provider'
+    AND lower(clonegroupid.attr_name) = 'clonegroupid'
+  LEFT JOIN resource_attribute AS clustercreatetime
+    ON clustercreatetime.resource_id = R.id
+    AND clustercreatetime.type = 'provider'
+    AND lower(clustercreatetime.attr_name) = 'clustercreatetime'
+  LEFT JOIN resource_attribute AS earliestbacktracktime
+    ON earliestbacktracktime.resource_id = R.id
+    AND earliestbacktracktime.type = 'provider'
+    AND lower(earliestbacktracktime.attr_name) = 'earliestbacktracktime'
+  LEFT JOIN resource_attribute AS backtrackwindow
+    ON backtrackwindow.resource_id = R.id
+    AND backtrackwindow.type = 'provider'
+    AND lower(backtrackwindow.attr_name) = 'backtrackwindow'
+  LEFT JOIN resource_attribute AS backtrackconsumedchangerecords
+    ON backtrackconsumedchangerecords.resource_id = R.id
+    AND backtrackconsumedchangerecords.type = 'provider'
+    AND lower(backtrackconsumedchangerecords.attr_name) = 'backtrackconsumedchangerecords'
+  LEFT JOIN resource_attribute AS enabledcloudwatchlogsexports
+    ON enabledcloudwatchlogsexports.resource_id = R.id
+    AND enabledcloudwatchlogsexports.type = 'provider'
+    AND lower(enabledcloudwatchlogsexports.attr_name) = 'enabledcloudwatchlogsexports'
+  LEFT JOIN resource_attribute AS capacity
+    ON capacity.resource_id = R.id
+    AND capacity.type = 'provider'
+    AND lower(capacity.attr_name) = 'capacity'
+  LEFT JOIN resource_attribute AS enginemode
+    ON enginemode.resource_id = R.id
+    AND enginemode.type = 'provider'
+    AND lower(enginemode.attr_name) = 'enginemode'
+  LEFT JOIN resource_attribute AS scalingconfigurationinfo
+    ON scalingconfigurationinfo.resource_id = R.id
+    AND scalingconfigurationinfo.type = 'provider'
+    AND lower(scalingconfigurationinfo.attr_name) = 'scalingconfigurationinfo'
+  LEFT JOIN resource_attribute AS deletionprotection
+    ON deletionprotection.resource_id = R.id
+    AND deletionprotection.type = 'provider'
+    AND lower(deletionprotection.attr_name) = 'deletionprotection'
+  LEFT JOIN resource_attribute AS httpendpointenabled
+    ON httpendpointenabled.resource_id = R.id
+    AND httpendpointenabled.type = 'provider'
+    AND lower(httpendpointenabled.attr_name) = 'httpendpointenabled'
+  LEFT JOIN resource_attribute AS activitystreammode
+    ON activitystreammode.resource_id = R.id
+    AND activitystreammode.type = 'provider'
+    AND lower(activitystreammode.attr_name) = 'activitystreammode'
+  LEFT JOIN resource_attribute AS activitystreamstatus
+    ON activitystreamstatus.resource_id = R.id
+    AND activitystreamstatus.type = 'provider'
+    AND lower(activitystreamstatus.attr_name) = 'activitystreamstatus'
+  LEFT JOIN resource_attribute AS activitystreamkmskeyid
+    ON activitystreamkmskeyid.resource_id = R.id
+    AND activitystreamkmskeyid.type = 'provider'
+    AND lower(activitystreamkmskeyid.attr_name) = 'activitystreamkmskeyid'
+  LEFT JOIN resource_attribute AS activitystreamkinesisstreamname
+    ON activitystreamkinesisstreamname.resource_id = R.id
+    AND activitystreamkinesisstreamname.type = 'provider'
+    AND lower(activitystreamkinesisstreamname.attr_name) = 'activitystreamkinesisstreamname'
+  LEFT JOIN resource_attribute AS copytagstosnapshot
+    ON copytagstosnapshot.resource_id = R.id
+    AND copytagstosnapshot.type = 'provider'
+    AND lower(copytagstosnapshot.attr_name) = 'copytagstosnapshot'
+  LEFT JOIN resource_attribute AS crossaccountclone
+    ON crossaccountclone.resource_id = R.id
+    AND crossaccountclone.type = 'provider'
+    AND lower(crossaccountclone.attr_name) = 'crossaccountclone'
+  LEFT JOIN resource_attribute AS domainmemberships
+    ON domainmemberships.resource_id = R.id
+    AND domainmemberships.type = 'provider'
+    AND lower(domainmemberships.attr_name) = 'domainmemberships'
+  LEFT JOIN resource_attribute AS globalwriteforwardingstatus
+    ON globalwriteforwardingstatus.resource_id = R.id
+    AND globalwriteforwardingstatus.type = 'provider'
+    AND lower(globalwriteforwardingstatus.attr_name) = 'globalwriteforwardingstatus'
+  LEFT JOIN resource_attribute AS globalwriteforwardingrequested
+    ON globalwriteforwardingrequested.resource_id = R.id
+    AND globalwriteforwardingrequested.type = 'provider'
+    AND lower(globalwriteforwardingrequested.attr_name) = 'globalwriteforwardingrequested'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -259,6 +302,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'dbcluster'
+  AND R.service = 'rds'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_rds_dbcluster;

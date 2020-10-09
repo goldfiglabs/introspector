@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_sns_subscription CASCADE;
 
 CREATE MATERIALIZED VIEW aws_sns_subscription AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -36,42 +24,54 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS subscriptionarn
-    ON subscriptionarn.id = R.id
-    AND subscriptionarn.attr_name = 'subscriptionarn'
-  LEFT JOIN attrs AS owner
-    ON owner.id = R.id
-    AND owner.attr_name = 'owner'
-  LEFT JOIN attrs AS protocol
-    ON protocol.id = R.id
-    AND protocol.attr_name = 'protocol'
-  LEFT JOIN attrs AS endpoint
-    ON endpoint.id = R.id
-    AND endpoint.attr_name = 'endpoint'
-  LEFT JOIN attrs AS topicarn
-    ON topicarn.id = R.id
-    AND topicarn.attr_name = 'topicarn'
-  LEFT JOIN attrs AS ConfirmationWasAuthenticated
-    ON ConfirmationWasAuthenticated.id = R.id
-    AND ConfirmationWasAuthenticated.attr_name = 'confirmationwasauthenticated'
-  LEFT JOIN attrs AS DeliveryPolicy
-    ON DeliveryPolicy.id = R.id
-    AND DeliveryPolicy.attr_name = 'deliverypolicy'
-  LEFT JOIN attrs AS EffectiveDeliveryPolicy
-    ON EffectiveDeliveryPolicy.id = R.id
-    AND EffectiveDeliveryPolicy.attr_name = 'effectivedeliverypolicy'
-  LEFT JOIN attrs AS FilterPolicy
-    ON FilterPolicy.id = R.id
-    AND FilterPolicy.attr_name = 'filterpolicy'
-  LEFT JOIN attrs AS PendingConfirmation
-    ON PendingConfirmation.id = R.id
-    AND PendingConfirmation.attr_name = 'pendingconfirmation'
-  LEFT JOIN attrs AS RawMessageDelivery
-    ON RawMessageDelivery.id = R.id
-    AND RawMessageDelivery.attr_name = 'rawmessagedelivery'
-  LEFT JOIN attrs AS RedrivePolicy
-    ON RedrivePolicy.id = R.id
-    AND RedrivePolicy.attr_name = 'redrivepolicy'
+  LEFT JOIN resource_attribute AS subscriptionarn
+    ON subscriptionarn.resource_id = R.id
+    AND subscriptionarn.type = 'provider'
+    AND lower(subscriptionarn.attr_name) = 'subscriptionarn'
+  LEFT JOIN resource_attribute AS owner
+    ON owner.resource_id = R.id
+    AND owner.type = 'provider'
+    AND lower(owner.attr_name) = 'owner'
+  LEFT JOIN resource_attribute AS protocol
+    ON protocol.resource_id = R.id
+    AND protocol.type = 'provider'
+    AND lower(protocol.attr_name) = 'protocol'
+  LEFT JOIN resource_attribute AS endpoint
+    ON endpoint.resource_id = R.id
+    AND endpoint.type = 'provider'
+    AND lower(endpoint.attr_name) = 'endpoint'
+  LEFT JOIN resource_attribute AS topicarn
+    ON topicarn.resource_id = R.id
+    AND topicarn.type = 'provider'
+    AND lower(topicarn.attr_name) = 'topicarn'
+  LEFT JOIN resource_attribute AS ConfirmationWasAuthenticated
+    ON ConfirmationWasAuthenticated.resource_id = R.id
+    AND ConfirmationWasAuthenticated.type = 'provider'
+    AND lower(ConfirmationWasAuthenticated.attr_name) = 'confirmationwasauthenticated'
+  LEFT JOIN resource_attribute AS DeliveryPolicy
+    ON DeliveryPolicy.resource_id = R.id
+    AND DeliveryPolicy.type = 'provider'
+    AND lower(DeliveryPolicy.attr_name) = 'deliverypolicy'
+  LEFT JOIN resource_attribute AS EffectiveDeliveryPolicy
+    ON EffectiveDeliveryPolicy.resource_id = R.id
+    AND EffectiveDeliveryPolicy.type = 'provider'
+    AND lower(EffectiveDeliveryPolicy.attr_name) = 'effectivedeliverypolicy'
+  LEFT JOIN resource_attribute AS FilterPolicy
+    ON FilterPolicy.resource_id = R.id
+    AND FilterPolicy.type = 'provider'
+    AND lower(FilterPolicy.attr_name) = 'filterpolicy'
+  LEFT JOIN resource_attribute AS PendingConfirmation
+    ON PendingConfirmation.resource_id = R.id
+    AND PendingConfirmation.type = 'provider'
+    AND lower(PendingConfirmation.attr_name) = 'pendingconfirmation'
+  LEFT JOIN resource_attribute AS RawMessageDelivery
+    ON RawMessageDelivery.resource_id = R.id
+    AND RawMessageDelivery.type = 'provider'
+    AND lower(RawMessageDelivery.attr_name) = 'rawmessagedelivery'
+  LEFT JOIN resource_attribute AS RedrivePolicy
+    ON RedrivePolicy.resource_id = R.id
+    AND RedrivePolicy.type = 'provider'
+    AND lower(RedrivePolicy.attr_name) = 'redrivepolicy'
   LEFT JOIN (
     SELECT
       _aws_sns_topic_relation.resource_id AS resource_id,
@@ -101,6 +101,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'subscription'
+  AND R.service = 'sns'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_sns_subscription;

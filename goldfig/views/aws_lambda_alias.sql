@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_lambda_alias CASCADE;
 
 CREATE MATERIALIZED VIEW aws_lambda_alias AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -31,27 +19,34 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS aliasarn
-    ON aliasarn.id = R.id
-    AND aliasarn.attr_name = 'aliasarn'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS functionversion
-    ON functionversion.id = R.id
-    AND functionversion.attr_name = 'functionversion'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS routingconfig
-    ON routingconfig.id = R.id
-    AND routingconfig.attr_name = 'routingconfig'
-  LEFT JOIN attrs AS revisionid
-    ON revisionid.id = R.id
-    AND revisionid.attr_name = 'revisionid'
-  LEFT JOIN attrs AS Policy
-    ON Policy.id = R.id
-    AND Policy.attr_name = 'policy'
+  LEFT JOIN resource_attribute AS aliasarn
+    ON aliasarn.resource_id = R.id
+    AND aliasarn.type = 'provider'
+    AND lower(aliasarn.attr_name) = 'aliasarn'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS functionversion
+    ON functionversion.resource_id = R.id
+    AND functionversion.type = 'provider'
+    AND lower(functionversion.attr_name) = 'functionversion'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS routingconfig
+    ON routingconfig.resource_id = R.id
+    AND routingconfig.type = 'provider'
+    AND lower(routingconfig.attr_name) = 'routingconfig'
+  LEFT JOIN resource_attribute AS revisionid
+    ON revisionid.resource_id = R.id
+    AND revisionid.type = 'provider'
+    AND lower(revisionid.attr_name) = 'revisionid'
+  LEFT JOIN resource_attribute AS Policy
+    ON Policy.resource_id = R.id
+    AND Policy.type = 'provider'
+    AND lower(Policy.attr_name) = 'policy'
   LEFT JOIN (
     SELECT
       _aws_lambda_function_relation.resource_id AS resource_id,
@@ -81,6 +76,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'alias'
+  AND R.service = 'lambda'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_lambda_alias;

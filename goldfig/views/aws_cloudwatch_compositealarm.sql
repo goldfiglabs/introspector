@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_compositealarm CASCADE;
 
 CREATE MATERIALIZED VIEW aws_cloudwatch_compositealarm AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -37,48 +25,62 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS actionsenabled
-    ON actionsenabled.id = R.id
-    AND actionsenabled.attr_name = 'actionsenabled'
-  LEFT JOIN attrs AS alarmactions
-    ON alarmactions.id = R.id
-    AND alarmactions.attr_name = 'alarmactions'
-  LEFT JOIN attrs AS alarmarn
-    ON alarmarn.id = R.id
-    AND alarmarn.attr_name = 'alarmarn'
-  LEFT JOIN attrs AS alarmconfigurationupdatedtimestamp
-    ON alarmconfigurationupdatedtimestamp.id = R.id
-    AND alarmconfigurationupdatedtimestamp.attr_name = 'alarmconfigurationupdatedtimestamp'
-  LEFT JOIN attrs AS alarmdescription
-    ON alarmdescription.id = R.id
-    AND alarmdescription.attr_name = 'alarmdescription'
-  LEFT JOIN attrs AS alarmname
-    ON alarmname.id = R.id
-    AND alarmname.attr_name = 'alarmname'
-  LEFT JOIN attrs AS alarmrule
-    ON alarmrule.id = R.id
-    AND alarmrule.attr_name = 'alarmrule'
-  LEFT JOIN attrs AS insufficientdataactions
-    ON insufficientdataactions.id = R.id
-    AND insufficientdataactions.attr_name = 'insufficientdataactions'
-  LEFT JOIN attrs AS okactions
-    ON okactions.id = R.id
-    AND okactions.attr_name = 'okactions'
-  LEFT JOIN attrs AS statereason
-    ON statereason.id = R.id
-    AND statereason.attr_name = 'statereason'
-  LEFT JOIN attrs AS statereasondata
-    ON statereasondata.id = R.id
-    AND statereasondata.attr_name = 'statereasondata'
-  LEFT JOIN attrs AS stateupdatedtimestamp
-    ON stateupdatedtimestamp.id = R.id
-    AND stateupdatedtimestamp.attr_name = 'stateupdatedtimestamp'
-  LEFT JOIN attrs AS statevalue
-    ON statevalue.id = R.id
-    AND statevalue.attr_name = 'statevalue'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS actionsenabled
+    ON actionsenabled.resource_id = R.id
+    AND actionsenabled.type = 'provider'
+    AND lower(actionsenabled.attr_name) = 'actionsenabled'
+  LEFT JOIN resource_attribute AS alarmactions
+    ON alarmactions.resource_id = R.id
+    AND alarmactions.type = 'provider'
+    AND lower(alarmactions.attr_name) = 'alarmactions'
+  LEFT JOIN resource_attribute AS alarmarn
+    ON alarmarn.resource_id = R.id
+    AND alarmarn.type = 'provider'
+    AND lower(alarmarn.attr_name) = 'alarmarn'
+  LEFT JOIN resource_attribute AS alarmconfigurationupdatedtimestamp
+    ON alarmconfigurationupdatedtimestamp.resource_id = R.id
+    AND alarmconfigurationupdatedtimestamp.type = 'provider'
+    AND lower(alarmconfigurationupdatedtimestamp.attr_name) = 'alarmconfigurationupdatedtimestamp'
+  LEFT JOIN resource_attribute AS alarmdescription
+    ON alarmdescription.resource_id = R.id
+    AND alarmdescription.type = 'provider'
+    AND lower(alarmdescription.attr_name) = 'alarmdescription'
+  LEFT JOIN resource_attribute AS alarmname
+    ON alarmname.resource_id = R.id
+    AND alarmname.type = 'provider'
+    AND lower(alarmname.attr_name) = 'alarmname'
+  LEFT JOIN resource_attribute AS alarmrule
+    ON alarmrule.resource_id = R.id
+    AND alarmrule.type = 'provider'
+    AND lower(alarmrule.attr_name) = 'alarmrule'
+  LEFT JOIN resource_attribute AS insufficientdataactions
+    ON insufficientdataactions.resource_id = R.id
+    AND insufficientdataactions.type = 'provider'
+    AND lower(insufficientdataactions.attr_name) = 'insufficientdataactions'
+  LEFT JOIN resource_attribute AS okactions
+    ON okactions.resource_id = R.id
+    AND okactions.type = 'provider'
+    AND lower(okactions.attr_name) = 'okactions'
+  LEFT JOIN resource_attribute AS statereason
+    ON statereason.resource_id = R.id
+    AND statereason.type = 'provider'
+    AND lower(statereason.attr_name) = 'statereason'
+  LEFT JOIN resource_attribute AS statereasondata
+    ON statereasondata.resource_id = R.id
+    AND statereasondata.type = 'provider'
+    AND lower(statereasondata.attr_name) = 'statereasondata'
+  LEFT JOIN resource_attribute AS stateupdatedtimestamp
+    ON stateupdatedtimestamp.resource_id = R.id
+    AND stateupdatedtimestamp.type = 'provider'
+    AND lower(stateupdatedtimestamp.attr_name) = 'stateupdatedtimestamp'
+  LEFT JOIN resource_attribute AS statevalue
+    ON statevalue.resource_id = R.id
+    AND statevalue.type = 'provider'
+    AND lower(statevalue.attr_name) = 'statevalue'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

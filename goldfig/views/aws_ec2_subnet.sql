@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_subnet CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_subnet AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -41,57 +29,74 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS availabilityzone
-    ON availabilityzone.id = R.id
-    AND availabilityzone.attr_name = 'availabilityzone'
-  LEFT JOIN attrs AS availabilityzoneid
-    ON availabilityzoneid.id = R.id
-    AND availabilityzoneid.attr_name = 'availabilityzoneid'
-  LEFT JOIN attrs AS availableipaddresscount
-    ON availableipaddresscount.id = R.id
-    AND availableipaddresscount.attr_name = 'availableipaddresscount'
-  LEFT JOIN attrs AS cidrblock
-    ON cidrblock.id = R.id
-    AND cidrblock.attr_name = 'cidrblock'
-  LEFT JOIN attrs AS defaultforaz
-    ON defaultforaz.id = R.id
-    AND defaultforaz.attr_name = 'defaultforaz'
-  LEFT JOIN attrs AS mappubliciponlaunch
-    ON mappubliciponlaunch.id = R.id
-    AND mappubliciponlaunch.attr_name = 'mappubliciponlaunch'
-  LEFT JOIN attrs AS mapcustomerownediponlaunch
-    ON mapcustomerownediponlaunch.id = R.id
-    AND mapcustomerownediponlaunch.attr_name = 'mapcustomerownediponlaunch'
-  LEFT JOIN attrs AS customerownedipv4pool
-    ON customerownedipv4pool.id = R.id
-    AND customerownedipv4pool.attr_name = 'customerownedipv4pool'
-  LEFT JOIN attrs AS state
-    ON state.id = R.id
-    AND state.attr_name = 'state'
-  LEFT JOIN attrs AS subnetid
-    ON subnetid.id = R.id
-    AND subnetid.attr_name = 'subnetid'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS ownerid
-    ON ownerid.id = R.id
-    AND ownerid.attr_name = 'ownerid'
-  LEFT JOIN attrs AS assignipv6addressoncreation
-    ON assignipv6addressoncreation.id = R.id
-    AND assignipv6addressoncreation.attr_name = 'assignipv6addressoncreation'
-  LEFT JOIN attrs AS ipv6cidrblockassociationset
-    ON ipv6cidrblockassociationset.id = R.id
-    AND ipv6cidrblockassociationset.attr_name = 'ipv6cidrblockassociationset'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS subnetarn
-    ON subnetarn.id = R.id
-    AND subnetarn.attr_name = 'subnetarn'
-  LEFT JOIN attrs AS outpostarn
-    ON outpostarn.id = R.id
-    AND outpostarn.attr_name = 'outpostarn'
+  LEFT JOIN resource_attribute AS availabilityzone
+    ON availabilityzone.resource_id = R.id
+    AND availabilityzone.type = 'provider'
+    AND lower(availabilityzone.attr_name) = 'availabilityzone'
+  LEFT JOIN resource_attribute AS availabilityzoneid
+    ON availabilityzoneid.resource_id = R.id
+    AND availabilityzoneid.type = 'provider'
+    AND lower(availabilityzoneid.attr_name) = 'availabilityzoneid'
+  LEFT JOIN resource_attribute AS availableipaddresscount
+    ON availableipaddresscount.resource_id = R.id
+    AND availableipaddresscount.type = 'provider'
+    AND lower(availableipaddresscount.attr_name) = 'availableipaddresscount'
+  LEFT JOIN resource_attribute AS cidrblock
+    ON cidrblock.resource_id = R.id
+    AND cidrblock.type = 'provider'
+    AND lower(cidrblock.attr_name) = 'cidrblock'
+  LEFT JOIN resource_attribute AS defaultforaz
+    ON defaultforaz.resource_id = R.id
+    AND defaultforaz.type = 'provider'
+    AND lower(defaultforaz.attr_name) = 'defaultforaz'
+  LEFT JOIN resource_attribute AS mappubliciponlaunch
+    ON mappubliciponlaunch.resource_id = R.id
+    AND mappubliciponlaunch.type = 'provider'
+    AND lower(mappubliciponlaunch.attr_name) = 'mappubliciponlaunch'
+  LEFT JOIN resource_attribute AS mapcustomerownediponlaunch
+    ON mapcustomerownediponlaunch.resource_id = R.id
+    AND mapcustomerownediponlaunch.type = 'provider'
+    AND lower(mapcustomerownediponlaunch.attr_name) = 'mapcustomerownediponlaunch'
+  LEFT JOIN resource_attribute AS customerownedipv4pool
+    ON customerownedipv4pool.resource_id = R.id
+    AND customerownedipv4pool.type = 'provider'
+    AND lower(customerownedipv4pool.attr_name) = 'customerownedipv4pool'
+  LEFT JOIN resource_attribute AS state
+    ON state.resource_id = R.id
+    AND state.type = 'provider'
+    AND lower(state.attr_name) = 'state'
+  LEFT JOIN resource_attribute AS subnetid
+    ON subnetid.resource_id = R.id
+    AND subnetid.type = 'provider'
+    AND lower(subnetid.attr_name) = 'subnetid'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS ownerid
+    ON ownerid.resource_id = R.id
+    AND ownerid.type = 'provider'
+    AND lower(ownerid.attr_name) = 'ownerid'
+  LEFT JOIN resource_attribute AS assignipv6addressoncreation
+    ON assignipv6addressoncreation.resource_id = R.id
+    AND assignipv6addressoncreation.type = 'provider'
+    AND lower(assignipv6addressoncreation.attr_name) = 'assignipv6addressoncreation'
+  LEFT JOIN resource_attribute AS ipv6cidrblockassociationset
+    ON ipv6cidrblockassociationset.resource_id = R.id
+    AND ipv6cidrblockassociationset.type = 'provider'
+    AND lower(ipv6cidrblockassociationset.attr_name) = 'ipv6cidrblockassociationset'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS subnetarn
+    ON subnetarn.resource_id = R.id
+    AND subnetarn.type = 'provider'
+    AND lower(subnetarn.attr_name) = 'subnetarn'
+  LEFT JOIN resource_attribute AS outpostarn
+    ON outpostarn.resource_id = R.id
+    AND outpostarn.type = 'provider'
+    AND lower(outpostarn.attr_name) = 'outpostarn'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -121,6 +126,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'subnet'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_subnet;

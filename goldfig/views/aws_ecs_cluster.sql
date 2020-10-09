@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ecs_cluster CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ecs_cluster AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -37,48 +25,62 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS clusterarn
-    ON clusterarn.id = R.id
-    AND clusterarn.attr_name = 'clusterarn'
-  LEFT JOIN attrs AS clustername
-    ON clustername.id = R.id
-    AND clustername.attr_name = 'clustername'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS registeredcontainerinstancescount
-    ON registeredcontainerinstancescount.id = R.id
-    AND registeredcontainerinstancescount.attr_name = 'registeredcontainerinstancescount'
-  LEFT JOIN attrs AS runningtaskscount
-    ON runningtaskscount.id = R.id
-    AND runningtaskscount.attr_name = 'runningtaskscount'
-  LEFT JOIN attrs AS pendingtaskscount
-    ON pendingtaskscount.id = R.id
-    AND pendingtaskscount.attr_name = 'pendingtaskscount'
-  LEFT JOIN attrs AS activeservicescount
-    ON activeservicescount.id = R.id
-    AND activeservicescount.attr_name = 'activeservicescount'
-  LEFT JOIN attrs AS statistics
-    ON statistics.id = R.id
-    AND statistics.attr_name = 'statistics'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS settings
-    ON settings.id = R.id
-    AND settings.attr_name = 'settings'
-  LEFT JOIN attrs AS capacityproviders
-    ON capacityproviders.id = R.id
-    AND capacityproviders.attr_name = 'capacityproviders'
-  LEFT JOIN attrs AS defaultcapacityproviderstrategy
-    ON defaultcapacityproviderstrategy.id = R.id
-    AND defaultcapacityproviderstrategy.attr_name = 'defaultcapacityproviderstrategy'
-  LEFT JOIN attrs AS attachments
-    ON attachments.id = R.id
-    AND attachments.attr_name = 'attachments'
-  LEFT JOIN attrs AS attachmentsstatus
-    ON attachmentsstatus.id = R.id
-    AND attachmentsstatus.attr_name = 'attachmentsstatus'
+  LEFT JOIN resource_attribute AS clusterarn
+    ON clusterarn.resource_id = R.id
+    AND clusterarn.type = 'provider'
+    AND lower(clusterarn.attr_name) = 'clusterarn'
+  LEFT JOIN resource_attribute AS clustername
+    ON clustername.resource_id = R.id
+    AND clustername.type = 'provider'
+    AND lower(clustername.attr_name) = 'clustername'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS registeredcontainerinstancescount
+    ON registeredcontainerinstancescount.resource_id = R.id
+    AND registeredcontainerinstancescount.type = 'provider'
+    AND lower(registeredcontainerinstancescount.attr_name) = 'registeredcontainerinstancescount'
+  LEFT JOIN resource_attribute AS runningtaskscount
+    ON runningtaskscount.resource_id = R.id
+    AND runningtaskscount.type = 'provider'
+    AND lower(runningtaskscount.attr_name) = 'runningtaskscount'
+  LEFT JOIN resource_attribute AS pendingtaskscount
+    ON pendingtaskscount.resource_id = R.id
+    AND pendingtaskscount.type = 'provider'
+    AND lower(pendingtaskscount.attr_name) = 'pendingtaskscount'
+  LEFT JOIN resource_attribute AS activeservicescount
+    ON activeservicescount.resource_id = R.id
+    AND activeservicescount.type = 'provider'
+    AND lower(activeservicescount.attr_name) = 'activeservicescount'
+  LEFT JOIN resource_attribute AS statistics
+    ON statistics.resource_id = R.id
+    AND statistics.type = 'provider'
+    AND lower(statistics.attr_name) = 'statistics'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS settings
+    ON settings.resource_id = R.id
+    AND settings.type = 'provider'
+    AND lower(settings.attr_name) = 'settings'
+  LEFT JOIN resource_attribute AS capacityproviders
+    ON capacityproviders.resource_id = R.id
+    AND capacityproviders.type = 'provider'
+    AND lower(capacityproviders.attr_name) = 'capacityproviders'
+  LEFT JOIN resource_attribute AS defaultcapacityproviderstrategy
+    ON defaultcapacityproviderstrategy.resource_id = R.id
+    AND defaultcapacityproviderstrategy.type = 'provider'
+    AND lower(defaultcapacityproviderstrategy.attr_name) = 'defaultcapacityproviderstrategy'
+  LEFT JOIN resource_attribute AS attachments
+    ON attachments.resource_id = R.id
+    AND attachments.type = 'provider'
+    AND lower(attachments.attr_name) = 'attachments'
+  LEFT JOIN resource_attribute AS attachmentsstatus
+    ON attachmentsstatus.resource_id = R.id
+    AND attachmentsstatus.type = 'provider'
+    AND lower(attachmentsstatus.attr_name) = 'attachmentsstatus'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

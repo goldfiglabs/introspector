@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ecs_taskdefinition CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ecs_taskdefinition AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -42,63 +30,82 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS taskdefinitionarn
-    ON taskdefinitionarn.id = R.id
-    AND taskdefinitionarn.attr_name = 'taskdefinitionarn'
-  LEFT JOIN attrs AS containerdefinitions
-    ON containerdefinitions.id = R.id
-    AND containerdefinitions.attr_name = 'containerdefinitions'
-  LEFT JOIN attrs AS family
-    ON family.id = R.id
-    AND family.attr_name = 'family'
-  LEFT JOIN attrs AS taskrolearn
-    ON taskrolearn.id = R.id
-    AND taskrolearn.attr_name = 'taskrolearn'
-  LEFT JOIN attrs AS executionrolearn
-    ON executionrolearn.id = R.id
-    AND executionrolearn.attr_name = 'executionrolearn'
-  LEFT JOIN attrs AS networkmode
-    ON networkmode.id = R.id
-    AND networkmode.attr_name = 'networkmode'
-  LEFT JOIN attrs AS revision
-    ON revision.id = R.id
-    AND revision.attr_name = 'revision'
-  LEFT JOIN attrs AS volumes
-    ON volumes.id = R.id
-    AND volumes.attr_name = 'volumes'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS requiresattributes
-    ON requiresattributes.id = R.id
-    AND requiresattributes.attr_name = 'requiresattributes'
-  LEFT JOIN attrs AS placementconstraints
-    ON placementconstraints.id = R.id
-    AND placementconstraints.attr_name = 'placementconstraints'
-  LEFT JOIN attrs AS compatibilities
-    ON compatibilities.id = R.id
-    AND compatibilities.attr_name = 'compatibilities'
-  LEFT JOIN attrs AS requirescompatibilities
-    ON requirescompatibilities.id = R.id
-    AND requirescompatibilities.attr_name = 'requirescompatibilities'
-  LEFT JOIN attrs AS cpu
-    ON cpu.id = R.id
-    AND cpu.attr_name = 'cpu'
-  LEFT JOIN attrs AS memory
-    ON memory.id = R.id
-    AND memory.attr_name = 'memory'
-  LEFT JOIN attrs AS inferenceaccelerators
-    ON inferenceaccelerators.id = R.id
-    AND inferenceaccelerators.attr_name = 'inferenceaccelerators'
-  LEFT JOIN attrs AS pidmode
-    ON pidmode.id = R.id
-    AND pidmode.attr_name = 'pidmode'
-  LEFT JOIN attrs AS ipcmode
-    ON ipcmode.id = R.id
-    AND ipcmode.attr_name = 'ipcmode'
-  LEFT JOIN attrs AS proxyconfiguration
-    ON proxyconfiguration.id = R.id
-    AND proxyconfiguration.attr_name = 'proxyconfiguration'
+  LEFT JOIN resource_attribute AS taskdefinitionarn
+    ON taskdefinitionarn.resource_id = R.id
+    AND taskdefinitionarn.type = 'provider'
+    AND lower(taskdefinitionarn.attr_name) = 'taskdefinitionarn'
+  LEFT JOIN resource_attribute AS containerdefinitions
+    ON containerdefinitions.resource_id = R.id
+    AND containerdefinitions.type = 'provider'
+    AND lower(containerdefinitions.attr_name) = 'containerdefinitions'
+  LEFT JOIN resource_attribute AS family
+    ON family.resource_id = R.id
+    AND family.type = 'provider'
+    AND lower(family.attr_name) = 'family'
+  LEFT JOIN resource_attribute AS taskrolearn
+    ON taskrolearn.resource_id = R.id
+    AND taskrolearn.type = 'provider'
+    AND lower(taskrolearn.attr_name) = 'taskrolearn'
+  LEFT JOIN resource_attribute AS executionrolearn
+    ON executionrolearn.resource_id = R.id
+    AND executionrolearn.type = 'provider'
+    AND lower(executionrolearn.attr_name) = 'executionrolearn'
+  LEFT JOIN resource_attribute AS networkmode
+    ON networkmode.resource_id = R.id
+    AND networkmode.type = 'provider'
+    AND lower(networkmode.attr_name) = 'networkmode'
+  LEFT JOIN resource_attribute AS revision
+    ON revision.resource_id = R.id
+    AND revision.type = 'provider'
+    AND lower(revision.attr_name) = 'revision'
+  LEFT JOIN resource_attribute AS volumes
+    ON volumes.resource_id = R.id
+    AND volumes.type = 'provider'
+    AND lower(volumes.attr_name) = 'volumes'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS requiresattributes
+    ON requiresattributes.resource_id = R.id
+    AND requiresattributes.type = 'provider'
+    AND lower(requiresattributes.attr_name) = 'requiresattributes'
+  LEFT JOIN resource_attribute AS placementconstraints
+    ON placementconstraints.resource_id = R.id
+    AND placementconstraints.type = 'provider'
+    AND lower(placementconstraints.attr_name) = 'placementconstraints'
+  LEFT JOIN resource_attribute AS compatibilities
+    ON compatibilities.resource_id = R.id
+    AND compatibilities.type = 'provider'
+    AND lower(compatibilities.attr_name) = 'compatibilities'
+  LEFT JOIN resource_attribute AS requirescompatibilities
+    ON requirescompatibilities.resource_id = R.id
+    AND requirescompatibilities.type = 'provider'
+    AND lower(requirescompatibilities.attr_name) = 'requirescompatibilities'
+  LEFT JOIN resource_attribute AS cpu
+    ON cpu.resource_id = R.id
+    AND cpu.type = 'provider'
+    AND lower(cpu.attr_name) = 'cpu'
+  LEFT JOIN resource_attribute AS memory
+    ON memory.resource_id = R.id
+    AND memory.type = 'provider'
+    AND lower(memory.attr_name) = 'memory'
+  LEFT JOIN resource_attribute AS inferenceaccelerators
+    ON inferenceaccelerators.resource_id = R.id
+    AND inferenceaccelerators.type = 'provider'
+    AND lower(inferenceaccelerators.attr_name) = 'inferenceaccelerators'
+  LEFT JOIN resource_attribute AS pidmode
+    ON pidmode.resource_id = R.id
+    AND pidmode.type = 'provider'
+    AND lower(pidmode.attr_name) = 'pidmode'
+  LEFT JOIN resource_attribute AS ipcmode
+    ON ipcmode.resource_id = R.id
+    AND ipcmode.type = 'provider'
+    AND lower(ipcmode.attr_name) = 'ipcmode'
+  LEFT JOIN resource_attribute AS proxyconfiguration
+    ON proxyconfiguration.resource_id = R.id
+    AND proxyconfiguration.type = 'provider'
+    AND lower(proxyconfiguration.attr_name) = 'proxyconfiguration'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

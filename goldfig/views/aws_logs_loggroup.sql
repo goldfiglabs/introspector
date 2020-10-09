@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_logs_loggroup CASCADE;
 
 CREATE MATERIALIZED VIEW aws_logs_loggroup AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -32,33 +20,42 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS loggroupname
-    ON loggroupname.id = R.id
-    AND loggroupname.attr_name = 'loggroupname'
-  LEFT JOIN attrs AS creationtime
-    ON creationtime.id = R.id
-    AND creationtime.attr_name = 'creationtime'
-  LEFT JOIN attrs AS retentionindays
-    ON retentionindays.id = R.id
-    AND retentionindays.attr_name = 'retentionindays'
-  LEFT JOIN attrs AS metricfiltercount
-    ON metricfiltercount.id = R.id
-    AND metricfiltercount.attr_name = 'metricfiltercount'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS storedbytes
-    ON storedbytes.id = R.id
-    AND storedbytes.attr_name = 'storedbytes'
-  LEFT JOIN attrs AS kmskeyid
-    ON kmskeyid.id = R.id
-    AND kmskeyid.attr_name = 'kmskeyid'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS metricfilters
-    ON metricfilters.id = R.id
-    AND metricfilters.attr_name = 'metricfilters'
+  LEFT JOIN resource_attribute AS loggroupname
+    ON loggroupname.resource_id = R.id
+    AND loggroupname.type = 'provider'
+    AND lower(loggroupname.attr_name) = 'loggroupname'
+  LEFT JOIN resource_attribute AS creationtime
+    ON creationtime.resource_id = R.id
+    AND creationtime.type = 'provider'
+    AND lower(creationtime.attr_name) = 'creationtime'
+  LEFT JOIN resource_attribute AS retentionindays
+    ON retentionindays.resource_id = R.id
+    AND retentionindays.type = 'provider'
+    AND lower(retentionindays.attr_name) = 'retentionindays'
+  LEFT JOIN resource_attribute AS metricfiltercount
+    ON metricfiltercount.resource_id = R.id
+    AND metricfiltercount.type = 'provider'
+    AND lower(metricfiltercount.attr_name) = 'metricfiltercount'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS storedbytes
+    ON storedbytes.resource_id = R.id
+    AND storedbytes.type = 'provider'
+    AND lower(storedbytes.attr_name) = 'storedbytes'
+  LEFT JOIN resource_attribute AS kmskeyid
+    ON kmskeyid.resource_id = R.id
+    AND kmskeyid.type = 'provider'
+    AND lower(kmskeyid.attr_name) = 'kmskeyid'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS metricfilters
+    ON metricfilters.resource_id = R.id
+    AND metricfilters.type = 'provider'
+    AND lower(metricfilters.attr_name) = 'metricfilters'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

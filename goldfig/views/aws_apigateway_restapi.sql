@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_apigateway_restapi CASCADE;
 
 CREATE MATERIALIZED VIEW aws_apigateway_restapi AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -36,45 +24,58 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS id
-    ON id.id = R.id
-    AND id.attr_name = 'id'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS createddate
-    ON createddate.id = R.id
-    AND createddate.attr_name = 'createddate'
-  LEFT JOIN attrs AS version
-    ON version.id = R.id
-    AND version.attr_name = 'version'
-  LEFT JOIN attrs AS warnings
-    ON warnings.id = R.id
-    AND warnings.attr_name = 'warnings'
-  LEFT JOIN attrs AS binarymediatypes
-    ON binarymediatypes.id = R.id
-    AND binarymediatypes.attr_name = 'binarymediatypes'
-  LEFT JOIN attrs AS minimumcompressionsize
-    ON minimumcompressionsize.id = R.id
-    AND minimumcompressionsize.attr_name = 'minimumcompressionsize'
-  LEFT JOIN attrs AS apikeysource
-    ON apikeysource.id = R.id
-    AND apikeysource.attr_name = 'apikeysource'
-  LEFT JOIN attrs AS endpointconfiguration
-    ON endpointconfiguration.id = R.id
-    AND endpointconfiguration.attr_name = 'endpointconfiguration'
-  LEFT JOIN attrs AS policy
-    ON policy.id = R.id
-    AND policy.attr_name = 'policy'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS stages
-    ON stages.id = R.id
-    AND stages.attr_name = 'stages'
+  LEFT JOIN resource_attribute AS id
+    ON id.resource_id = R.id
+    AND id.type = 'provider'
+    AND lower(id.attr_name) = 'id'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS createddate
+    ON createddate.resource_id = R.id
+    AND createddate.type = 'provider'
+    AND lower(createddate.attr_name) = 'createddate'
+  LEFT JOIN resource_attribute AS version
+    ON version.resource_id = R.id
+    AND version.type = 'provider'
+    AND lower(version.attr_name) = 'version'
+  LEFT JOIN resource_attribute AS warnings
+    ON warnings.resource_id = R.id
+    AND warnings.type = 'provider'
+    AND lower(warnings.attr_name) = 'warnings'
+  LEFT JOIN resource_attribute AS binarymediatypes
+    ON binarymediatypes.resource_id = R.id
+    AND binarymediatypes.type = 'provider'
+    AND lower(binarymediatypes.attr_name) = 'binarymediatypes'
+  LEFT JOIN resource_attribute AS minimumcompressionsize
+    ON minimumcompressionsize.resource_id = R.id
+    AND minimumcompressionsize.type = 'provider'
+    AND lower(minimumcompressionsize.attr_name) = 'minimumcompressionsize'
+  LEFT JOIN resource_attribute AS apikeysource
+    ON apikeysource.resource_id = R.id
+    AND apikeysource.type = 'provider'
+    AND lower(apikeysource.attr_name) = 'apikeysource'
+  LEFT JOIN resource_attribute AS endpointconfiguration
+    ON endpointconfiguration.resource_id = R.id
+    AND endpointconfiguration.type = 'provider'
+    AND lower(endpointconfiguration.attr_name) = 'endpointconfiguration'
+  LEFT JOIN resource_attribute AS policy
+    ON policy.resource_id = R.id
+    AND policy.type = 'provider'
+    AND lower(policy.attr_name) = 'policy'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS stages
+    ON stages.resource_id = R.id
+    AND stages.type = 'provider'
+    AND lower(stages.attr_name) = 'stages'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

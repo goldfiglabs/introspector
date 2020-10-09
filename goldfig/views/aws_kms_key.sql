@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_kms_key CASCADE;
 
 CREATE MATERIALIZED VIEW aws_kms_key AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -44,69 +32,90 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS awsaccountid
-    ON awsaccountid.id = R.id
-    AND awsaccountid.attr_name = 'awsaccountid'
-  LEFT JOIN attrs AS keyid
-    ON keyid.id = R.id
-    AND keyid.attr_name = 'keyid'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS creationdate
-    ON creationdate.id = R.id
-    AND creationdate.attr_name = 'creationdate'
-  LEFT JOIN attrs AS enabled
-    ON enabled.id = R.id
-    AND enabled.attr_name = 'enabled'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS keyusage
-    ON keyusage.id = R.id
-    AND keyusage.attr_name = 'keyusage'
-  LEFT JOIN attrs AS keystate
-    ON keystate.id = R.id
-    AND keystate.attr_name = 'keystate'
-  LEFT JOIN attrs AS deletiondate
-    ON deletiondate.id = R.id
-    AND deletiondate.attr_name = 'deletiondate'
-  LEFT JOIN attrs AS validto
-    ON validto.id = R.id
-    AND validto.attr_name = 'validto'
-  LEFT JOIN attrs AS origin
-    ON origin.id = R.id
-    AND origin.attr_name = 'origin'
-  LEFT JOIN attrs AS customkeystoreid
-    ON customkeystoreid.id = R.id
-    AND customkeystoreid.attr_name = 'customkeystoreid'
-  LEFT JOIN attrs AS cloudhsmclusterid
-    ON cloudhsmclusterid.id = R.id
-    AND cloudhsmclusterid.attr_name = 'cloudhsmclusterid'
-  LEFT JOIN attrs AS expirationmodel
-    ON expirationmodel.id = R.id
-    AND expirationmodel.attr_name = 'expirationmodel'
-  LEFT JOIN attrs AS keymanager
-    ON keymanager.id = R.id
-    AND keymanager.attr_name = 'keymanager'
-  LEFT JOIN attrs AS customermasterkeyspec
-    ON customermasterkeyspec.id = R.id
-    AND customermasterkeyspec.attr_name = 'customermasterkeyspec'
-  LEFT JOIN attrs AS encryptionalgorithms
-    ON encryptionalgorithms.id = R.id
-    AND encryptionalgorithms.attr_name = 'encryptionalgorithms'
-  LEFT JOIN attrs AS signingalgorithms
-    ON signingalgorithms.id = R.id
-    AND signingalgorithms.attr_name = 'signingalgorithms'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS keyrotationenabled
-    ON keyrotationenabled.id = R.id
-    AND keyrotationenabled.attr_name = 'keyrotationenabled'
-  LEFT JOIN attrs AS policy
-    ON policy.id = R.id
-    AND policy.attr_name = 'policy'
+  LEFT JOIN resource_attribute AS awsaccountid
+    ON awsaccountid.resource_id = R.id
+    AND awsaccountid.type = 'provider'
+    AND lower(awsaccountid.attr_name) = 'awsaccountid'
+  LEFT JOIN resource_attribute AS keyid
+    ON keyid.resource_id = R.id
+    AND keyid.type = 'provider'
+    AND lower(keyid.attr_name) = 'keyid'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS creationdate
+    ON creationdate.resource_id = R.id
+    AND creationdate.type = 'provider'
+    AND lower(creationdate.attr_name) = 'creationdate'
+  LEFT JOIN resource_attribute AS enabled
+    ON enabled.resource_id = R.id
+    AND enabled.type = 'provider'
+    AND lower(enabled.attr_name) = 'enabled'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS keyusage
+    ON keyusage.resource_id = R.id
+    AND keyusage.type = 'provider'
+    AND lower(keyusage.attr_name) = 'keyusage'
+  LEFT JOIN resource_attribute AS keystate
+    ON keystate.resource_id = R.id
+    AND keystate.type = 'provider'
+    AND lower(keystate.attr_name) = 'keystate'
+  LEFT JOIN resource_attribute AS deletiondate
+    ON deletiondate.resource_id = R.id
+    AND deletiondate.type = 'provider'
+    AND lower(deletiondate.attr_name) = 'deletiondate'
+  LEFT JOIN resource_attribute AS validto
+    ON validto.resource_id = R.id
+    AND validto.type = 'provider'
+    AND lower(validto.attr_name) = 'validto'
+  LEFT JOIN resource_attribute AS origin
+    ON origin.resource_id = R.id
+    AND origin.type = 'provider'
+    AND lower(origin.attr_name) = 'origin'
+  LEFT JOIN resource_attribute AS customkeystoreid
+    ON customkeystoreid.resource_id = R.id
+    AND customkeystoreid.type = 'provider'
+    AND lower(customkeystoreid.attr_name) = 'customkeystoreid'
+  LEFT JOIN resource_attribute AS cloudhsmclusterid
+    ON cloudhsmclusterid.resource_id = R.id
+    AND cloudhsmclusterid.type = 'provider'
+    AND lower(cloudhsmclusterid.attr_name) = 'cloudhsmclusterid'
+  LEFT JOIN resource_attribute AS expirationmodel
+    ON expirationmodel.resource_id = R.id
+    AND expirationmodel.type = 'provider'
+    AND lower(expirationmodel.attr_name) = 'expirationmodel'
+  LEFT JOIN resource_attribute AS keymanager
+    ON keymanager.resource_id = R.id
+    AND keymanager.type = 'provider'
+    AND lower(keymanager.attr_name) = 'keymanager'
+  LEFT JOIN resource_attribute AS customermasterkeyspec
+    ON customermasterkeyspec.resource_id = R.id
+    AND customermasterkeyspec.type = 'provider'
+    AND lower(customermasterkeyspec.attr_name) = 'customermasterkeyspec'
+  LEFT JOIN resource_attribute AS encryptionalgorithms
+    ON encryptionalgorithms.resource_id = R.id
+    AND encryptionalgorithms.type = 'provider'
+    AND lower(encryptionalgorithms.attr_name) = 'encryptionalgorithms'
+  LEFT JOIN resource_attribute AS signingalgorithms
+    ON signingalgorithms.resource_id = R.id
+    AND signingalgorithms.type = 'provider'
+    AND lower(signingalgorithms.attr_name) = 'signingalgorithms'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS keyrotationenabled
+    ON keyrotationenabled.resource_id = R.id
+    AND keyrotationenabled.type = 'provider'
+    AND lower(keyrotationenabled.attr_name) = 'keyrotationenabled'
+  LEFT JOIN resource_attribute AS policy
+    ON policy.resource_id = R.id
+    AND policy.type = 'provider'
+    AND lower(policy.attr_name) = 'policy'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -123,6 +132,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'key'
+  AND R.service = 'kms'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_kms_key;

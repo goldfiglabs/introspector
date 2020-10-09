@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_instanceprofile CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_instanceprofile AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -30,24 +18,30 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS path
-    ON path.id = R.id
-    AND path.attr_name = 'path'
-  LEFT JOIN attrs AS instanceprofilename
-    ON instanceprofilename.id = R.id
-    AND instanceprofilename.attr_name = 'instanceprofilename'
-  LEFT JOIN attrs AS instanceprofileid
-    ON instanceprofileid.id = R.id
-    AND instanceprofileid.attr_name = 'instanceprofileid'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS createdate
-    ON createdate.id = R.id
-    AND createdate.attr_name = 'createdate'
-  LEFT JOIN attrs AS roles
-    ON roles.id = R.id
-    AND roles.attr_name = 'roles'
+  LEFT JOIN resource_attribute AS path
+    ON path.resource_id = R.id
+    AND path.type = 'provider'
+    AND lower(path.attr_name) = 'path'
+  LEFT JOIN resource_attribute AS instanceprofilename
+    ON instanceprofilename.resource_id = R.id
+    AND instanceprofilename.type = 'provider'
+    AND lower(instanceprofilename.attr_name) = 'instanceprofilename'
+  LEFT JOIN resource_attribute AS instanceprofileid
+    ON instanceprofileid.resource_id = R.id
+    AND instanceprofileid.type = 'provider'
+    AND lower(instanceprofileid.attr_name) = 'instanceprofileid'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS createdate
+    ON createdate.resource_id = R.id
+    AND createdate.type = 'provider'
+    AND lower(createdate.attr_name) = 'createdate'
+  LEFT JOIN resource_attribute AS roles
+    ON roles.resource_id = R.id
+    AND roles.type = 'provider'
+    AND lower(roles.attr_name) = 'roles'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -77,6 +71,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'instanceprofile'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_instanceprofile;

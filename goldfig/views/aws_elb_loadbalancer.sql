@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_elb_loadbalancer CASCADE;
 
 CREATE MATERIALIZED VIEW aws_elb_loadbalancer AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -41,60 +29,78 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS loadbalancername
-    ON loadbalancername.id = R.id
-    AND loadbalancername.attr_name = 'loadbalancername'
-  LEFT JOIN attrs AS dnsname
-    ON dnsname.id = R.id
-    AND dnsname.attr_name = 'dnsname'
-  LEFT JOIN attrs AS canonicalhostedzonename
-    ON canonicalhostedzonename.id = R.id
-    AND canonicalhostedzonename.attr_name = 'canonicalhostedzonename'
-  LEFT JOIN attrs AS canonicalhostedzonenameid
-    ON canonicalhostedzonenameid.id = R.id
-    AND canonicalhostedzonenameid.attr_name = 'canonicalhostedzonenameid'
-  LEFT JOIN attrs AS listenerdescriptions
-    ON listenerdescriptions.id = R.id
-    AND listenerdescriptions.attr_name = 'listenerdescriptions'
-  LEFT JOIN attrs AS policies
-    ON policies.id = R.id
-    AND policies.attr_name = 'policies'
-  LEFT JOIN attrs AS backendserverdescriptions
-    ON backendserverdescriptions.id = R.id
-    AND backendserverdescriptions.attr_name = 'backendserverdescriptions'
-  LEFT JOIN attrs AS availabilityzones
-    ON availabilityzones.id = R.id
-    AND availabilityzones.attr_name = 'availabilityzones'
-  LEFT JOIN attrs AS subnets
-    ON subnets.id = R.id
-    AND subnets.attr_name = 'subnets'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS instances
-    ON instances.id = R.id
-    AND instances.attr_name = 'instances'
-  LEFT JOIN attrs AS healthcheck
-    ON healthcheck.id = R.id
-    AND healthcheck.attr_name = 'healthcheck'
-  LEFT JOIN attrs AS sourcesecuritygroup
-    ON sourcesecuritygroup.id = R.id
-    AND sourcesecuritygroup.attr_name = 'sourcesecuritygroup'
-  LEFT JOIN attrs AS securitygroups
-    ON securitygroups.id = R.id
-    AND securitygroups.attr_name = 'securitygroups'
-  LEFT JOIN attrs AS createdtime
-    ON createdtime.id = R.id
-    AND createdtime.attr_name = 'createdtime'
-  LEFT JOIN attrs AS scheme
-    ON scheme.id = R.id
-    AND scheme.attr_name = 'scheme'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS attributes
-    ON attributes.id = R.id
-    AND attributes.attr_name = 'attributes'
+  LEFT JOIN resource_attribute AS loadbalancername
+    ON loadbalancername.resource_id = R.id
+    AND loadbalancername.type = 'provider'
+    AND lower(loadbalancername.attr_name) = 'loadbalancername'
+  LEFT JOIN resource_attribute AS dnsname
+    ON dnsname.resource_id = R.id
+    AND dnsname.type = 'provider'
+    AND lower(dnsname.attr_name) = 'dnsname'
+  LEFT JOIN resource_attribute AS canonicalhostedzonename
+    ON canonicalhostedzonename.resource_id = R.id
+    AND canonicalhostedzonename.type = 'provider'
+    AND lower(canonicalhostedzonename.attr_name) = 'canonicalhostedzonename'
+  LEFT JOIN resource_attribute AS canonicalhostedzonenameid
+    ON canonicalhostedzonenameid.resource_id = R.id
+    AND canonicalhostedzonenameid.type = 'provider'
+    AND lower(canonicalhostedzonenameid.attr_name) = 'canonicalhostedzonenameid'
+  LEFT JOIN resource_attribute AS listenerdescriptions
+    ON listenerdescriptions.resource_id = R.id
+    AND listenerdescriptions.type = 'provider'
+    AND lower(listenerdescriptions.attr_name) = 'listenerdescriptions'
+  LEFT JOIN resource_attribute AS policies
+    ON policies.resource_id = R.id
+    AND policies.type = 'provider'
+    AND lower(policies.attr_name) = 'policies'
+  LEFT JOIN resource_attribute AS backendserverdescriptions
+    ON backendserverdescriptions.resource_id = R.id
+    AND backendserverdescriptions.type = 'provider'
+    AND lower(backendserverdescriptions.attr_name) = 'backendserverdescriptions'
+  LEFT JOIN resource_attribute AS availabilityzones
+    ON availabilityzones.resource_id = R.id
+    AND availabilityzones.type = 'provider'
+    AND lower(availabilityzones.attr_name) = 'availabilityzones'
+  LEFT JOIN resource_attribute AS subnets
+    ON subnets.resource_id = R.id
+    AND subnets.type = 'provider'
+    AND lower(subnets.attr_name) = 'subnets'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS instances
+    ON instances.resource_id = R.id
+    AND instances.type = 'provider'
+    AND lower(instances.attr_name) = 'instances'
+  LEFT JOIN resource_attribute AS healthcheck
+    ON healthcheck.resource_id = R.id
+    AND healthcheck.type = 'provider'
+    AND lower(healthcheck.attr_name) = 'healthcheck'
+  LEFT JOIN resource_attribute AS sourcesecuritygroup
+    ON sourcesecuritygroup.resource_id = R.id
+    AND sourcesecuritygroup.type = 'provider'
+    AND lower(sourcesecuritygroup.attr_name) = 'sourcesecuritygroup'
+  LEFT JOIN resource_attribute AS securitygroups
+    ON securitygroups.resource_id = R.id
+    AND securitygroups.type = 'provider'
+    AND lower(securitygroups.attr_name) = 'securitygroups'
+  LEFT JOIN resource_attribute AS createdtime
+    ON createdtime.resource_id = R.id
+    AND createdtime.type = 'provider'
+    AND lower(createdtime.attr_name) = 'createdtime'
+  LEFT JOIN resource_attribute AS scheme
+    ON scheme.resource_id = R.id
+    AND scheme.type = 'provider'
+    AND lower(scheme.attr_name) = 'scheme'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS attributes
+    ON attributes.resource_id = R.id
+    AND attributes.type = 'provider'
+    AND lower(attributes.attr_name) = 'attributes'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -111,6 +117,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'loadbalancer'
+  AND R.service = 'elb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elb_loadbalancer;

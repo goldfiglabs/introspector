@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_logs_metricfilter CASCADE;
 
 CREATE MATERIALIZED VIEW aws_logs_metricfilter AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -29,21 +17,26 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS filtername
-    ON filtername.id = R.id
-    AND filtername.attr_name = 'filtername'
-  LEFT JOIN attrs AS filterpattern
-    ON filterpattern.id = R.id
-    AND filterpattern.attr_name = 'filterpattern'
-  LEFT JOIN attrs AS metrictransformations
-    ON metrictransformations.id = R.id
-    AND metrictransformations.attr_name = 'metrictransformations'
-  LEFT JOIN attrs AS creationtime
-    ON creationtime.id = R.id
-    AND creationtime.attr_name = 'creationtime'
-  LEFT JOIN attrs AS loggroupname
-    ON loggroupname.id = R.id
-    AND loggroupname.attr_name = 'loggroupname'
+  LEFT JOIN resource_attribute AS filtername
+    ON filtername.resource_id = R.id
+    AND filtername.type = 'provider'
+    AND lower(filtername.attr_name) = 'filtername'
+  LEFT JOIN resource_attribute AS filterpattern
+    ON filterpattern.resource_id = R.id
+    AND filterpattern.type = 'provider'
+    AND lower(filterpattern.attr_name) = 'filterpattern'
+  LEFT JOIN resource_attribute AS metrictransformations
+    ON metrictransformations.resource_id = R.id
+    AND metrictransformations.type = 'provider'
+    AND lower(metrictransformations.attr_name) = 'metrictransformations'
+  LEFT JOIN resource_attribute AS creationtime
+    ON creationtime.resource_id = R.id
+    AND creationtime.type = 'provider'
+    AND lower(creationtime.attr_name) = 'creationtime'
+  LEFT JOIN resource_attribute AS loggroupname
+    ON loggroupname.resource_id = R.id
+    AND loggroupname.type = 'provider'
+    AND lower(loggroupname.attr_name) = 'loggroupname'
   LEFT JOIN (
     SELECT
       _aws_logs_loggroup_relation.resource_id AS resource_id,

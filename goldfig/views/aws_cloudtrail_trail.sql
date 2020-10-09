@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_cloudtrail_trail CASCADE;
 
 CREATE MATERIALIZED VIEW aws_cloudtrail_trail AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -60,111 +48,146 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS s3bucketname
-    ON s3bucketname.id = R.id
-    AND s3bucketname.attr_name = 's3bucketname'
-  LEFT JOIN attrs AS s3keyprefix
-    ON s3keyprefix.id = R.id
-    AND s3keyprefix.attr_name = 's3keyprefix'
-  LEFT JOIN attrs AS snstopicname
-    ON snstopicname.id = R.id
-    AND snstopicname.attr_name = 'snstopicname'
-  LEFT JOIN attrs AS snstopicarn
-    ON snstopicarn.id = R.id
-    AND snstopicarn.attr_name = 'snstopicarn'
-  LEFT JOIN attrs AS includeglobalserviceevents
-    ON includeglobalserviceevents.id = R.id
-    AND includeglobalserviceevents.attr_name = 'includeglobalserviceevents'
-  LEFT JOIN attrs AS ismultiregiontrail
-    ON ismultiregiontrail.id = R.id
-    AND ismultiregiontrail.attr_name = 'ismultiregiontrail'
-  LEFT JOIN attrs AS homeregion
-    ON homeregion.id = R.id
-    AND homeregion.attr_name = 'homeregion'
-  LEFT JOIN attrs AS trailarn
-    ON trailarn.id = R.id
-    AND trailarn.attr_name = 'trailarn'
-  LEFT JOIN attrs AS logfilevalidationenabled
-    ON logfilevalidationenabled.id = R.id
-    AND logfilevalidationenabled.attr_name = 'logfilevalidationenabled'
-  LEFT JOIN attrs AS cloudwatchlogsloggrouparn
-    ON cloudwatchlogsloggrouparn.id = R.id
-    AND cloudwatchlogsloggrouparn.attr_name = 'cloudwatchlogsloggrouparn'
-  LEFT JOIN attrs AS cloudwatchlogsrolearn
-    ON cloudwatchlogsrolearn.id = R.id
-    AND cloudwatchlogsrolearn.attr_name = 'cloudwatchlogsrolearn'
-  LEFT JOIN attrs AS kmskeyid
-    ON kmskeyid.id = R.id
-    AND kmskeyid.attr_name = 'kmskeyid'
-  LEFT JOIN attrs AS hascustomeventselectors
-    ON hascustomeventselectors.id = R.id
-    AND hascustomeventselectors.attr_name = 'hascustomeventselectors'
-  LEFT JOIN attrs AS hasinsightselectors
-    ON hasinsightselectors.id = R.id
-    AND hasinsightselectors.attr_name = 'hasinsightselectors'
-  LEFT JOIN attrs AS isorganizationtrail
-    ON isorganizationtrail.id = R.id
-    AND isorganizationtrail.attr_name = 'isorganizationtrail'
-  LEFT JOIN attrs AS islogging
-    ON islogging.id = R.id
-    AND islogging.attr_name = 'islogging'
-  LEFT JOIN attrs AS latestdeliveryerror
-    ON latestdeliveryerror.id = R.id
-    AND latestdeliveryerror.attr_name = 'latestdeliveryerror'
-  LEFT JOIN attrs AS latestnotificationerror
-    ON latestnotificationerror.id = R.id
-    AND latestnotificationerror.attr_name = 'latestnotificationerror'
-  LEFT JOIN attrs AS latestdeliverytime
-    ON latestdeliverytime.id = R.id
-    AND latestdeliverytime.attr_name = 'latestdeliverytime'
-  LEFT JOIN attrs AS latestnotificationtime
-    ON latestnotificationtime.id = R.id
-    AND latestnotificationtime.attr_name = 'latestnotificationtime'
-  LEFT JOIN attrs AS startloggingtime
-    ON startloggingtime.id = R.id
-    AND startloggingtime.attr_name = 'startloggingtime'
-  LEFT JOIN attrs AS stoploggingtime
-    ON stoploggingtime.id = R.id
-    AND stoploggingtime.attr_name = 'stoploggingtime'
-  LEFT JOIN attrs AS latestcloudwatchlogsdeliveryerror
-    ON latestcloudwatchlogsdeliveryerror.id = R.id
-    AND latestcloudwatchlogsdeliveryerror.attr_name = 'latestcloudwatchlogsdeliveryerror'
-  LEFT JOIN attrs AS latestcloudwatchlogsdeliverytime
-    ON latestcloudwatchlogsdeliverytime.id = R.id
-    AND latestcloudwatchlogsdeliverytime.attr_name = 'latestcloudwatchlogsdeliverytime'
-  LEFT JOIN attrs AS latestdigestdeliverytime
-    ON latestdigestdeliverytime.id = R.id
-    AND latestdigestdeliverytime.attr_name = 'latestdigestdeliverytime'
-  LEFT JOIN attrs AS latestdigestdeliveryerror
-    ON latestdigestdeliveryerror.id = R.id
-    AND latestdigestdeliveryerror.attr_name = 'latestdigestdeliveryerror'
-  LEFT JOIN attrs AS latestdeliveryattempttime
-    ON latestdeliveryattempttime.id = R.id
-    AND latestdeliveryattempttime.attr_name = 'latestdeliveryattempttime'
-  LEFT JOIN attrs AS latestnotificationattempttime
-    ON latestnotificationattempttime.id = R.id
-    AND latestnotificationattempttime.attr_name = 'latestnotificationattempttime'
-  LEFT JOIN attrs AS latestnotificationattemptsucceeded
-    ON latestnotificationattemptsucceeded.id = R.id
-    AND latestnotificationattemptsucceeded.attr_name = 'latestnotificationattemptsucceeded'
-  LEFT JOIN attrs AS latestdeliveryattemptsucceeded
-    ON latestdeliveryattemptsucceeded.id = R.id
-    AND latestdeliveryattemptsucceeded.attr_name = 'latestdeliveryattemptsucceeded'
-  LEFT JOIN attrs AS timeloggingstarted
-    ON timeloggingstarted.id = R.id
-    AND timeloggingstarted.attr_name = 'timeloggingstarted'
-  LEFT JOIN attrs AS timeloggingstopped
-    ON timeloggingstopped.id = R.id
-    AND timeloggingstopped.attr_name = 'timeloggingstopped'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS eventselectors
-    ON eventselectors.id = R.id
-    AND eventselectors.attr_name = 'eventselectors'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS s3bucketname
+    ON s3bucketname.resource_id = R.id
+    AND s3bucketname.type = 'provider'
+    AND lower(s3bucketname.attr_name) = 's3bucketname'
+  LEFT JOIN resource_attribute AS s3keyprefix
+    ON s3keyprefix.resource_id = R.id
+    AND s3keyprefix.type = 'provider'
+    AND lower(s3keyprefix.attr_name) = 's3keyprefix'
+  LEFT JOIN resource_attribute AS snstopicname
+    ON snstopicname.resource_id = R.id
+    AND snstopicname.type = 'provider'
+    AND lower(snstopicname.attr_name) = 'snstopicname'
+  LEFT JOIN resource_attribute AS snstopicarn
+    ON snstopicarn.resource_id = R.id
+    AND snstopicarn.type = 'provider'
+    AND lower(snstopicarn.attr_name) = 'snstopicarn'
+  LEFT JOIN resource_attribute AS includeglobalserviceevents
+    ON includeglobalserviceevents.resource_id = R.id
+    AND includeglobalserviceevents.type = 'provider'
+    AND lower(includeglobalserviceevents.attr_name) = 'includeglobalserviceevents'
+  LEFT JOIN resource_attribute AS ismultiregiontrail
+    ON ismultiregiontrail.resource_id = R.id
+    AND ismultiregiontrail.type = 'provider'
+    AND lower(ismultiregiontrail.attr_name) = 'ismultiregiontrail'
+  LEFT JOIN resource_attribute AS homeregion
+    ON homeregion.resource_id = R.id
+    AND homeregion.type = 'provider'
+    AND lower(homeregion.attr_name) = 'homeregion'
+  LEFT JOIN resource_attribute AS trailarn
+    ON trailarn.resource_id = R.id
+    AND trailarn.type = 'provider'
+    AND lower(trailarn.attr_name) = 'trailarn'
+  LEFT JOIN resource_attribute AS logfilevalidationenabled
+    ON logfilevalidationenabled.resource_id = R.id
+    AND logfilevalidationenabled.type = 'provider'
+    AND lower(logfilevalidationenabled.attr_name) = 'logfilevalidationenabled'
+  LEFT JOIN resource_attribute AS cloudwatchlogsloggrouparn
+    ON cloudwatchlogsloggrouparn.resource_id = R.id
+    AND cloudwatchlogsloggrouparn.type = 'provider'
+    AND lower(cloudwatchlogsloggrouparn.attr_name) = 'cloudwatchlogsloggrouparn'
+  LEFT JOIN resource_attribute AS cloudwatchlogsrolearn
+    ON cloudwatchlogsrolearn.resource_id = R.id
+    AND cloudwatchlogsrolearn.type = 'provider'
+    AND lower(cloudwatchlogsrolearn.attr_name) = 'cloudwatchlogsrolearn'
+  LEFT JOIN resource_attribute AS kmskeyid
+    ON kmskeyid.resource_id = R.id
+    AND kmskeyid.type = 'provider'
+    AND lower(kmskeyid.attr_name) = 'kmskeyid'
+  LEFT JOIN resource_attribute AS hascustomeventselectors
+    ON hascustomeventselectors.resource_id = R.id
+    AND hascustomeventselectors.type = 'provider'
+    AND lower(hascustomeventselectors.attr_name) = 'hascustomeventselectors'
+  LEFT JOIN resource_attribute AS hasinsightselectors
+    ON hasinsightselectors.resource_id = R.id
+    AND hasinsightselectors.type = 'provider'
+    AND lower(hasinsightselectors.attr_name) = 'hasinsightselectors'
+  LEFT JOIN resource_attribute AS isorganizationtrail
+    ON isorganizationtrail.resource_id = R.id
+    AND isorganizationtrail.type = 'provider'
+    AND lower(isorganizationtrail.attr_name) = 'isorganizationtrail'
+  LEFT JOIN resource_attribute AS islogging
+    ON islogging.resource_id = R.id
+    AND islogging.type = 'provider'
+    AND lower(islogging.attr_name) = 'islogging'
+  LEFT JOIN resource_attribute AS latestdeliveryerror
+    ON latestdeliveryerror.resource_id = R.id
+    AND latestdeliveryerror.type = 'provider'
+    AND lower(latestdeliveryerror.attr_name) = 'latestdeliveryerror'
+  LEFT JOIN resource_attribute AS latestnotificationerror
+    ON latestnotificationerror.resource_id = R.id
+    AND latestnotificationerror.type = 'provider'
+    AND lower(latestnotificationerror.attr_name) = 'latestnotificationerror'
+  LEFT JOIN resource_attribute AS latestdeliverytime
+    ON latestdeliverytime.resource_id = R.id
+    AND latestdeliverytime.type = 'provider'
+    AND lower(latestdeliverytime.attr_name) = 'latestdeliverytime'
+  LEFT JOIN resource_attribute AS latestnotificationtime
+    ON latestnotificationtime.resource_id = R.id
+    AND latestnotificationtime.type = 'provider'
+    AND lower(latestnotificationtime.attr_name) = 'latestnotificationtime'
+  LEFT JOIN resource_attribute AS startloggingtime
+    ON startloggingtime.resource_id = R.id
+    AND startloggingtime.type = 'provider'
+    AND lower(startloggingtime.attr_name) = 'startloggingtime'
+  LEFT JOIN resource_attribute AS stoploggingtime
+    ON stoploggingtime.resource_id = R.id
+    AND stoploggingtime.type = 'provider'
+    AND lower(stoploggingtime.attr_name) = 'stoploggingtime'
+  LEFT JOIN resource_attribute AS latestcloudwatchlogsdeliveryerror
+    ON latestcloudwatchlogsdeliveryerror.resource_id = R.id
+    AND latestcloudwatchlogsdeliveryerror.type = 'provider'
+    AND lower(latestcloudwatchlogsdeliveryerror.attr_name) = 'latestcloudwatchlogsdeliveryerror'
+  LEFT JOIN resource_attribute AS latestcloudwatchlogsdeliverytime
+    ON latestcloudwatchlogsdeliverytime.resource_id = R.id
+    AND latestcloudwatchlogsdeliverytime.type = 'provider'
+    AND lower(latestcloudwatchlogsdeliverytime.attr_name) = 'latestcloudwatchlogsdeliverytime'
+  LEFT JOIN resource_attribute AS latestdigestdeliverytime
+    ON latestdigestdeliverytime.resource_id = R.id
+    AND latestdigestdeliverytime.type = 'provider'
+    AND lower(latestdigestdeliverytime.attr_name) = 'latestdigestdeliverytime'
+  LEFT JOIN resource_attribute AS latestdigestdeliveryerror
+    ON latestdigestdeliveryerror.resource_id = R.id
+    AND latestdigestdeliveryerror.type = 'provider'
+    AND lower(latestdigestdeliveryerror.attr_name) = 'latestdigestdeliveryerror'
+  LEFT JOIN resource_attribute AS latestdeliveryattempttime
+    ON latestdeliveryattempttime.resource_id = R.id
+    AND latestdeliveryattempttime.type = 'provider'
+    AND lower(latestdeliveryattempttime.attr_name) = 'latestdeliveryattempttime'
+  LEFT JOIN resource_attribute AS latestnotificationattempttime
+    ON latestnotificationattempttime.resource_id = R.id
+    AND latestnotificationattempttime.type = 'provider'
+    AND lower(latestnotificationattempttime.attr_name) = 'latestnotificationattempttime'
+  LEFT JOIN resource_attribute AS latestnotificationattemptsucceeded
+    ON latestnotificationattemptsucceeded.resource_id = R.id
+    AND latestnotificationattemptsucceeded.type = 'provider'
+    AND lower(latestnotificationattemptsucceeded.attr_name) = 'latestnotificationattemptsucceeded'
+  LEFT JOIN resource_attribute AS latestdeliveryattemptsucceeded
+    ON latestdeliveryattemptsucceeded.resource_id = R.id
+    AND latestdeliveryattemptsucceeded.type = 'provider'
+    AND lower(latestdeliveryattemptsucceeded.attr_name) = 'latestdeliveryattemptsucceeded'
+  LEFT JOIN resource_attribute AS timeloggingstarted
+    ON timeloggingstarted.resource_id = R.id
+    AND timeloggingstarted.type = 'provider'
+    AND lower(timeloggingstarted.attr_name) = 'timeloggingstarted'
+  LEFT JOIN resource_attribute AS timeloggingstopped
+    ON timeloggingstopped.resource_id = R.id
+    AND timeloggingstopped.type = 'provider'
+    AND lower(timeloggingstopped.attr_name) = 'timeloggingstopped'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS eventselectors
+    ON eventselectors.resource_id = R.id
+    AND eventselectors.type = 'provider'
+    AND lower(eventselectors.attr_name) = 'eventselectors'
   LEFT JOIN (
     SELECT
       _aws_s3_bucket_relation.resource_id AS resource_id,
@@ -207,6 +230,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'trail'
+  AND R.service = 'cloudtrail'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudtrail_trail;

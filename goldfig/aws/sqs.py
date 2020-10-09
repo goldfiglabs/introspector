@@ -11,7 +11,9 @@ _log = logging.getLogger(__name__)
 
 
 def _import_queue(proxy: ServiceProxy, queue_url: str) -> Dict[str, Any]:
-  attrs_resp = proxy.get('get_queue_attributes', QueueUrl=queue_url)
+  attrs_resp = proxy.get('get_queue_attributes',
+                         QueueUrl=queue_url,
+                         AttributeNames=['All'])
   if attrs_resp is None:
     raise GFNoAccess('sqs', 'get_queue_attributes')
   attrs = attrs_resp['Attributes']

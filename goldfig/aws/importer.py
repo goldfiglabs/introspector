@@ -10,6 +10,7 @@ from goldfig.aws.acm import import_account_acm_region_to_db, import_account_acm_
 from goldfig.aws.apigateway import import_account_apigateway_region_to_db, import_account_apigateway_region_with_pool
 from goldfig.aws.apigatewayv2 import import_account_apigatewayv2_region_to_db, import_account_apigatewayv2_region_with_pool
 from goldfig.aws.iam import import_account_iam_to_db, import_account_iam_with_pool
+from goldfig.aws.dynamodb import import_account_dynamodb_region_to_db, import_account_dynamodb_region_with_pool
 from goldfig.aws.ec2 import import_account_ec2_region_to_db, import_account_ec2_region_with_pool
 from goldfig.aws.ecs import import_account_ecs_region_to_db, import_account_ecs_region_with_pool
 from goldfig.aws.elb import import_account_elb_region_to_db, import_account_elb_region_with_pool
@@ -18,7 +19,7 @@ from goldfig.aws.s3 import import_account_s3_to_db, import_account_s3_with_pool
 from goldfig.aws.kms import import_account_kms_region_to_db, import_account_kms_region_with_pool
 from goldfig.aws.lambdax import import_account_lambda_region_to_db, import_account_lambda_region_with_pool
 from goldfig.aws.logs import import_account_logs_region_to_db, import_account_logs_region_with_pool
-from goldfig.aws.cloudfront import import_account_cloudfront_region_to_db, import_account_cloudfront_region_with_pool
+from goldfig.aws.cloudfront import import_account_cloudfront_to_db, import_account_cloudfront_with_pool
 from goldfig.aws.cloudtrail import import_account_cloudtrail_region_to_db, import_account_cloudtrail_region_with_pool
 from goldfig.aws.cloudwatch import import_account_cloudwatch_region_to_db, import_account_cloudwatch_region_with_pool
 from goldfig.aws.config import import_account_config_region_to_db, import_account_config_region_with_pool
@@ -39,6 +40,11 @@ def run_single_session(db: Session, import_job_id: int,
 
   import_account_route53_to_db(db, import_job_id, proxy_builder)
   db.flush()
+
+  for region in region_cache.regions_for_service('dynamodb'):
+    import_account_dynamodb_region_to_db(db, import_job_id, region,
+                                         proxy_builder)
+    db.flush()
 
   for region in region_cache.regions_for_service('ec2'):
     import_account_ec2_region_to_db(db, import_job_id, region, proxy_builder)
@@ -95,10 +101,8 @@ def run_single_session(db: Session, import_job_id: int,
     import_account_sqs_region_to_db(db, import_job_id, region, proxy_builder)
     db.flush()
 
-  for region in region_cache.regions_for_service('cloudfront'):
-    import_account_cloudfront_region_to_db(db, import_job_id, region,
-                                           proxy_builder)
-    db.flush()
+  import_account_cloudfront_to_db(db, import_job_id, proxy_builder)
+  db.flush()
 
   for region in region_cache.regions_for_service('apigatewayv2'):
     import_account_apigatewayv2_region_to_db(db, import_job_id, region,
@@ -138,6 +142,10 @@ def run_parallel_session(region_cache: RegionCache,
 
     results += import_account_route53_with_pool(pool, proxy_builder_args,
                                                 import_job.id, ps, accounts)
+
+    for region in region_cache.regions_for_service('dynamodb'):
+      results += import_account_dynamodb_region_with_pool(
+          pool, proxy_builder_args, import_job.id, region, ps, accounts)
 
     for region in region_cache.regions_for_service('ec2'):
       results += import_account_ec2_region_with_pool(pool, proxy_builder_args,
@@ -202,9 +210,8 @@ def run_parallel_session(region_cache: RegionCache,
                                                      import_job.id, region, ps,
                                                      accounts)
 
-    for region in region_cache.regions_for_service('cloudfront'):
-      results += import_account_cloudfront_region_with_pool(
-          pool, proxy_builder_args, import_job.id, region, ps, accounts)
+    results += import_account_cloudfront_with_pool(pool, proxy_builder_args,
+                                                   import_job.id, ps, accounts)
 
     for region in region_cache.regions_for_service('apigatewayv2'):
       results += import_account_apigatewayv2_region_with_pool(

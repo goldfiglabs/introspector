@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_organizations_root CASCADE;
 
 CREATE MATERIALIZED VIEW aws_organizations_root AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -29,24 +17,30 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS id
-    ON id.id = R.id
-    AND id.attr_name = 'id'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS policytypes
-    ON policytypes.id = R.id
-    AND policytypes.attr_name = 'policytypes'
-  LEFT JOIN attrs AS servicecontrolpolicies
-    ON servicecontrolpolicies.id = R.id
-    AND servicecontrolpolicies.attr_name = 'servicecontrolpolicies'
-  LEFT JOIN attrs AS tagpolicies
-    ON tagpolicies.id = R.id
-    AND tagpolicies.attr_name = 'tagpolicies'
+  LEFT JOIN resource_attribute AS id
+    ON id.resource_id = R.id
+    AND id.type = 'provider'
+    AND lower(id.attr_name) = 'id'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS policytypes
+    ON policytypes.resource_id = R.id
+    AND policytypes.type = 'provider'
+    AND lower(policytypes.attr_name) = 'policytypes'
+  LEFT JOIN resource_attribute AS servicecontrolpolicies
+    ON servicecontrolpolicies.resource_id = R.id
+    AND servicecontrolpolicies.type = 'provider'
+    AND lower(servicecontrolpolicies.attr_name) = 'servicecontrolpolicies'
+  LEFT JOIN resource_attribute AS tagpolicies
+    ON tagpolicies.resource_id = R.id
+    AND tagpolicies.type = 'provider'
+    AND lower(tagpolicies.attr_name) = 'tagpolicies'
   LEFT JOIN (
     SELECT
       _aws_organizations_organization_relation.resource_id AS resource_id,
@@ -63,6 +57,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'root'
+  AND R.service = 'organizations'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_organizations_root;

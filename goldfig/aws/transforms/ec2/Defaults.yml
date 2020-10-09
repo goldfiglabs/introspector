@@ -1,0 +1,11 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Defaults
+  name: name
+  uri:
+    uri: uri
+  attributes:
+    provider:
+    - EbsEncryptionByDefault
+    - EbsDefaultKmsKeyId

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_metricalarm CASCADE;
 
 CREATE MATERIALIZED VIEW aws_cloudwatch_metricalarm AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -52,90 +40,118 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS alarmname
-    ON alarmname.id = R.id
-    AND alarmname.attr_name = 'alarmname'
-  LEFT JOIN attrs AS alarmarn
-    ON alarmarn.id = R.id
-    AND alarmarn.attr_name = 'alarmarn'
-  LEFT JOIN attrs AS alarmdescription
-    ON alarmdescription.id = R.id
-    AND alarmdescription.attr_name = 'alarmdescription'
-  LEFT JOIN attrs AS alarmconfigurationupdatedtimestamp
-    ON alarmconfigurationupdatedtimestamp.id = R.id
-    AND alarmconfigurationupdatedtimestamp.attr_name = 'alarmconfigurationupdatedtimestamp'
-  LEFT JOIN attrs AS actionsenabled
-    ON actionsenabled.id = R.id
-    AND actionsenabled.attr_name = 'actionsenabled'
-  LEFT JOIN attrs AS okactions
-    ON okactions.id = R.id
-    AND okactions.attr_name = 'okactions'
-  LEFT JOIN attrs AS alarmactions
-    ON alarmactions.id = R.id
-    AND alarmactions.attr_name = 'alarmactions'
-  LEFT JOIN attrs AS insufficientdataactions
-    ON insufficientdataactions.id = R.id
-    AND insufficientdataactions.attr_name = 'insufficientdataactions'
-  LEFT JOIN attrs AS statevalue
-    ON statevalue.id = R.id
-    AND statevalue.attr_name = 'statevalue'
-  LEFT JOIN attrs AS statereason
-    ON statereason.id = R.id
-    AND statereason.attr_name = 'statereason'
-  LEFT JOIN attrs AS statereasondata
-    ON statereasondata.id = R.id
-    AND statereasondata.attr_name = 'statereasondata'
-  LEFT JOIN attrs AS stateupdatedtimestamp
-    ON stateupdatedtimestamp.id = R.id
-    AND stateupdatedtimestamp.attr_name = 'stateupdatedtimestamp'
-  LEFT JOIN attrs AS metricname
-    ON metricname.id = R.id
-    AND metricname.attr_name = 'metricname'
-  LEFT JOIN attrs AS namespace
-    ON namespace.id = R.id
-    AND namespace.attr_name = 'namespace'
-  LEFT JOIN attrs AS statistic
-    ON statistic.id = R.id
-    AND statistic.attr_name = 'statistic'
-  LEFT JOIN attrs AS extendedstatistic
-    ON extendedstatistic.id = R.id
-    AND extendedstatistic.attr_name = 'extendedstatistic'
-  LEFT JOIN attrs AS dimensions
-    ON dimensions.id = R.id
-    AND dimensions.attr_name = 'dimensions'
-  LEFT JOIN attrs AS period
-    ON period.id = R.id
-    AND period.attr_name = 'period'
-  LEFT JOIN attrs AS unit
-    ON unit.id = R.id
-    AND unit.attr_name = 'unit'
-  LEFT JOIN attrs AS evaluationperiods
-    ON evaluationperiods.id = R.id
-    AND evaluationperiods.attr_name = 'evaluationperiods'
-  LEFT JOIN attrs AS datapointstoalarm
-    ON datapointstoalarm.id = R.id
-    AND datapointstoalarm.attr_name = 'datapointstoalarm'
-  LEFT JOIN attrs AS threshold
-    ON threshold.id = R.id
-    AND threshold.attr_name = 'threshold'
-  LEFT JOIN attrs AS comparisonoperator
-    ON comparisonoperator.id = R.id
-    AND comparisonoperator.attr_name = 'comparisonoperator'
-  LEFT JOIN attrs AS treatmissingdata
-    ON treatmissingdata.id = R.id
-    AND treatmissingdata.attr_name = 'treatmissingdata'
-  LEFT JOIN attrs AS evaluatelowsamplecountpercentile
-    ON evaluatelowsamplecountpercentile.id = R.id
-    AND evaluatelowsamplecountpercentile.attr_name = 'evaluatelowsamplecountpercentile'
-  LEFT JOIN attrs AS metrics
-    ON metrics.id = R.id
-    AND metrics.attr_name = 'metrics'
-  LEFT JOIN attrs AS thresholdmetricid
-    ON thresholdmetricid.id = R.id
-    AND thresholdmetricid.attr_name = 'thresholdmetricid'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS alarmname
+    ON alarmname.resource_id = R.id
+    AND alarmname.type = 'provider'
+    AND lower(alarmname.attr_name) = 'alarmname'
+  LEFT JOIN resource_attribute AS alarmarn
+    ON alarmarn.resource_id = R.id
+    AND alarmarn.type = 'provider'
+    AND lower(alarmarn.attr_name) = 'alarmarn'
+  LEFT JOIN resource_attribute AS alarmdescription
+    ON alarmdescription.resource_id = R.id
+    AND alarmdescription.type = 'provider'
+    AND lower(alarmdescription.attr_name) = 'alarmdescription'
+  LEFT JOIN resource_attribute AS alarmconfigurationupdatedtimestamp
+    ON alarmconfigurationupdatedtimestamp.resource_id = R.id
+    AND alarmconfigurationupdatedtimestamp.type = 'provider'
+    AND lower(alarmconfigurationupdatedtimestamp.attr_name) = 'alarmconfigurationupdatedtimestamp'
+  LEFT JOIN resource_attribute AS actionsenabled
+    ON actionsenabled.resource_id = R.id
+    AND actionsenabled.type = 'provider'
+    AND lower(actionsenabled.attr_name) = 'actionsenabled'
+  LEFT JOIN resource_attribute AS okactions
+    ON okactions.resource_id = R.id
+    AND okactions.type = 'provider'
+    AND lower(okactions.attr_name) = 'okactions'
+  LEFT JOIN resource_attribute AS alarmactions
+    ON alarmactions.resource_id = R.id
+    AND alarmactions.type = 'provider'
+    AND lower(alarmactions.attr_name) = 'alarmactions'
+  LEFT JOIN resource_attribute AS insufficientdataactions
+    ON insufficientdataactions.resource_id = R.id
+    AND insufficientdataactions.type = 'provider'
+    AND lower(insufficientdataactions.attr_name) = 'insufficientdataactions'
+  LEFT JOIN resource_attribute AS statevalue
+    ON statevalue.resource_id = R.id
+    AND statevalue.type = 'provider'
+    AND lower(statevalue.attr_name) = 'statevalue'
+  LEFT JOIN resource_attribute AS statereason
+    ON statereason.resource_id = R.id
+    AND statereason.type = 'provider'
+    AND lower(statereason.attr_name) = 'statereason'
+  LEFT JOIN resource_attribute AS statereasondata
+    ON statereasondata.resource_id = R.id
+    AND statereasondata.type = 'provider'
+    AND lower(statereasondata.attr_name) = 'statereasondata'
+  LEFT JOIN resource_attribute AS stateupdatedtimestamp
+    ON stateupdatedtimestamp.resource_id = R.id
+    AND stateupdatedtimestamp.type = 'provider'
+    AND lower(stateupdatedtimestamp.attr_name) = 'stateupdatedtimestamp'
+  LEFT JOIN resource_attribute AS metricname
+    ON metricname.resource_id = R.id
+    AND metricname.type = 'provider'
+    AND lower(metricname.attr_name) = 'metricname'
+  LEFT JOIN resource_attribute AS namespace
+    ON namespace.resource_id = R.id
+    AND namespace.type = 'provider'
+    AND lower(namespace.attr_name) = 'namespace'
+  LEFT JOIN resource_attribute AS statistic
+    ON statistic.resource_id = R.id
+    AND statistic.type = 'provider'
+    AND lower(statistic.attr_name) = 'statistic'
+  LEFT JOIN resource_attribute AS extendedstatistic
+    ON extendedstatistic.resource_id = R.id
+    AND extendedstatistic.type = 'provider'
+    AND lower(extendedstatistic.attr_name) = 'extendedstatistic'
+  LEFT JOIN resource_attribute AS dimensions
+    ON dimensions.resource_id = R.id
+    AND dimensions.type = 'provider'
+    AND lower(dimensions.attr_name) = 'dimensions'
+  LEFT JOIN resource_attribute AS period
+    ON period.resource_id = R.id
+    AND period.type = 'provider'
+    AND lower(period.attr_name) = 'period'
+  LEFT JOIN resource_attribute AS unit
+    ON unit.resource_id = R.id
+    AND unit.type = 'provider'
+    AND lower(unit.attr_name) = 'unit'
+  LEFT JOIN resource_attribute AS evaluationperiods
+    ON evaluationperiods.resource_id = R.id
+    AND evaluationperiods.type = 'provider'
+    AND lower(evaluationperiods.attr_name) = 'evaluationperiods'
+  LEFT JOIN resource_attribute AS datapointstoalarm
+    ON datapointstoalarm.resource_id = R.id
+    AND datapointstoalarm.type = 'provider'
+    AND lower(datapointstoalarm.attr_name) = 'datapointstoalarm'
+  LEFT JOIN resource_attribute AS threshold
+    ON threshold.resource_id = R.id
+    AND threshold.type = 'provider'
+    AND lower(threshold.attr_name) = 'threshold'
+  LEFT JOIN resource_attribute AS comparisonoperator
+    ON comparisonoperator.resource_id = R.id
+    AND comparisonoperator.type = 'provider'
+    AND lower(comparisonoperator.attr_name) = 'comparisonoperator'
+  LEFT JOIN resource_attribute AS treatmissingdata
+    ON treatmissingdata.resource_id = R.id
+    AND treatmissingdata.type = 'provider'
+    AND lower(treatmissingdata.attr_name) = 'treatmissingdata'
+  LEFT JOIN resource_attribute AS evaluatelowsamplecountpercentile
+    ON evaluatelowsamplecountpercentile.resource_id = R.id
+    AND evaluatelowsamplecountpercentile.type = 'provider'
+    AND lower(evaluatelowsamplecountpercentile.attr_name) = 'evaluatelowsamplecountpercentile'
+  LEFT JOIN resource_attribute AS metrics
+    ON metrics.resource_id = R.id
+    AND metrics.type = 'provider'
+    AND lower(metrics.attr_name) = 'metrics'
+  LEFT JOIN resource_attribute AS thresholdmetricid
+    ON thresholdmetricid.resource_id = R.id
+    AND thresholdmetricid.type = 'provider'
+    AND lower(thresholdmetricid.attr_name) = 'thresholdmetricid'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_cloudwatch_metric_relation.resource_id AS resource_id,

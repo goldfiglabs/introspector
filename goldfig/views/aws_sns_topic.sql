@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_sns_topic CASCADE;
 
 CREATE MATERIALIZED VIEW aws_sns_topic AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -34,39 +22,50 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS topicarn
-    ON topicarn.id = R.id
-    AND topicarn.attr_name = 'topicarn'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS DeliveryPolicy
-    ON DeliveryPolicy.id = R.id
-    AND DeliveryPolicy.attr_name = 'deliverypolicy'
-  LEFT JOIN attrs AS DisplayName
-    ON DisplayName.id = R.id
-    AND DisplayName.attr_name = 'displayname'
-  LEFT JOIN attrs AS Owner
-    ON Owner.id = R.id
-    AND Owner.attr_name = 'owner'
-  LEFT JOIN attrs AS Policy
-    ON Policy.id = R.id
-    AND Policy.attr_name = 'policy'
-  LEFT JOIN attrs AS SubscriptionsConfirmed
-    ON SubscriptionsConfirmed.id = R.id
-    AND SubscriptionsConfirmed.attr_name = 'subscriptionsconfirmed'
-  LEFT JOIN attrs AS SubscriptionsDeleted
-    ON SubscriptionsDeleted.id = R.id
-    AND SubscriptionsDeleted.attr_name = 'subscriptionsdeleted'
-  LEFT JOIN attrs AS SubscriptionsPending
-    ON SubscriptionsPending.id = R.id
-    AND SubscriptionsPending.attr_name = 'subscriptionspending'
-  LEFT JOIN attrs AS EffectiveDeliveryPolicy
-    ON EffectiveDeliveryPolicy.id = R.id
-    AND EffectiveDeliveryPolicy.attr_name = 'effectivedeliverypolicy'
-  LEFT JOIN attrs AS KmsMasterKeyId
-    ON KmsMasterKeyId.id = R.id
-    AND KmsMasterKeyId.attr_name = 'kmsmasterkeyid'
+  LEFT JOIN resource_attribute AS topicarn
+    ON topicarn.resource_id = R.id
+    AND topicarn.type = 'provider'
+    AND lower(topicarn.attr_name) = 'topicarn'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS DeliveryPolicy
+    ON DeliveryPolicy.resource_id = R.id
+    AND DeliveryPolicy.type = 'provider'
+    AND lower(DeliveryPolicy.attr_name) = 'deliverypolicy'
+  LEFT JOIN resource_attribute AS DisplayName
+    ON DisplayName.resource_id = R.id
+    AND DisplayName.type = 'provider'
+    AND lower(DisplayName.attr_name) = 'displayname'
+  LEFT JOIN resource_attribute AS Owner
+    ON Owner.resource_id = R.id
+    AND Owner.type = 'provider'
+    AND lower(Owner.attr_name) = 'owner'
+  LEFT JOIN resource_attribute AS Policy
+    ON Policy.resource_id = R.id
+    AND Policy.type = 'provider'
+    AND lower(Policy.attr_name) = 'policy'
+  LEFT JOIN resource_attribute AS SubscriptionsConfirmed
+    ON SubscriptionsConfirmed.resource_id = R.id
+    AND SubscriptionsConfirmed.type = 'provider'
+    AND lower(SubscriptionsConfirmed.attr_name) = 'subscriptionsconfirmed'
+  LEFT JOIN resource_attribute AS SubscriptionsDeleted
+    ON SubscriptionsDeleted.resource_id = R.id
+    AND SubscriptionsDeleted.type = 'provider'
+    AND lower(SubscriptionsDeleted.attr_name) = 'subscriptionsdeleted'
+  LEFT JOIN resource_attribute AS SubscriptionsPending
+    ON SubscriptionsPending.resource_id = R.id
+    AND SubscriptionsPending.type = 'provider'
+    AND lower(SubscriptionsPending.attr_name) = 'subscriptionspending'
+  LEFT JOIN resource_attribute AS EffectiveDeliveryPolicy
+    ON EffectiveDeliveryPolicy.resource_id = R.id
+    AND EffectiveDeliveryPolicy.type = 'provider'
+    AND lower(EffectiveDeliveryPolicy.attr_name) = 'effectivedeliverypolicy'
+  LEFT JOIN resource_attribute AS KmsMasterKeyId
+    ON KmsMasterKeyId.resource_id = R.id
+    AND KmsMasterKeyId.type = 'provider'
+    AND lower(KmsMasterKeyId.attr_name) = 'kmsmasterkeyid'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -83,6 +82,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'topic'
+  AND R.service = 'sns'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_sns_topic;

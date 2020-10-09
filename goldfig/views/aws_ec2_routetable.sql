@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_routetable CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_routetable AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -31,27 +19,34 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS associations
-    ON associations.id = R.id
-    AND associations.attr_name = 'associations'
-  LEFT JOIN attrs AS propagatingvgws
-    ON propagatingvgws.id = R.id
-    AND propagatingvgws.attr_name = 'propagatingvgws'
-  LEFT JOIN attrs AS routetableid
-    ON routetableid.id = R.id
-    AND routetableid.attr_name = 'routetableid'
-  LEFT JOIN attrs AS routes
-    ON routes.id = R.id
-    AND routes.attr_name = 'routes'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
-  LEFT JOIN attrs AS ownerid
-    ON ownerid.id = R.id
-    AND ownerid.attr_name = 'ownerid'
+  LEFT JOIN resource_attribute AS associations
+    ON associations.resource_id = R.id
+    AND associations.type = 'provider'
+    AND lower(associations.attr_name) = 'associations'
+  LEFT JOIN resource_attribute AS propagatingvgws
+    ON propagatingvgws.resource_id = R.id
+    AND propagatingvgws.type = 'provider'
+    AND lower(propagatingvgws.attr_name) = 'propagatingvgws'
+  LEFT JOIN resource_attribute AS routetableid
+    ON routetableid.resource_id = R.id
+    AND routetableid.type = 'provider'
+    AND lower(routetableid.attr_name) = 'routetableid'
+  LEFT JOIN resource_attribute AS routes
+    ON routes.resource_id = R.id
+    AND routes.type = 'provider'
+    AND lower(routes.attr_name) = 'routes'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS ownerid
+    ON ownerid.resource_id = R.id
+    AND ownerid.type = 'provider'
+    AND lower(ownerid.attr_name) = 'ownerid'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -81,6 +76,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'routetable'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_routetable;

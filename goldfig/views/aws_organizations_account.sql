@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_organizations_account CASCADE;
 
 CREATE MATERIALIZED VIEW aws_organizations_account AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -34,36 +22,46 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS id
-    ON id.id = R.id
-    AND id.attr_name = 'id'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS email
-    ON email.id = R.id
-    AND email.attr_name = 'email'
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS joinedmethod
-    ON joinedmethod.id = R.id
-    AND joinedmethod.attr_name = 'joinedmethod'
-  LEFT JOIN attrs AS joinedtimestamp
-    ON joinedtimestamp.id = R.id
-    AND joinedtimestamp.attr_name = 'joinedtimestamp'
-  LEFT JOIN attrs AS servicecontrolpolicies
-    ON servicecontrolpolicies.id = R.id
-    AND servicecontrolpolicies.attr_name = 'servicecontrolpolicies'
-  LEFT JOIN attrs AS tagpolicies
-    ON tagpolicies.id = R.id
-    AND tagpolicies.attr_name = 'tagpolicies'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS id
+    ON id.resource_id = R.id
+    AND id.type = 'provider'
+    AND lower(id.attr_name) = 'id'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS email
+    ON email.resource_id = R.id
+    AND email.type = 'provider'
+    AND lower(email.attr_name) = 'email'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS joinedmethod
+    ON joinedmethod.resource_id = R.id
+    AND joinedmethod.type = 'provider'
+    AND lower(joinedmethod.attr_name) = 'joinedmethod'
+  LEFT JOIN resource_attribute AS joinedtimestamp
+    ON joinedtimestamp.resource_id = R.id
+    AND joinedtimestamp.type = 'provider'
+    AND lower(joinedtimestamp.attr_name) = 'joinedtimestamp'
+  LEFT JOIN resource_attribute AS servicecontrolpolicies
+    ON servicecontrolpolicies.resource_id = R.id
+    AND servicecontrolpolicies.type = 'provider'
+    AND lower(servicecontrolpolicies.attr_name) = 'servicecontrolpolicies'
+  LEFT JOIN resource_attribute AS tagpolicies
+    ON tagpolicies.resource_id = R.id
+    AND tagpolicies.type = 'provider'
+    AND lower(tagpolicies.attr_name) = 'tagpolicies'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_root_relation.resource_id AS resource_id,
@@ -93,6 +91,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'account'
+  AND R.service = 'organizations'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_organizations_account;

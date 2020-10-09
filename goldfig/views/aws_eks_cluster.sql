@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_eks_cluster CASCADE;
 
 CREATE MATERIALIZED VIEW aws_eks_cluster AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -39,51 +27,66 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS name
-    ON name.id = R.id
-    AND name.attr_name = 'name'
-  LEFT JOIN attrs AS arn
-    ON arn.id = R.id
-    AND arn.attr_name = 'arn'
-  LEFT JOIN attrs AS createdat
-    ON createdat.id = R.id
-    AND createdat.attr_name = 'createdat'
-  LEFT JOIN attrs AS version
-    ON version.id = R.id
-    AND version.attr_name = 'version'
-  LEFT JOIN attrs AS endpoint
-    ON endpoint.id = R.id
-    AND endpoint.attr_name = 'endpoint'
-  LEFT JOIN attrs AS rolearn
-    ON rolearn.id = R.id
-    AND rolearn.attr_name = 'rolearn'
-  LEFT JOIN attrs AS resourcesvpcconfig
-    ON resourcesvpcconfig.id = R.id
-    AND resourcesvpcconfig.attr_name = 'resourcesvpcconfig'
-  LEFT JOIN attrs AS logging
-    ON logging.id = R.id
-    AND logging.attr_name = 'logging'
-  LEFT JOIN attrs AS identity
-    ON identity.id = R.id
-    AND identity.attr_name = 'identity'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS certificateauthority
-    ON certificateauthority.id = R.id
-    AND certificateauthority.attr_name = 'certificateauthority'
-  LEFT JOIN attrs AS clientrequesttoken
-    ON clientrequesttoken.id = R.id
-    AND clientrequesttoken.attr_name = 'clientrequesttoken'
-  LEFT JOIN attrs AS platformversion
-    ON platformversion.id = R.id
-    AND platformversion.attr_name = 'platformversion'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
-  LEFT JOIN attrs AS encryptionconfig
-    ON encryptionconfig.id = R.id
-    AND encryptionconfig.attr_name = 'encryptionconfig'
+  LEFT JOIN resource_attribute AS name
+    ON name.resource_id = R.id
+    AND name.type = 'provider'
+    AND lower(name.attr_name) = 'name'
+  LEFT JOIN resource_attribute AS arn
+    ON arn.resource_id = R.id
+    AND arn.type = 'provider'
+    AND lower(arn.attr_name) = 'arn'
+  LEFT JOIN resource_attribute AS createdat
+    ON createdat.resource_id = R.id
+    AND createdat.type = 'provider'
+    AND lower(createdat.attr_name) = 'createdat'
+  LEFT JOIN resource_attribute AS version
+    ON version.resource_id = R.id
+    AND version.type = 'provider'
+    AND lower(version.attr_name) = 'version'
+  LEFT JOIN resource_attribute AS endpoint
+    ON endpoint.resource_id = R.id
+    AND endpoint.type = 'provider'
+    AND lower(endpoint.attr_name) = 'endpoint'
+  LEFT JOIN resource_attribute AS rolearn
+    ON rolearn.resource_id = R.id
+    AND rolearn.type = 'provider'
+    AND lower(rolearn.attr_name) = 'rolearn'
+  LEFT JOIN resource_attribute AS resourcesvpcconfig
+    ON resourcesvpcconfig.resource_id = R.id
+    AND resourcesvpcconfig.type = 'provider'
+    AND lower(resourcesvpcconfig.attr_name) = 'resourcesvpcconfig'
+  LEFT JOIN resource_attribute AS logging
+    ON logging.resource_id = R.id
+    AND logging.type = 'provider'
+    AND lower(logging.attr_name) = 'logging'
+  LEFT JOIN resource_attribute AS identity
+    ON identity.resource_id = R.id
+    AND identity.type = 'provider'
+    AND lower(identity.attr_name) = 'identity'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS certificateauthority
+    ON certificateauthority.resource_id = R.id
+    AND certificateauthority.type = 'provider'
+    AND lower(certificateauthority.attr_name) = 'certificateauthority'
+  LEFT JOIN resource_attribute AS clientrequesttoken
+    ON clientrequesttoken.resource_id = R.id
+    AND clientrequesttoken.type = 'provider'
+    AND lower(clientrequesttoken.attr_name) = 'clientrequesttoken'
+  LEFT JOIN resource_attribute AS platformversion
+    ON platformversion.resource_id = R.id
+    AND platformversion.type = 'provider'
+    AND lower(platformversion.attr_name) = 'platformversion'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS encryptionconfig
+    ON encryptionconfig.resource_id = R.id
+    AND encryptionconfig.type = 'provider'
+    AND lower(encryptionconfig.attr_name) = 'encryptionconfig'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,

@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_apigatewayv2_stage CASCADE;
 
 CREATE MATERIALIZED VIEW aws_apigatewayv2_stage AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -38,48 +26,62 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS accesslogsettings
-    ON accesslogsettings.id = R.id
-    AND accesslogsettings.attr_name = 'accesslogsettings'
-  LEFT JOIN attrs AS apigatewaymanaged
-    ON apigatewaymanaged.id = R.id
-    AND apigatewaymanaged.attr_name = 'apigatewaymanaged'
-  LEFT JOIN attrs AS autodeploy
-    ON autodeploy.id = R.id
-    AND autodeploy.attr_name = 'autodeploy'
-  LEFT JOIN attrs AS clientcertificateid
-    ON clientcertificateid.id = R.id
-    AND clientcertificateid.attr_name = 'clientcertificateid'
-  LEFT JOIN attrs AS createddate
-    ON createddate.id = R.id
-    AND createddate.attr_name = 'createddate'
-  LEFT JOIN attrs AS defaultroutesettings
-    ON defaultroutesettings.id = R.id
-    AND defaultroutesettings.attr_name = 'defaultroutesettings'
-  LEFT JOIN attrs AS deploymentid
-    ON deploymentid.id = R.id
-    AND deploymentid.attr_name = 'deploymentid'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS lastdeploymentstatusmessage
-    ON lastdeploymentstatusmessage.id = R.id
-    AND lastdeploymentstatusmessage.attr_name = 'lastdeploymentstatusmessage'
-  LEFT JOIN attrs AS lastupdateddate
-    ON lastupdateddate.id = R.id
-    AND lastupdateddate.attr_name = 'lastupdateddate'
-  LEFT JOIN attrs AS routesettings
-    ON routesettings.id = R.id
-    AND routesettings.attr_name = 'routesettings'
-  LEFT JOIN attrs AS stagename
-    ON stagename.id = R.id
-    AND stagename.attr_name = 'stagename'
-  LEFT JOIN attrs AS stagevariables
-    ON stagevariables.id = R.id
-    AND stagevariables.attr_name = 'stagevariables'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS accesslogsettings
+    ON accesslogsettings.resource_id = R.id
+    AND accesslogsettings.type = 'provider'
+    AND lower(accesslogsettings.attr_name) = 'accesslogsettings'
+  LEFT JOIN resource_attribute AS apigatewaymanaged
+    ON apigatewaymanaged.resource_id = R.id
+    AND apigatewaymanaged.type = 'provider'
+    AND lower(apigatewaymanaged.attr_name) = 'apigatewaymanaged'
+  LEFT JOIN resource_attribute AS autodeploy
+    ON autodeploy.resource_id = R.id
+    AND autodeploy.type = 'provider'
+    AND lower(autodeploy.attr_name) = 'autodeploy'
+  LEFT JOIN resource_attribute AS clientcertificateid
+    ON clientcertificateid.resource_id = R.id
+    AND clientcertificateid.type = 'provider'
+    AND lower(clientcertificateid.attr_name) = 'clientcertificateid'
+  LEFT JOIN resource_attribute AS createddate
+    ON createddate.resource_id = R.id
+    AND createddate.type = 'provider'
+    AND lower(createddate.attr_name) = 'createddate'
+  LEFT JOIN resource_attribute AS defaultroutesettings
+    ON defaultroutesettings.resource_id = R.id
+    AND defaultroutesettings.type = 'provider'
+    AND lower(defaultroutesettings.attr_name) = 'defaultroutesettings'
+  LEFT JOIN resource_attribute AS deploymentid
+    ON deploymentid.resource_id = R.id
+    AND deploymentid.type = 'provider'
+    AND lower(deploymentid.attr_name) = 'deploymentid'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS lastdeploymentstatusmessage
+    ON lastdeploymentstatusmessage.resource_id = R.id
+    AND lastdeploymentstatusmessage.type = 'provider'
+    AND lower(lastdeploymentstatusmessage.attr_name) = 'lastdeploymentstatusmessage'
+  LEFT JOIN resource_attribute AS lastupdateddate
+    ON lastupdateddate.resource_id = R.id
+    AND lastupdateddate.type = 'provider'
+    AND lower(lastupdateddate.attr_name) = 'lastupdateddate'
+  LEFT JOIN resource_attribute AS routesettings
+    ON routesettings.resource_id = R.id
+    AND routesettings.type = 'provider'
+    AND lower(routesettings.attr_name) = 'routesettings'
+  LEFT JOIN resource_attribute AS stagename
+    ON stagename.resource_id = R.id
+    AND stagename.type = 'provider'
+    AND lower(stagename.attr_name) = 'stagename'
+  LEFT JOIN resource_attribute AS stagevariables
+    ON stagevariables.resource_id = R.id
+    AND stagevariables.type = 'provider'
+    AND lower(stagevariables.attr_name) = 'stagevariables'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_apigatewayv2_api_relation.resource_id AS resource_id,
@@ -109,6 +111,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'stage'
+  AND R.service = 'apigatewayv2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_apigatewayv2_stage;

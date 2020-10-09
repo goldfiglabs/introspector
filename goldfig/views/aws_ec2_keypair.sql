@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_keypair CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_keypair AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -27,18 +15,22 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS keypairid
-    ON keypairid.id = R.id
-    AND keypairid.attr_name = 'keypairid'
-  LEFT JOIN attrs AS keyfingerprint
-    ON keyfingerprint.id = R.id
-    AND keyfingerprint.attr_name = 'keyfingerprint'
-  LEFT JOIN attrs AS keyname
-    ON keyname.id = R.id
-    AND keyname.attr_name = 'keyname'
-  LEFT JOIN attrs AS tags
-    ON tags.id = R.id
-    AND tags.attr_name = 'tags'
+  LEFT JOIN resource_attribute AS keypairid
+    ON keypairid.resource_id = R.id
+    AND keypairid.type = 'provider'
+    AND lower(keypairid.attr_name) = 'keypairid'
+  LEFT JOIN resource_attribute AS keyfingerprint
+    ON keyfingerprint.resource_id = R.id
+    AND keyfingerprint.type = 'provider'
+    AND lower(keyfingerprint.attr_name) = 'keyfingerprint'
+  LEFT JOIN resource_attribute AS keyname
+    ON keyname.resource_id = R.id
+    AND keyname.type = 'provider'
+    AND lower(keyname.attr_name) = 'keyname'
+  LEFT JOIN resource_attribute AS tags
+    ON tags.resource_id = R.id
+    AND tags.type = 'provider'
+    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -55,6 +47,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'keypair'
+  AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_keypair;

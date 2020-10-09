@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_ec2_networkinterface CASCADE;
 
 CREATE MATERIALIZED VIEW aws_ec2_networkinterface AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -46,69 +34,90 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS association
-    ON association.id = R.id
-    AND association.attr_name = 'association'
-  LEFT JOIN attrs AS attachment
-    ON attachment.id = R.id
-    AND attachment.attr_name = 'attachment'
-  LEFT JOIN attrs AS availabilityzone
-    ON availabilityzone.id = R.id
-    AND availabilityzone.attr_name = 'availabilityzone'
-  LEFT JOIN attrs AS description
-    ON description.id = R.id
-    AND description.attr_name = 'description'
-  LEFT JOIN attrs AS groups
-    ON groups.id = R.id
-    AND groups.attr_name = 'groups'
-  LEFT JOIN attrs AS interfacetype
-    ON interfacetype.id = R.id
-    AND interfacetype.attr_name = 'interfacetype'
-  LEFT JOIN attrs AS ipv6addresses
-    ON ipv6addresses.id = R.id
-    AND ipv6addresses.attr_name = 'ipv6addresses'
-  LEFT JOIN attrs AS macaddress
-    ON macaddress.id = R.id
-    AND macaddress.attr_name = 'macaddress'
-  LEFT JOIN attrs AS networkinterfaceid
-    ON networkinterfaceid.id = R.id
-    AND networkinterfaceid.attr_name = 'networkinterfaceid'
-  LEFT JOIN attrs AS outpostarn
-    ON outpostarn.id = R.id
-    AND outpostarn.attr_name = 'outpostarn'
-  LEFT JOIN attrs AS ownerid
-    ON ownerid.id = R.id
-    AND ownerid.attr_name = 'ownerid'
-  LEFT JOIN attrs AS privatednsname
-    ON privatednsname.id = R.id
-    AND privatednsname.attr_name = 'privatednsname'
-  LEFT JOIN attrs AS privateipaddress
-    ON privateipaddress.id = R.id
-    AND privateipaddress.attr_name = 'privateipaddress'
-  LEFT JOIN attrs AS privateipaddresses
-    ON privateipaddresses.id = R.id
-    AND privateipaddresses.attr_name = 'privateipaddresses'
-  LEFT JOIN attrs AS requesterid
-    ON requesterid.id = R.id
-    AND requesterid.attr_name = 'requesterid'
-  LEFT JOIN attrs AS requestermanaged
-    ON requestermanaged.id = R.id
-    AND requestermanaged.attr_name = 'requestermanaged'
-  LEFT JOIN attrs AS sourcedestcheck
-    ON sourcedestcheck.id = R.id
-    AND sourcedestcheck.attr_name = 'sourcedestcheck'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS subnetid
-    ON subnetid.id = R.id
-    AND subnetid.attr_name = 'subnetid'
-  LEFT JOIN attrs AS tagset
-    ON tagset.id = R.id
-    AND tagset.attr_name = 'tagset'
-  LEFT JOIN attrs AS vpcid
-    ON vpcid.id = R.id
-    AND vpcid.attr_name = 'vpcid'
+  LEFT JOIN resource_attribute AS association
+    ON association.resource_id = R.id
+    AND association.type = 'provider'
+    AND lower(association.attr_name) = 'association'
+  LEFT JOIN resource_attribute AS attachment
+    ON attachment.resource_id = R.id
+    AND attachment.type = 'provider'
+    AND lower(attachment.attr_name) = 'attachment'
+  LEFT JOIN resource_attribute AS availabilityzone
+    ON availabilityzone.resource_id = R.id
+    AND availabilityzone.type = 'provider'
+    AND lower(availabilityzone.attr_name) = 'availabilityzone'
+  LEFT JOIN resource_attribute AS description
+    ON description.resource_id = R.id
+    AND description.type = 'provider'
+    AND lower(description.attr_name) = 'description'
+  LEFT JOIN resource_attribute AS groups
+    ON groups.resource_id = R.id
+    AND groups.type = 'provider'
+    AND lower(groups.attr_name) = 'groups'
+  LEFT JOIN resource_attribute AS interfacetype
+    ON interfacetype.resource_id = R.id
+    AND interfacetype.type = 'provider'
+    AND lower(interfacetype.attr_name) = 'interfacetype'
+  LEFT JOIN resource_attribute AS ipv6addresses
+    ON ipv6addresses.resource_id = R.id
+    AND ipv6addresses.type = 'provider'
+    AND lower(ipv6addresses.attr_name) = 'ipv6addresses'
+  LEFT JOIN resource_attribute AS macaddress
+    ON macaddress.resource_id = R.id
+    AND macaddress.type = 'provider'
+    AND lower(macaddress.attr_name) = 'macaddress'
+  LEFT JOIN resource_attribute AS networkinterfaceid
+    ON networkinterfaceid.resource_id = R.id
+    AND networkinterfaceid.type = 'provider'
+    AND lower(networkinterfaceid.attr_name) = 'networkinterfaceid'
+  LEFT JOIN resource_attribute AS outpostarn
+    ON outpostarn.resource_id = R.id
+    AND outpostarn.type = 'provider'
+    AND lower(outpostarn.attr_name) = 'outpostarn'
+  LEFT JOIN resource_attribute AS ownerid
+    ON ownerid.resource_id = R.id
+    AND ownerid.type = 'provider'
+    AND lower(ownerid.attr_name) = 'ownerid'
+  LEFT JOIN resource_attribute AS privatednsname
+    ON privatednsname.resource_id = R.id
+    AND privatednsname.type = 'provider'
+    AND lower(privatednsname.attr_name) = 'privatednsname'
+  LEFT JOIN resource_attribute AS privateipaddress
+    ON privateipaddress.resource_id = R.id
+    AND privateipaddress.type = 'provider'
+    AND lower(privateipaddress.attr_name) = 'privateipaddress'
+  LEFT JOIN resource_attribute AS privateipaddresses
+    ON privateipaddresses.resource_id = R.id
+    AND privateipaddresses.type = 'provider'
+    AND lower(privateipaddresses.attr_name) = 'privateipaddresses'
+  LEFT JOIN resource_attribute AS requesterid
+    ON requesterid.resource_id = R.id
+    AND requesterid.type = 'provider'
+    AND lower(requesterid.attr_name) = 'requesterid'
+  LEFT JOIN resource_attribute AS requestermanaged
+    ON requestermanaged.resource_id = R.id
+    AND requestermanaged.type = 'provider'
+    AND lower(requestermanaged.attr_name) = 'requestermanaged'
+  LEFT JOIN resource_attribute AS sourcedestcheck
+    ON sourcedestcheck.resource_id = R.id
+    AND sourcedestcheck.type = 'provider'
+    AND lower(sourcedestcheck.attr_name) = 'sourcedestcheck'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS subnetid
+    ON subnetid.resource_id = R.id
+    AND subnetid.type = 'provider'
+    AND lower(subnetid.attr_name) = 'subnetid'
+  LEFT JOIN resource_attribute AS tagset
+    ON tagset.resource_id = R.id
+    AND tagset.type = 'provider'
+    AND lower(tagset.attr_name) = 'tagset'
+  LEFT JOIN resource_attribute AS vpcid
+    ON vpcid.resource_id = R.id
+    AND vpcid.type = 'provider'
+    AND lower(vpcid.attr_name) = 'vpcid'
   LEFT JOIN (
     SELECT
       _aws_ec2_instance_relation.resource_id AS resource_id,

@@ -1,0 +1,25 @@
+version: 1
+resources:
+- service: dynamodb
+  provider_type: Backup
+  name: BackupName
+  uri:
+    uri: BackupArn
+  attributes:
+    provider:
+    - TableName
+    - TableId
+    - TableArn
+    - BackupArn
+    - BackupName
+    - BackupCreationDateTime
+    - BackupExpiryDateTime
+    - BackupStatus
+    - BackupType
+    - BackupSizeBytes
+  relations:
+  - relation: backup-of
+    path: TableArn
+    uri:
+      uri:
+        path: ''

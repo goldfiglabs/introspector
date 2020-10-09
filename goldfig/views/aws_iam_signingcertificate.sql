@@ -1,18 +1,6 @@
 DROP MATERIALIZED VIEW IF EXISTS aws_iam_signingcertificate CASCADE;
 
 CREATE MATERIALIZED VIEW aws_iam_signingcertificate AS
-WITH attrs AS (
-  SELECT
-    R.id,
-    LOWER(RA.attr_name) AS attr_name,
-    RA.attr_value
-  FROM
-    resource AS R
-    INNER JOIN resource_attribute AS RA
-      ON RA.resource_id = R.id
-  WHERE
-    RA.type = 'provider'
-)
 SELECT
   R.id AS resource_id,
   R.uri,
@@ -29,21 +17,26 @@ FROM
   resource AS R
   INNER JOIN provider_account AS PA
     ON PA.id = R.provider_account_id
-  LEFT JOIN attrs AS username
-    ON username.id = R.id
-    AND username.attr_name = 'username'
-  LEFT JOIN attrs AS certificateid
-    ON certificateid.id = R.id
-    AND certificateid.attr_name = 'certificateid'
-  LEFT JOIN attrs AS certificatebody
-    ON certificatebody.id = R.id
-    AND certificatebody.attr_name = 'certificatebody'
-  LEFT JOIN attrs AS status
-    ON status.id = R.id
-    AND status.attr_name = 'status'
-  LEFT JOIN attrs AS uploaddate
-    ON uploaddate.id = R.id
-    AND uploaddate.attr_name = 'uploaddate'
+  LEFT JOIN resource_attribute AS username
+    ON username.resource_id = R.id
+    AND username.type = 'provider'
+    AND lower(username.attr_name) = 'username'
+  LEFT JOIN resource_attribute AS certificateid
+    ON certificateid.resource_id = R.id
+    AND certificateid.type = 'provider'
+    AND lower(certificateid.attr_name) = 'certificateid'
+  LEFT JOIN resource_attribute AS certificatebody
+    ON certificatebody.resource_id = R.id
+    AND certificatebody.type = 'provider'
+    AND lower(certificatebody.attr_name) = 'certificatebody'
+  LEFT JOIN resource_attribute AS status
+    ON status.resource_id = R.id
+    AND status.type = 'provider'
+    AND lower(status.attr_name) = 'status'
+  LEFT JOIN resource_attribute AS uploaddate
+    ON uploaddate.resource_id = R.id
+    AND uploaddate.type = 'provider'
+    AND lower(uploaddate.attr_name) = 'uploaddate'
   LEFT JOIN (
     SELECT
       _aws_iam_user_relation.resource_id AS resource_id,
@@ -73,6 +66,7 @@ FROM
   WHERE
   PA.provider = 'aws'
   AND LOWER(R.provider_type) = 'signingcertificate'
+  AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_signingcertificate;

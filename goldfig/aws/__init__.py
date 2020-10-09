@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple
 
+import botocore.exceptions
 from botocore.parsers import parse_timestamp
 import botocore.session as boto
 from dateutil.tz import tzutc
@@ -43,13 +44,21 @@ def get_boto_session() -> boto.Session:
 
 def create_provider_and_credential(db: Session, proxy: Proxy,
                                    identity) -> ProviderAccount:
+  account_id = identity['Account']
   org = proxy.service('organizations')
-  org_resp = org.get('describe_organization')['Organization']
-  org_id = org_resp['Id']
+  try:
+    org_resp = org.get('describe_organization')['Organization']
+    org_id = org_resp['Id']
+  except botocore.exceptions.ClientError as e:
+    code = e.response.get('Error', {}).get('Code')
+    if code == 'AWSOrganizationsNotInUseException':
+      org_id = f'OrgDummy:{account_id}'
+    else:
+      raise
   provider = ProviderAccount(provider='aws', name=org_id)
   db.add(provider)
   db.flush()
-  credential = ProviderCredential(scope=identity['Account'],
+  credential = ProviderCredential(scope=account_id,
                                   principal_uri=identity['Arn'],
                                   config={'from_environment': True})
   credential.provider_id = provider.id
@@ -89,9 +98,10 @@ def load_boto_for_provider(db: Session,
 def build_aws_import_job(session: boto.Session,
                          proxy_builder: ProxyBuilder) -> Dict:
   proxy = proxy_builder(session)
-  org, graph = _build_org_graph(proxy)
   sts = session.create_client('sts')
   identity = sts.get_caller_identity()
+  account_id = identity['Account']
+  org, graph = _build_org_graph(proxy, account_id)
   return {
       'account': {
           'account_id': org['Id'],
@@ -113,9 +123,49 @@ def _require_resp(tup: Optional[Tuple[str, Dict[str, Any]]]) -> Dict[str, Any]:
     return tup[1]
 
 
-def _build_org_graph(proxy: Proxy):
+def _build_org_graph(proxy: Proxy, account_id: str):
   org = proxy.service('organizations')
-  org_resp = org.get('describe_organization')['Organization']
+  try:
+    org_resp = org.get('describe_organization')['Organization']
+  except botocore.exceptions.ClientError as e:
+    code = e.response.get('Error', {}).get('Code')
+    if code == 'AWSOrganizationsNotInUseException':
+      org_id = f'OrgDummy:{account_id}'
+
+      org_resp = {
+          'Id':
+          org_id,
+          "Arn":
+          f"arn:aws:organizations::{account_id}:organization/{org_id}",
+          "MasterAccountId":
+          account_id,
+          "MasterAccountArn":
+          f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}",
+      }
+      root_id = 'r-dummy'
+      root = {
+          "Id": root_id,
+          "Arn":
+          f"arn:aws:organizations::{account_id}:root/{org_id}/{root_id}",
+          "Name": "Root",
+          "PolicyTypes": []
+      }
+      account = {
+          "Id":
+          account_id,
+          "Arn":
+          f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}"
+      }
+      return org_resp, {
+          'accounts': {
+              root_id: [account]
+          },
+          'organizational_units': {
+              '': [root]
+          }
+      }
+    else:
+      raise
   roots_resp = _require_resp(org.list('list_roots'))
   roots = roots_resp['Roots']
   accounts = {}

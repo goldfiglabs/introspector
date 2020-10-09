@@ -8,6 +8,7 @@ from typing import Iterator, List, Tuple
 import psycopg2
 from psycopg2 import sql
 from sqlalchemy import create_engine, text
+from sqlalchemy.pool import NullPool
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -200,7 +201,8 @@ def init_db():
   try:
     db = import_session()
   except OperationalError as e:
-    if 'password authentication failed' in str(e) or 'database "goldfig" does not exist' in str(e):
+    if 'password authentication failed' in str(
+        e) or 'database "goldfig" does not exist' in str(e):
       # need to set up db
       _install_db_and_roles()
       db = import_session()
@@ -213,7 +215,8 @@ def import_session() -> Session:
   global _import_engine
   if _import_engine is None:
     _import_engine = create_engine(_ImportCredential.connection_string(),
-                                   connect_args={'connect_timeout': 3})
+                                   connect_args={'connect_timeout': 3},
+                                   poolclass=NullPool)
     # Force connection errors early
     _import_engine.connect()
   return sessionmaker(bind=_import_engine)()
