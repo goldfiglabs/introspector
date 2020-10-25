@@ -70,11 +70,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'instanceprofile'
+  AND R.provider_type = 'InstanceProfile'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_instanceprofile;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_instanceprofile IS 'iam instanceprofile resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_instanceprofile IS 'iam InstanceProfile resources and their associated attributes.';
 

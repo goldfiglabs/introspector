@@ -71,11 +71,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'loggroup'
+  AND R.provider_type = 'LogGroup'
   AND R.service = 'logs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_logs_loggroup;
 
-COMMENT ON MATERIALIZED VIEW aws_logs_loggroup IS 'logs loggroup resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_logs_loggroup IS 'logs LogGroup resources and their associated attributes.';
 

@@ -185,16 +185,16 @@ class RotatePasswordsAfter90Days(Check):
       SELECT
         uri,
         (password_enabled = True AND
-          (passwordlastused IS NULL AND age(password_last_changed) > interval '90 days')
-          OR (age(passwordlastused) > interval '90 days' )
+          ((passwordlastused IS NULL AND age(password_last_changed) > interval '90 days')
+          OR (age(passwordlastused) > interval '90 days' ))
         ) AS password_violation,
         (
           access_key_1_active = True AND
-          age(access_key_1_last_used_date) > interval '90 days'
+          COALESCE(age(access_key_1_last_used_date) > interval '90 days', true)
         ) AS access_key_1_violation,
         (
           access_key_2_active = True AND
-          age(access_key_2_last_used_date) > interval '90 days'
+          COALESCE(age(access_key_2_last_used_date) > interval '90 days', true)
         ) AS access_key_2_violation
       FROM
         aws_iam_user
@@ -202,18 +202,18 @@ class RotatePasswordsAfter90Days(Check):
         provider_account_id = :provider_account_id
         AND (
           (password_enabled = True AND
-            (passwordlastused IS NULL AND age(password_last_changed) > interval '90 days')
-            OR (age(passwordlastused) > interval '90 days' )
+            ((passwordlastused IS NULL AND age(password_last_changed) > interval '90 days')
+            OR (age(passwordlastused) > interval '90 days' ))
           )
           OR
           (
             access_key_1_active = True AND
-            age(access_key_1_last_used_date) > interval '90 days'
+            COALESCE(age(access_key_1_last_used_date) > interval '90 days', true)
           )
           OR
           (
             access_key_2_active = True AND
-            age(access_key_2_last_used_date) > interval '90 days'
+            COALESCE(age(access_key_2_last_used_date) > interval '90 days', true)
           )
         )
     '''
@@ -799,7 +799,7 @@ class NoAdminAccess(Check):
       U.uri AS user_uri
     FROM
       policy_documents AS PD
-      CROSS JOIN LATERAL jsonb_array_elements(PD.document->'Statement') AS s
+      CROSS JOIN LATERAL unpack_maybe_array(PD.document->'Statement') AS s
       LEFT JOIN resource_relation AS Manages
         ON Manages.resource_id = PD.resource_id
         AND Manages.relation = 'manages'

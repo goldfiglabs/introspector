@@ -57,11 +57,11 @@ FROM
     AND lower(tagpolicies.attr_name) = 'tagpolicies'
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'organization'
+  AND R.provider_type = 'Organization'
   AND R.service = 'organizations'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_organizations_organization;
 
-COMMENT ON MATERIALIZED VIEW aws_organizations_organization IS 'organizations organization resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_organizations_organization IS 'organizations Organization resources and their associated attributes.';
 

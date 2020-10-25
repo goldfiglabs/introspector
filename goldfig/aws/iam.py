@@ -10,7 +10,7 @@ from botocore.exceptions import ClientError
 from sqlalchemy.orm import Session
 
 from goldfig import ImportWriter, db_import_writer, PathStack
-from goldfig.aws import load_boto_session, load_boto_session_from_config, account_paths_for_import, ProxyBuilder, make_proxy_builder, walk_graph
+from goldfig.aws import load_boto_session, load_boto_session_from_config, account_paths_for_import, walk_graph
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.bootstrap_db import import_session
 from goldfig.delta.resource import apply_mapped_attrs
@@ -292,8 +292,7 @@ def _import_organizational_unit(proxy: Proxy, ps: PathStack,
 
 class _AccountProxies:
   def __init__(self, credentials: List[ProviderCredential],
-               master_account_arn: str, proxy_builder: ProxyBuilder):
-    self._proxy_builder = proxy_builder
+               master_account_arn: str):
     self._credentials = credentials
     self._master_account_arn = master_account_arn
     self._cache: Dict[str, Proxy] = {}
@@ -310,7 +309,7 @@ class _AccountProxies:
   def _make_proxy(self, arn: str) -> Proxy:
     creds = self.credentials_for_arn(arn)
     boto = load_boto_session(creds)
-    proxy = self._proxy_builder(boto)
+    proxy = Proxy.build(boto)
     self._cache[arn] = proxy
     return proxy
 
@@ -320,7 +319,7 @@ class _AccountProxies:
 
 
 def _import_graph(
-    proxy_builder: ProxyBuilder, import_job: ImportJob, writer: ImportWriter,
+    import_job: ImportJob, writer: ImportWriter,
     account_credentials: List[ProviderCredential],
     import_iam_fn: Callable[[PathStack, ProviderCredential], List[f.Future]]
 ) -> List[f.Future]:
@@ -328,8 +327,7 @@ def _import_graph(
   org = config['aws_org']
   is_mocked = org['Id'].startswith('OrgDummy')
   master_account_arn = org['MasterAccountArn']
-  proxies = _AccountProxies(account_credentials, master_account_arn,
-                            proxy_builder)
+  proxies = _AccountProxies(account_credentials, master_account_arn)
   ps = PathStack.from_import_job(import_job)
   results = []
   for path, typ, entry in walk_graph(org, config['aws_graph']):
@@ -370,12 +368,10 @@ def _import_iam(iam: ServiceProxy, writer: ImportWriter, ps: PathStack,
   _import_password_policy(iam, ps, writer, account_id)
 
 
-def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
-                 config: Dict, f):
+def _async_proxy(ps: PathStack, import_job_id: int, config: Dict, f):
   db = import_session()
-  proxy_builder = make_proxy_builder(*proxy_builder_args)
   boto = load_boto_session_from_config(config)
-  proxy = proxy_builder(boto)
+  proxy = Proxy.build(boto)
   writer = db_import_writer(db, import_job_id, 'iam', phase=0, source='base')
   service_proxy = proxy.service('iam')
   f(service_proxy, ps, writer)
@@ -383,14 +379,12 @@ def _async_proxy(ps: PathStack, proxy_builder_args, import_job_id: int,
 
 
 def _import_account_iam_with_pool(ps: PathStack, account: ProviderCredential,
-                                  pool: f.ProcessPoolExecutor,
-                                  proxy_builder_args, import_job_id):
+                                  pool: f.ProcessPoolExecutor, import_job_id):
   results: List[f.Future] = []
 
   def queue_job(fn):
     return pool.submit(_async_proxy,
                        ps=ps,
-                       proxy_builder_args=proxy_builder_args,
                        import_job_id=import_job_id,
                        config=account.config,
                        f=fn)
@@ -405,13 +399,11 @@ def _import_account_iam_with_pool(ps: PathStack, account: ProviderCredential,
 
 
 def import_account_iam_with_pool(
-    pool: f.ProcessPoolExecutor, proxy_builder_args, import_job_id: int,
-    ps: PathStack, account_paths: List[Tuple[str, ProviderCredential]]):
+    pool: f.ProcessPoolExecutor, import_job_id: int, ps: PathStack,
+    account_paths: List[Tuple[str, ProviderCredential]]):
   def import_iam_fn(ps: PathStack, credential: ProviderCredential):
-    return _import_account_iam_with_pool(ps, credential, pool,
-                                         proxy_builder_args, import_job_id)
+    return _import_account_iam_with_pool(ps, credential, pool, import_job_id)
 
-  proxy_builder = make_proxy_builder(*proxy_builder_args)
   db = import_session()
   writer = db_import_writer(db,
                             import_job_id,
@@ -420,14 +412,12 @@ def import_account_iam_with_pool(
                             source='base')
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   accounts = list(map(lambda i: i[1], account_paths))
-  results = _import_graph(proxy_builder, import_job, writer, accounts,
-                          import_iam_fn)
+  results = _import_graph(import_job, writer, accounts, import_iam_fn)
   db.commit()
   return results
 
 
-def import_account_iam_to_db(db: Session, import_job_id: int,
-                             proxy_builder: ProxyBuilder):
+def import_account_iam_to_db(db: Session, import_job_id: int):
   job: ImportJob = db.query(ImportJob).get(import_job_id)
   account_paths = account_paths_for_import(db, job)
   # drop the paths, we don't need them here
@@ -440,12 +430,12 @@ def import_account_iam_to_db(db: Session, import_job_id: int,
 
   def import_iam_fn(ps: PathStack, credential: ProviderCredential):
     boto = load_boto_session(credential)
-    proxy = proxy_builder(boto)
+    proxy = Proxy.build(boto)
     iam = proxy.service('iam')
     _import_iam(iam, writer, ps, credential.scope)
     return []
 
-  _import_graph(proxy_builder, job, writer, accounts, import_iam_fn)
+  _import_graph(job, writer, accounts, import_iam_fn)
 
 
 def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,

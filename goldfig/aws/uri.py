@@ -142,10 +142,26 @@ def _redshift_uri_fn(partition: str, account_id: str, resource_name: str,
   raise GFInternal(f'Failed redshift uri fn {resource_name} {kwargs}')
 
 
+def _cloudwatch_metrics(**kwargs) -> str:
+  region = _get_with_parent('region', kwargs)
+  if region is None:
+    raise GFInternal(f'Missing region in {kwargs} for metric')
+  name = kwargs['metric_name']
+  namespace = kwargs['metric_namespace']
+  dimensions = kwargs['metric_dimensions'] or []
+  flattened = '$'.join([
+      f'{dim["Name"]}_{dim["Value"]}' for dim in dimensions
+      if dim['Value'] is not None
+  ])
+  return f'metrics/{region}/{namespace}/{name}/{flattened}'
+
+
 def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
   if 'uri' in kwargs:
     return kwargs['uri']
   resource_name = kwargs.pop('resource_name')
+  # allow to override account_id in case of targeting across accounts
+  account_id = kwargs.get('account_id', account_id)
   if service == 'ec2':
     return _ec2_arn_fn(resource_name, account_id, partition, **kwargs)
   elif service == 's3':
@@ -165,12 +181,7 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
   elif service == 'redshift':
     return _redshift_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'cloudwatch' and resource_name == 'metric':
-    region = _get_with_parent('region', kwargs)
-    if region is None:
-      raise GFInternal(f'Missing region in {kwargs} for metric')
-    name = kwargs['metric_name']
-    namespace = kwargs['metric_namespace']
-    return f'metrics/{region}/{namespace}/{name}'
+    return _cloudwatch_metrics(**kwargs)
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
@@ -180,7 +191,7 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
       region = ''
     else:
       raise GFInternal(f'Missing region in {kwargs} for service {service}')
-  if service in ('kms', 'route53'):
+  if service in ('kms', 'route53', 'ssm'):
     return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}/{id}'
   return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
 

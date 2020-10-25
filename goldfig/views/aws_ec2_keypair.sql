@@ -46,11 +46,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'keypair'
+  AND R.provider_type = 'KeyPair'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_keypair;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_keypair IS 'ec2 keypair resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_keypair IS 'ec2 KeyPair resources and their associated attributes.';
 

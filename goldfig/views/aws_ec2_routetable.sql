@@ -75,11 +75,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'routetable'
+  AND R.provider_type = 'RouteTable'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_routetable;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_routetable IS 'ec2 routetable resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_routetable IS 'ec2 RouteTable resources and their associated attributes.';
 

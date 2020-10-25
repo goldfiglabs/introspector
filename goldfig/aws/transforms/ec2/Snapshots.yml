@@ -26,6 +26,7 @@ resources:
         Tags:
           path: Tags
           transform: aws_tags
+  resource_name: snapshot
   relations:
   - relation: encrypted-using
     path: KmsKeyId

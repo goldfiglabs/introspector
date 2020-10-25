@@ -32,7 +32,8 @@ def _import_metrics(proxy: ServiceProxy):
   if metrics_resp is not None:
     metrics = metrics_resp[1]['Metrics']
     for metric in metrics:
-      yield 'Metric', metric
+      if not metric['Namespace'].startswith('AWS'):
+        yield 'Metric', metric
 
 
 def _import_cloudwatch_region(proxy: ServiceProxy,

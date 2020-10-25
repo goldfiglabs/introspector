@@ -7,7 +7,12 @@ from goldfig.aws.svc import make_import_to_db, make_import_with_pool
 
 _log = logging.getLogger(__name__)
 
-ApiResources = ['stages', 'routes', 'integrations', 'models']
+ApiResources = [
+    'stages',
+    'routes',
+    #'integrations', # Disabled, needs more permissions
+    #'models' # Disabled, needs more permissions
+]
 
 
 def _import_api(proxy: ServiceProxy, api: Dict) -> Dict[str, Any]:

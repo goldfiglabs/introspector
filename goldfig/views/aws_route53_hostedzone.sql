@@ -81,30 +81,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'hostedzone'
+  AND R.provider_type = 'HostedZone'
   AND R.service = 'route53'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_route53_hostedzone;
 
-COMMENT ON MATERIALIZED VIEW aws_route53_hostedzone IS 'route53 hostedzone resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_route53_hostedzone IS 'route53 HostedZone resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_route53_hostedzone_ec2_vpc CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_route53_HostedZone_ec2_vpc CASCADE;
 
-CREATE MATERIALIZED VIEW aws_route53_hostedzone_ec2_vpc AS
+CREATE MATERIALIZED VIEW aws_route53_HostedZone_ec2_vpc AS
 SELECT
-  aws_route53_hostedzone.id AS hostedzone_id,
+  aws_route53_HostedZone.id AS HostedZone_id,
   aws_ec2_vpc.id AS vpc_id
 FROM
-  resource AS aws_route53_hostedzone
+  resource AS aws_route53_HostedZone
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_route53_hostedzone.id
+    ON RR.resource_id = aws_route53_HostedZone.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_vpc
     ON aws_ec2_vpc.id = RR.target_id
     AND aws_ec2_vpc.provider_type = 'VPC'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_route53_hostedzone_ec2_vpc;
+REFRESH MATERIALIZED VIEW aws_route53_HostedZone_ec2_vpc;

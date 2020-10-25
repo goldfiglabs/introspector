@@ -125,11 +125,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'stage'
+  AND R.provider_type = 'Stage'
   AND R.service = 'apigateway'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_apigateway_stage;
 
-COMMENT ON MATERIALIZED VIEW aws_apigateway_stage IS 'apigateway stage resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_apigateway_stage IS 'apigateway Stage resources and their associated attributes.';
 

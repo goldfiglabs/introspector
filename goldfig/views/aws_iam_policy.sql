@@ -115,68 +115,68 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'policy'
+  AND R.provider_type = 'Policy'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_policy;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_policy IS 'iam policy resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_policy IS 'iam Policy resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_iam_policy_group CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_iam_Policy_group CASCADE;
 
-CREATE MATERIALIZED VIEW aws_iam_policy_group AS
+CREATE MATERIALIZED VIEW aws_iam_Policy_group AS
 SELECT
-  aws_iam_policy.id AS policy_id,
+  aws_iam_Policy.id AS Policy_id,
   aws_iam_group.id AS group_id
 FROM
-  resource AS aws_iam_policy
+  resource AS aws_iam_Policy
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_iam_policy.id
+    ON RR.resource_id = aws_iam_Policy.id
     AND RR.relation = 'manages'
   INNER JOIN resource AS aws_iam_group
     ON aws_iam_group.id = RR.target_id
     AND aws_iam_group.provider_type = 'Group'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_iam_policy_group;
+REFRESH MATERIALIZED VIEW aws_iam_Policy_group;
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_iam_policy_role CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_iam_Policy_role CASCADE;
 
-CREATE MATERIALIZED VIEW aws_iam_policy_role AS
+CREATE MATERIALIZED VIEW aws_iam_Policy_role AS
 SELECT
-  aws_iam_policy.id AS policy_id,
+  aws_iam_Policy.id AS Policy_id,
   aws_iam_role.id AS role_id
 FROM
-  resource AS aws_iam_policy
+  resource AS aws_iam_Policy
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_iam_policy.id
+    ON RR.resource_id = aws_iam_Policy.id
     AND RR.relation = 'manages'
   INNER JOIN resource AS aws_iam_role
     ON aws_iam_role.id = RR.target_id
     AND aws_iam_role.provider_type = 'Role'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_iam_policy_role;
+REFRESH MATERIALIZED VIEW aws_iam_Policy_role;
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_iam_policy_user CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_iam_Policy_user CASCADE;
 
-CREATE MATERIALIZED VIEW aws_iam_policy_user AS
+CREATE MATERIALIZED VIEW aws_iam_Policy_user AS
 SELECT
-  aws_iam_policy.id AS policy_id,
+  aws_iam_Policy.id AS Policy_id,
   aws_iam_user.id AS user_id
 FROM
-  resource AS aws_iam_policy
+  resource AS aws_iam_Policy
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_iam_policy.id
+    ON RR.resource_id = aws_iam_Policy.id
     AND RR.relation = 'manages'
   INNER JOIN resource AS aws_iam_user
     ON aws_iam_user.id = RR.target_id
     AND aws_iam_user.provider_type = 'User'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_iam_policy_user;
+REFRESH MATERIALIZED VIEW aws_iam_Policy_user;

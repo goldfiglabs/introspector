@@ -131,11 +131,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'key'
+  AND R.provider_type = 'Key'
   AND R.service = 'kms'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_kms_key;
 
-COMMENT ON MATERIALIZED VIEW aws_kms_key IS 'kms key resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_kms_key IS 'kms Key resources and their associated attributes.';
 

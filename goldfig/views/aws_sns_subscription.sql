@@ -100,11 +100,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'subscription'
+  AND R.provider_type = 'Subscription'
   AND R.service = 'sns'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_sns_subscription;
 
-COMMENT ON MATERIALIZED VIEW aws_sns_subscription IS 'sns subscription resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_sns_subscription IS 'sns Subscription resources and their associated attributes.';
 

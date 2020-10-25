@@ -14,7 +14,7 @@ def _import_distribution(proxy: ServiceProxy, summary: Dict) -> Dict[str, Any]:
   distribution = proxy.get('get_distribution',
                            Id=distribution_id)['Distribution']
   config = proxy.get('get_distribution_config', Id=distribution_id)
-  distribution.update(config)
+  distribution.update(config['DistributionConfig'])
   tags_resp = proxy.list('list_tags_for_resource', Resource=arn)
   if tags_resp is not None:
     distribution['Tags'] = tags_resp[1]['Tags']['Items']

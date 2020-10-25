@@ -180,30 +180,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'metricalarm'
+  AND R.provider_type = 'MetricAlarm'
   AND R.service = 'cloudwatch'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudwatch_metricalarm;
 
-COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metricalarm IS 'cloudwatch metricalarm resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metricalarm IS 'cloudwatch MetricAlarm resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_metricalarm_sns_topic CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_cloudwatch_MetricAlarm_sns_topic CASCADE;
 
-CREATE MATERIALIZED VIEW aws_cloudwatch_metricalarm_sns_topic AS
+CREATE MATERIALIZED VIEW aws_cloudwatch_MetricAlarm_sns_topic AS
 SELECT
-  aws_cloudwatch_metricalarm.id AS metricalarm_id,
+  aws_cloudwatch_MetricAlarm.id AS MetricAlarm_id,
   aws_sns_topic.id AS topic_id
 FROM
-  resource AS aws_cloudwatch_metricalarm
+  resource AS aws_cloudwatch_MetricAlarm
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_cloudwatch_metricalarm.id
+    ON RR.resource_id = aws_cloudwatch_MetricAlarm.id
     AND RR.relation = 'triggers'
   INNER JOIN resource AS aws_sns_topic
     ON aws_sns_topic.id = RR.target_id
     AND aws_sns_topic.provider_type = 'Topic'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_cloudwatch_metricalarm_sns_topic;
+REFRESH MATERIALIZED VIEW aws_cloudwatch_MetricAlarm_sns_topic;

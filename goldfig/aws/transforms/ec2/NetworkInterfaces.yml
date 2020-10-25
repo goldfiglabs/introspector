@@ -55,3 +55,10 @@ resources:
         value: vpc
       id:
         path: ''
+  - relation: in
+    path: SubnetId
+    uri:
+      resource_name:
+        value: subnet
+      id:
+        path: ''

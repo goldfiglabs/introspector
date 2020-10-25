@@ -29,6 +29,7 @@ SELECT
   
     _instance_id.target_id AS _instance_id,
     _vpc_id.target_id AS _vpc_id,
+    _subnet_id.target_id AS _subnet_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -146,6 +147,19 @@ FROM
   ) AS _vpc_id ON _vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
+      _aws_ec2_subnet_relation.resource_id AS resource_id,
+      _aws_ec2_subnet.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_subnet_relation
+      INNER JOIN resource AS _aws_ec2_subnet
+        ON _aws_ec2_subnet_relation.target_id = _aws_ec2_subnet.id
+        AND _aws_ec2_subnet.provider_type = 'Subnet'
+        AND _aws_ec2_subnet.service = 'ec2'
+    WHERE
+      _aws_ec2_subnet_relation.relation = 'in'
+  ) AS _subnet_id ON _subnet_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
@@ -159,30 +173,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'networkinterface'
+  AND R.provider_type = 'NetworkInterface'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_networkinterface;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_networkinterface IS 'ec2 networkinterface resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_networkinterface IS 'ec2 NetworkInterface resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_networkinterface_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_NetworkInterface_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_networkinterface_securitygroup AS
+CREATE MATERIALIZED VIEW aws_ec2_NetworkInterface_securitygroup AS
 SELECT
-  aws_ec2_networkinterface.id AS networkinterface_id,
+  aws_ec2_NetworkInterface.id AS NetworkInterface_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_ec2_networkinterface
+  resource AS aws_ec2_NetworkInterface
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_networkinterface.id
+    ON RR.resource_id = aws_ec2_NetworkInterface.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_networkinterface_securitygroup;
+REFRESH MATERIALIZED VIEW aws_ec2_NetworkInterface_securitygroup;

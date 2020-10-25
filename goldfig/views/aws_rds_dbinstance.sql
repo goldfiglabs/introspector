@@ -335,30 +335,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'dbinstance'
+  AND R.provider_type = 'DBInstance'
   AND R.service = 'rds'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_rds_dbinstance;
 
-COMMENT ON MATERIALIZED VIEW aws_rds_dbinstance IS 'rds dbinstance resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_rds_dbinstance IS 'rds DBInstance resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbinstance_ec2_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_rds_DBInstance_ec2_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_rds_dbinstance_ec2_securitygroup AS
+CREATE MATERIALIZED VIEW aws_rds_DBInstance_ec2_securitygroup AS
 SELECT
-  aws_rds_dbinstance.id AS dbinstance_id,
+  aws_rds_DBInstance.id AS DBInstance_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_rds_dbinstance
+  resource AS aws_rds_DBInstance
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_rds_dbinstance.id
+    ON RR.resource_id = aws_rds_DBInstance.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_rds_dbinstance_ec2_securitygroup;
+REFRESH MATERIALIZED VIEW aws_rds_DBInstance_ec2_securitygroup;

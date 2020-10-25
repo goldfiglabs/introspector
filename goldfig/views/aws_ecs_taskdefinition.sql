@@ -121,11 +121,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'taskdefinition'
+  AND R.provider_type = 'TaskDefinition'
   AND R.service = 'ecs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ecs_taskdefinition;
 
-COMMENT ON MATERIALIZED VIEW aws_ecs_taskdefinition IS 'ecs taskdefinition resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ecs_taskdefinition IS 'ecs TaskDefinition resources and their associated attributes.';
 

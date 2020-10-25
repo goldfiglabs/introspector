@@ -103,7 +103,16 @@ def view_names() -> List[str]:
 
 
 def refresh_views(db: Session):
-  for view in view_names():
+  result = db.execute('''
+    SELECT
+      matviewname AS view_name
+    FROM
+      pg_matviews
+    WHERE
+      schemaname = 'public'
+  ''')
+  for row in result:
+    view = row['view_name']
     db.execute('REFRESH MATERIALIZED VIEW ' + view)
 
 
@@ -133,6 +142,9 @@ def _install_schema(db: Session) -> None:
     # this is kinda bad, and should maybe be wrapped
     # in an admin credential, rather than the import one
     models.Base.metadata.create_all(_import_engine)
+    db.execute(
+        'CREATE INDEX case_insensitive_name_idx ON resource_attribute (type, lower(attr_name))'
+    )
     version = models.SchemaVersion(version=SCHEMA_VERSION)
     db.add(version)
     db.commit()

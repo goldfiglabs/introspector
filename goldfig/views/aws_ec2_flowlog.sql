@@ -152,11 +152,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'flowlog'
+  AND R.provider_type = 'FlowLog'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_flowlog;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_flowlog IS 'ec2 flowlog resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_flowlog IS 'ec2 FlowLog resources and their associated attributes.';
 

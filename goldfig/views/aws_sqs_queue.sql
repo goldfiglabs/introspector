@@ -11,8 +11,8 @@ SELECT
   (ApproximateNumberOfMessagesNotVisible.attr_value #>> '{}')::integer AS approximatenumberofmessagesnotvisible,
   (ApproximateNumberOfMessagesDelayed.attr_value #>> '{}')::integer AS approximatenumberofmessagesdelayed,
   (DelaySeconds.attr_value #>> '{}')::integer AS delayseconds,
-  (TO_TIMESTAMP(CreatedTimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdtimestamp,
-  (TO_TIMESTAMP(LastModifiedTimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS lastmodifiedtimestamp,
+  TIMESTAMP WITH TIME ZONE 'epoch' + (CreatedTimestamp.attr_value #>> '{}')::double precision * INTERVAL '1 second' AS createdtimestamp,
+  TIMESTAMP WITH TIME ZONE 'epoch' + (LastModifiedTimestamp.attr_value #>> '{}')::double precision * INTERVAL '1 second' AS lastmodifiedtimestamp,
   QueueArn.attr_value #>> '{}' AS queuearn,
   (MaximumMessageSize.attr_value #>> '{}')::integer AS maximummessagesize,
   (MessageRetentionPeriod.attr_value #>> '{}')::integer AS messageretentionperiod,
@@ -135,11 +135,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'queue'
+  AND R.provider_type = 'Queue'
   AND R.service = 'sqs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_sqs_queue;
 
-COMMENT ON MATERIALIZED VIEW aws_sqs_queue IS 'sqs queue resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_sqs_queue IS 'sqs Queue resources and their associated attributes.';
 

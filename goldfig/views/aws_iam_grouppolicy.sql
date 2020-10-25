@@ -55,11 +55,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'grouppolicy'
+  AND R.provider_type = 'GroupPolicy'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_grouppolicy;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_grouppolicy IS 'iam grouppolicy resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_grouppolicy IS 'iam GroupPolicy resources and their associated attributes.';
 

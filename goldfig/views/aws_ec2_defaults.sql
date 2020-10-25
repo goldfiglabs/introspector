@@ -36,11 +36,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'defaults'
+  AND R.provider_type = 'Defaults'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_defaults;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_defaults IS 'ec2 defaults resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_defaults IS 'ec2 Defaults resources and their associated attributes.';
 

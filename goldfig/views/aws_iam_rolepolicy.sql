@@ -55,11 +55,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'rolepolicy'
+  AND R.provider_type = 'RolePolicy'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_rolepolicy;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_rolepolicy IS 'iam rolepolicy resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_rolepolicy IS 'iam RolePolicy resources and their associated attributes.';
 

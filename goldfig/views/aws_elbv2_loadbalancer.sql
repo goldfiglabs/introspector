@@ -150,30 +150,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'loadbalancer'
+  AND R.provider_type = 'LoadBalancer'
   AND R.service = 'elbv2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elbv2_loadbalancer;
 
-COMMENT ON MATERIALIZED VIEW aws_elbv2_loadbalancer IS 'elbv2 loadbalancer resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_elbv2_loadbalancer IS 'elbv2 LoadBalancer resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_loadbalancer_ec2_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_LoadBalancer_ec2_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_elbv2_loadbalancer_ec2_securitygroup AS
+CREATE MATERIALIZED VIEW aws_elbv2_LoadBalancer_ec2_securitygroup AS
 SELECT
-  aws_elbv2_loadbalancer.id AS loadbalancer_id,
+  aws_elbv2_LoadBalancer.id AS LoadBalancer_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_elbv2_loadbalancer
+  resource AS aws_elbv2_LoadBalancer
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_elbv2_loadbalancer.id
+    ON RR.resource_id = aws_elbv2_LoadBalancer.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_elbv2_loadbalancer_ec2_securitygroup;
+REFRESH MATERIALIZED VIEW aws_elbv2_LoadBalancer_ec2_securitygroup;

@@ -60,11 +60,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'policyversion'
+  AND R.provider_type = 'PolicyVersion'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_policyversion;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_policyversion IS 'iam policyversion resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_policyversion IS 'iam PolicyVersion resources and their associated attributes.';
 

@@ -80,11 +80,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'securitygroup'
+  AND R.provider_type = 'SecurityGroup'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_securitygroup;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_securitygroup IS 'ec2 securitygroup resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_securitygroup IS 'ec2 SecurityGroup resources and their associated attributes.';
 

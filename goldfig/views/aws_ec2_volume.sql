@@ -101,11 +101,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'volume'
+  AND R.provider_type = 'Volume'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_volume;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_volume IS 'ec2 volume resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_volume IS 'ec2 Volume resources and their associated attributes.';
 

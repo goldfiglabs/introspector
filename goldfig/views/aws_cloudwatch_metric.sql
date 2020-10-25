@@ -41,11 +41,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'metric'
+  AND R.provider_type = 'Metric'
   AND R.service = 'cloudwatch'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudwatch_metric;
 
-COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metric IS 'cloudwatch metric resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_cloudwatch_metric IS 'cloudwatch Metric resources and their associated attributes.';
 

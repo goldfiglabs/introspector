@@ -25,6 +25,8 @@ resources:
         path: metricName
       metric_namespace:
         path: metricNamespace
+      metric_dimensions:
+        value: []
     attributes:
       MetricValue:
         path: metricValue

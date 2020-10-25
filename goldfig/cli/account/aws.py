@@ -8,9 +8,9 @@ from tabulate import tabulate
 
 from goldfig.account import delete_account
 from goldfig.aws import (build_aws_import_job, load_boto_for_provider,
-                         make_proxy_builder, ProxyBuilder,
                          create_provider_and_credential,
                          account_paths_for_import, get_boto_session)
+from goldfig.aws.fetch import Proxy
 from goldfig.aws.importer import run_single_session, run_parallel_session
 from goldfig.aws.map import map_import
 from goldfig.aws.region import RegionCache
@@ -23,8 +23,7 @@ from goldfig.models import ProviderAccount, ImportJob
 _log = logging.getLogger(__name__)
 
 
-def _add_account_interactive(db: Session, proxy_builder: ProxyBuilder,
-                             force: bool) -> ProviderAccount:
+def _add_account_interactive(db: Session, force: bool) -> ProviderAccount:
   boto_session = get_boto_session()
   creds = boto_session.get_credentials()
   if creds is not None:
@@ -35,7 +34,7 @@ def _add_account_interactive(db: Session, proxy_builder: ProxyBuilder,
         default='yes')
     if not add:
       raise GFError('User cancelled')
-    proxy = proxy_builder(boto_session)
+    proxy = Proxy.build(boto_session)
     return create_provider_and_credential(db, proxy, identity)
   else:
     # TODO: point to docs on specifying credentials
@@ -49,7 +48,6 @@ def _add_account_interactive(db: Session, proxy_builder: ProxyBuilder,
 
 
 def _find_provider(db: Session,
-                   proxy_builder: ProxyBuilder,
                    account_spec: Optional[str],
                    force: bool = False) -> ProviderAccount:
   if account_spec is None:
@@ -63,7 +61,7 @@ def _find_provider(db: Session,
     elif len(accounts) == 1:
       return accounts[0]
     else:
-      return _add_account_interactive(db, proxy_builder, force)
+      return _add_account_interactive(db, force)
   else:
     raise NotImplementedError('cannot specify account yet')
 
@@ -91,18 +89,6 @@ def cmd():
               default=False,
               type=bool,
               hidden=True)
-@click.option('-p',
-              '--patch-id',
-              'patch_id',
-              default=None,
-              type=int,
-              hidden=True)
-@click.option('-c',
-              '--use-cache/--no-use-cache',
-              'use_cache',
-              default=False,
-              hidden=True,
-              type=bool)
 @click.option('-f',
               '--force',
               'force',
@@ -110,23 +96,20 @@ def cmd():
               is_flag=True,
               help='Skip prompts for adding accounts')
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
-def import_aws_cmd(account: Optional[str], debug: bool,
-                   patch_id: Optional[int], use_cache: bool, force: bool,
+def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
                    dry_run: bool):
   db = import_session()
-  proxy_builder_args = (use_cache, patch_id)
-  proxy_builder = make_proxy_builder(*proxy_builder_args)
-  provider = _find_provider(db, proxy_builder, account, force=force)
+  provider = _find_provider(db, account, force=force)
   boto = load_boto_for_provider(db, provider)
-  import_desc = build_aws_import_job(boto, proxy_builder)
+  import_desc = build_aws_import_job(boto)
   import_job = ImportJob.create(provider, import_desc)
   db.add(import_job)
   db.flush()
   region_cache = RegionCache(boto)
   if debug:
-    run_single_session(db, import_job.id, proxy_builder, region_cache)
+    run_single_session(db, import_job.id, region_cache)
     db.flush()
-    map_import(db, import_job.id, proxy_builder)
+    map_import(db, import_job.id)
     refresh_views(db)
     if not dry_run:
       db.commit()
@@ -135,12 +118,13 @@ def import_aws_cmd(account: Optional[str], debug: bool,
     accounts = account_paths_for_import(db, import_job)
     db.commit()
     # No db required for parallel invocation
-    exceptions = run_parallel_session(region_cache, accounts, import_job,
-                                      proxy_builder_args)
+    exceptions = run_parallel_session(region_cache, accounts, import_job)
     # Make certain we're using the current db session
     import_job = db.query(ImportJob).get(import_job.id)
     if len(exceptions) == 0:
-      map_import(db, import_job.id, proxy_builder)
+      db.commit()
+      map_import(db, import_job.id)
+      db.commit()
       refresh_views(db)
       import_job.mark_complete(exceptions=[])
     else:
@@ -161,27 +145,13 @@ def import_aws_cmd(account: Optional[str], debug: bool,
     'Remap a specific import. If not specified, the last import will be used',
     type=int,
     default=None)
-@click.option('-p',
-              '--patch-id',
-              'patch_id',
-              default=None,
-              type=int,
-              hidden=True)
-@click.option('-c',
-              '--use-cache/--no-use-cache',
-              'use_cache',
-              default=False,
-              hidden=True,
-              type=bool)
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
-def remap_cmd(import_job_id: Optional[int], use_cache: bool,
-              patch_id: Optional[int], dry_run: bool):
+def remap_cmd(import_job_id: Optional[int], dry_run: bool):
   _log.info('Mapping an AWS import')
   if import_job_id is None:
     raise NotImplementedError('Need to query last import job')
-  proxy_builder = make_proxy_builder(use_cache, patch_id)
   db = import_session()
-  map_import(db, import_job_id, proxy_builder)
+  map_import(db, import_job_id)
   refresh_views(db)
   if not dry_run:
     db.commit()

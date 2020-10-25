@@ -229,11 +229,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'trail'
+  AND R.provider_type = 'Trail'
   AND R.service = 'cloudtrail'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudtrail_trail;
 
-COMMENT ON MATERIALIZED VIEW aws_cloudtrail_trail IS 'cloudtrail trail resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_cloudtrail_trail IS 'cloudtrail Trail resources and their associated attributes.';
 

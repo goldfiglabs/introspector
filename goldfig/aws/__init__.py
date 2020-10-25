@@ -11,19 +11,7 @@ from goldfig.aws.fetch import Proxy
 from goldfig.error import GFInternal
 from goldfig.models import ImportJob, ProviderAccount, ProviderCredential
 
-ProxyBuilder = Callable[[boto.Session], Proxy]
 _log = logging.getLogger(__name__)
-
-
-def make_proxy_builder(use_cache: bool = False,
-                       patch_id: Optional[int] = None) -> ProxyBuilder:
-  def _fn(boto: boto.Session) -> Proxy:
-    if use_cache:
-      return Proxy.build(boto, patch_id=patch_id)
-    else:
-      return Proxy.dummy(boto)
-
-  return _fn
 
 
 def _parse_timestamp(value) -> str:
@@ -95,9 +83,8 @@ def load_boto_for_provider(db: Session,
   return load_boto_session(account)
 
 
-def build_aws_import_job(session: boto.Session,
-                         proxy_builder: ProxyBuilder) -> Dict:
-  proxy = proxy_builder(session)
+def build_aws_import_job(session: boto.Session) -> Dict:
+  proxy = Proxy.build(session)
   sts = session.create_client('sts')
   identity = sts.get_caller_identity()
   account_id = identity['Account']

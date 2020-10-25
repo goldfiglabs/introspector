@@ -1,0 +1,66 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: VpcPeeringConnection
+  name: VpcPeeringConnectionId
+  uri:
+    id: VpcPeeringConnectionId
+  attributes:
+    provider:
+    - AccepterVpcInfo
+    - ExpirationTime
+    - RequesterVpcInfo
+    - Status
+    - Tags
+    - VpcPeeringConnectionId
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: vpc-peering-connection
+  relations:
+  - relation: peers-to
+    path: AccepterVpcInfo
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      region:
+        path: Region
+      account_id:
+        path: OwnerId
+      id:
+        path: VpcId
+    attributes:
+      CidrBlock:
+        path: CidrBlock
+      CidrBlockSet:
+        path: CidrBlockSet
+      Ipv6CidrBlockSet:
+        path: Ipv6CidrBlockSet
+      PeeringOptions:
+        path: PeeringOptions
+  - relation: peers-from
+    path: RequesterVpcInfo
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      region:
+        path: Region
+      account_id:
+        path: OwnerId
+      id:
+        path: VpcId
+    attributes:
+      CidrBlock:
+        path: CidrBlock
+      CidrBlockSet:
+        path: CidrBlockSet
+      Ipv6CidrBlockSet:
+        path: Ipv6CidrBlockSet
+      PeeringOptions:
+        path: PeeringOptions

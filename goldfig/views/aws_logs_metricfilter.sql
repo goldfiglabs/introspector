@@ -65,28 +65,28 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'metricfilter'
+  AND R.provider_type = 'MetricFilter'
   AND R.service = 'logs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_logs_metricfilter;
 
-COMMENT ON MATERIALIZED VIEW aws_logs_metricfilter IS 'logs metricfilter resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_logs_metricfilter IS 'logs MetricFilter resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_logs_metricfilter_cloudwatch_metric CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_logs_MetricFilter_cloudwatch_metric CASCADE;
 
-CREATE MATERIALIZED VIEW aws_logs_metricfilter_cloudwatch_metric AS
+CREATE MATERIALIZED VIEW aws_logs_MetricFilter_cloudwatch_metric AS
 SELECT
-  aws_logs_metricfilter.id AS metricfilter_id,
+  aws_logs_MetricFilter.id AS MetricFilter_id,
   aws_cloudwatch_metric.id AS metric_id,
   MetricValue.value #>> '{}' AS metricvalue,
   (DefaultValue.value #>> '{}')::double precision AS defaultvalue
 FROM
-  resource AS aws_logs_metricfilter
+  resource AS aws_logs_MetricFilter
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_logs_metricfilter.id
+    ON RR.resource_id = aws_logs_MetricFilter.id
     AND RR.relation = 'forwards-to'
   INNER JOIN resource AS aws_cloudwatch_metric
     ON aws_cloudwatch_metric.id = RR.target_id
@@ -99,4 +99,4 @@ FROM
     AND DefaultValue.name = 'DefaultValue'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_logs_metricfilter_cloudwatch_metric;
+REFRESH MATERIALIZED VIEW aws_logs_MetricFilter_cloudwatch_metric;

@@ -146,11 +146,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'table'
+  AND R.provider_type = 'Table'
   AND R.service = 'dynamodb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_dynamodb_table;
 
-COMMENT ON MATERIALIZED VIEW aws_dynamodb_table IS 'dynamodb table resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_dynamodb_table IS 'dynamodb Table resources and their associated attributes.';
 

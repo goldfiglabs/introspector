@@ -185,11 +185,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'function'
+  AND R.provider_type = 'Function'
   AND R.service = 'lambda'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_lambda_function;
 
-COMMENT ON MATERIALIZED VIEW aws_lambda_function IS 'lambda function resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_lambda_function IS 'lambda Function resources and their associated attributes.';
 

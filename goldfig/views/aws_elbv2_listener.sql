@@ -80,27 +80,27 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'listener'
+  AND R.provider_type = 'Listener'
   AND R.service = 'elbv2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elbv2_listener;
 
-COMMENT ON MATERIALIZED VIEW aws_elbv2_listener IS 'elbv2 listener resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_elbv2_listener IS 'elbv2 Listener resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_listener_acm_certificate CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_elbv2_Listener_acm_certificate CASCADE;
 
-CREATE MATERIALIZED VIEW aws_elbv2_listener_acm_certificate AS
+CREATE MATERIALIZED VIEW aws_elbv2_Listener_acm_certificate AS
 SELECT
-  aws_elbv2_listener.id AS listener_id,
+  aws_elbv2_Listener.id AS Listener_id,
   aws_acm_certificate.id AS certificate_id,
   (IsDefault.value #>> '{}')::boolean AS isdefault
 FROM
-  resource AS aws_elbv2_listener
+  resource AS aws_elbv2_Listener
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_elbv2_listener.id
+    ON RR.resource_id = aws_elbv2_Listener.id
     AND RR.relation = 'serves'
   INNER JOIN resource AS aws_acm_certificate
     ON aws_acm_certificate.id = RR.target_id
@@ -110,4 +110,4 @@ FROM
     AND IsDefault.name = 'IsDefault'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_elbv2_listener_acm_certificate;
+REFRESH MATERIALIZED VIEW aws_elbv2_Listener_acm_certificate;

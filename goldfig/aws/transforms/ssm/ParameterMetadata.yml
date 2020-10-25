@@ -1,0 +1,36 @@
+version: 1
+resources:
+- service: ssm
+  provider_type: Parameter
+  name: Name
+  uri:
+    id: Name
+  attributes:
+    provider:
+    - Name
+    - Type
+    - KeyId
+    - LastModifiedDate
+    - LastModifiedUser
+    - Description
+    - AllowedPattern
+    - Version
+    - Tier
+    - Policies
+    - DataType
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  relations:
+  - relation: secured-by
+    path: KeyId
+    uri:
+      id:
+        path: ''
+      service:
+        value: kms
+      resource_name:
+        value: key

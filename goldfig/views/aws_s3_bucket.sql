@@ -18,7 +18,7 @@ SELECT
   location.attr_value #>> '{}' AS location,
   logging.attr_value::jsonb AS logging,
   notificationconfiguration.attr_value::jsonb AS notificationconfiguration,
-  policy.attr_value #>> '{}' AS policy,
+  policy.attr_value::jsonb AS policy,
   policystatus.attr_value::jsonb AS policystatus,
   replication.attr_value::jsonb AS replication,
   requestpayment.attr_value #>> '{}' AS requestpayment,
@@ -126,11 +126,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'bucket'
+  AND R.provider_type = 'Bucket'
   AND R.service = 's3'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_s3_bucket;
 
-COMMENT ON MATERIALIZED VIEW aws_s3_bucket IS 's3 bucket resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_s3_bucket IS 's3 Bucket resources and their associated attributes.';
 

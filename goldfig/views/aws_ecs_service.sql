@@ -185,11 +185,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'service'
+  AND R.provider_type = 'Service'
   AND R.service = 'ecs'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ecs_service;
 
-COMMENT ON MATERIALIZED VIEW aws_ecs_service IS 'ecs service resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ecs_service IS 'ecs Service resources and their associated attributes.';
 

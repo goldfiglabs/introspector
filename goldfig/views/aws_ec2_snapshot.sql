@@ -124,11 +124,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'snapshot'
+  AND R.provider_type = 'Snapshot'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_snapshot;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_snapshot IS 'ec2 snapshot resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_snapshot IS 'ec2 Snapshot resources and their associated attributes.';
 

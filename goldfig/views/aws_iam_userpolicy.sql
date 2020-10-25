@@ -55,11 +55,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'userpolicy'
+  AND R.provider_type = 'UserPolicy'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_userpolicy;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_userpolicy IS 'iam userpolicy resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_userpolicy IS 'iam UserPolicy resources and their associated attributes.';
 

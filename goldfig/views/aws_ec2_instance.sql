@@ -56,6 +56,7 @@ SELECT
     _image_id.target_id AS _image_id,
     _iam_instanceprofile_id.target_id AS _iam_instanceprofile_id,
     _vpc_id.target_id AS _vpc_id,
+    _subnet_id.target_id AS _subnet_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -290,6 +291,19 @@ FROM
   ) AS _vpc_id ON _vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
+      _aws_ec2_subnet_relation.resource_id AS resource_id,
+      _aws_ec2_subnet.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_subnet_relation
+      INNER JOIN resource AS _aws_ec2_subnet
+        ON _aws_ec2_subnet_relation.target_id = _aws_ec2_subnet.id
+        AND _aws_ec2_subnet.provider_type = 'Subnet'
+        AND _aws_ec2_subnet.service = 'ec2'
+    WHERE
+      _aws_ec2_subnet_relation.relation = 'in'
+  ) AS _subnet_id ON _subnet_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
@@ -303,21 +317,21 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'instance'
+  AND R.provider_type = 'Instance'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_instance;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'ec2 instance resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'ec2 Instance resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_volume CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_Instance_volume CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_instance_volume AS
+CREATE MATERIALIZED VIEW aws_ec2_Instance_volume AS
 SELECT
-  aws_ec2_instance.id AS instance_id,
+  aws_ec2_Instance.id AS Instance_id,
   aws_ec2_volume.id AS volume_id,
   (DeleteOnTermiation.value #>> '{}')::boolean AS deleteontermiation,
   (TO_TIMESTAMP(AttachTime.value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS attachtime,
@@ -325,9 +339,9 @@ SELECT
   Status.value #>> '{}' AS status,
   DeviceName.value #>> '{}' AS devicename
 FROM
-  resource AS aws_ec2_instance
+  resource AS aws_ec2_Instance
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_instance.id
+    ON RR.resource_id = aws_ec2_Instance.id
     AND RR.relation = 'attached'
   INNER JOIN resource AS aws_ec2_volume
     ON aws_ec2_volume.id = RR.target_id
@@ -349,23 +363,23 @@ FROM
     AND DeviceName.name = 'DeviceName'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_instance_volume;
+REFRESH MATERIALIZED VIEW aws_ec2_Instance_volume;
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_Instance_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_instance_securitygroup AS
+CREATE MATERIALIZED VIEW aws_ec2_Instance_securitygroup AS
 SELECT
-  aws_ec2_instance.id AS instance_id,
+  aws_ec2_Instance.id AS Instance_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_ec2_instance
+  resource AS aws_ec2_Instance
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_instance.id
+    ON RR.resource_id = aws_ec2_Instance.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_instance_securitygroup;
+REFRESH MATERIALIZED VIEW aws_ec2_Instance_securitygroup;

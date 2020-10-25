@@ -56,11 +56,11 @@ FROM
   ) AS _organization_id ON _organization_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'root'
+  AND R.provider_type = 'Root'
   AND R.service = 'organizations'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_organizations_root;
 
-COMMENT ON MATERIALIZED VIEW aws_organizations_root IS 'organizations root resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_organizations_root IS 'organizations Root resources and their associated attributes.';
 

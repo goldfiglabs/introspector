@@ -201,11 +201,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'user'
+  AND R.provider_type = 'User'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_user;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_user IS 'iam user resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_user IS 'iam User resources and their associated attributes.';
 

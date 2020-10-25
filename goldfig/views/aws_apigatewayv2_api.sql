@@ -101,11 +101,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'api'
+  AND R.provider_type = 'Api'
   AND R.service = 'apigatewayv2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_apigatewayv2_api;
 
-COMMENT ON MATERIALIZED VIEW aws_apigatewayv2_api IS 'apigatewayv2 api resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_apigatewayv2_api IS 'apigatewayv2 Api resources and their associated attributes.';
 

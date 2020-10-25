@@ -61,30 +61,30 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'group'
+  AND R.provider_type = 'Group'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_group;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_group IS 'iam group resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_group IS 'iam Group resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_iam_group_user CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_iam_Group_user CASCADE;
 
-CREATE MATERIALIZED VIEW aws_iam_group_user AS
+CREATE MATERIALIZED VIEW aws_iam_Group_user AS
 SELECT
-  aws_iam_group.id AS group_id,
+  aws_iam_Group.id AS Group_id,
   aws_iam_user.id AS user_id
 FROM
-  resource AS aws_iam_group
+  resource AS aws_iam_Group
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_iam_group.id
+    ON RR.resource_id = aws_iam_Group.id
     AND RR.relation = 'contains'
   INNER JOIN resource AS aws_iam_user
     ON aws_iam_user.id = RR.target_id
     AND aws_iam_user.provider_type = 'User'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_iam_group_user;
+REFRESH MATERIALIZED VIEW aws_iam_Group_user;

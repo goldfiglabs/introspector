@@ -65,11 +65,11 @@ FROM
   ) AS _organizational_unit_id ON _organizational_unit_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'organizationalunit'
+  AND R.provider_type = 'OrganizationalUnit'
   AND R.service = 'organizations'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_organizations_organizationalunit;
 
-COMMENT ON MATERIALIZED VIEW aws_organizations_organizationalunit IS 'organizations organizationalunit resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_organizations_organizationalunit IS 'organizations OrganizationalUnit resources and their associated attributes.';
 

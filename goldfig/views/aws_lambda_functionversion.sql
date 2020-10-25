@@ -194,11 +194,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'functionversion'
+  AND R.provider_type = 'FunctionVersion'
   AND R.service = 'lambda'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_lambda_functionversion;
 
-COMMENT ON MATERIALIZED VIEW aws_lambda_functionversion IS 'lambda functionversion resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_lambda_functionversion IS 'lambda FunctionVersion resources and their associated attributes.';
 

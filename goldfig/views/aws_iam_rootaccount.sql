@@ -66,11 +66,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'rootaccount'
+  AND R.provider_type = 'RootAccount'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_rootaccount;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_rootaccount IS 'iam rootaccount resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_rootaccount IS 'iam RootAccount resources and their associated attributes.';
 

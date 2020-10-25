@@ -1,14 +1,11 @@
-import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, Generator, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 import yaml
 
 import botocore.exceptions
 from botocore.session import Session as Boto
-
-import jsonpatch
 
 from goldfig.error import GFInternal
 
@@ -16,102 +13,6 @@ _log = logging.getLogger(__name__)
 
 _THIS_DIR: Path = Path(os.path.dirname(__file__))
 KeyFilter = Callable[[str], bool]
-
-
-class Cache(object):
-  _DEFAULT_CACHE = _THIS_DIR.parent.parent / 'cache' / 'aws' / '1'
-
-  @classmethod
-  def default(cls) -> 'Cache':
-    return cls(path=cls._DEFAULT_CACHE, update_on_miss=True)
-
-  @classmethod
-  def patched(cls, patch_id: int) -> 'Cache':
-    patch_dir = _THIS_DIR.parent.parent / 'patches' / 'aws' / str(patch_id)
-    return cls(path=cls._DEFAULT_CACHE,
-               update_on_miss=False,
-               patch_dir=str(patch_dir))
-
-  @classmethod
-  def dummy(cls) -> 'Cache':
-    return cls(Path('dummy'), update_on_miss=False)
-
-  def __init__(self,
-               path: Path,
-               update_on_miss: bool,
-               patch_dir: Optional[str] = None):
-    self._path = path
-    self._update_on_miss = update_on_miss
-    self._patch_dir = patch_dir
-    if self._update_on_miss:
-      os.makedirs(str(self._path), exist_ok=True)
-
-  def client(self, service: str, region: Optional[str]) -> 'ClientCache':
-    patch = None
-    if self._patch_dir is not None:
-      patch_path = Path(self._patch_dir) / f'{service}_{region}.json'
-      if patch_path.exists():
-        with open(str(patch_path), 'r') as f:
-          patch = json.load(f)
-      _log.debug(f'Using patch for {service} {patch}')
-    filename = service if region is None else f'{service}_{region}'
-    return ClientCache(self._path / f'{filename}.json',
-                       self._update_on_miss,
-                       patch=patch)
-
-
-class ClientCache(object):
-  def __init__(self, path: Path, update_on_miss: bool, patch=None):
-    self._path = path
-    self._update_on_miss = update_on_miss
-    try:
-      with open(str(self._path), 'r') as f:
-        self._cached = json.load(f)
-    except FileNotFoundError:
-      self._cached = {}
-    if patch is not None:
-      _log.debug('patching')
-      jsonpatch.apply_patch(self._cached, patch, in_place=True)
-
-  def get(self, resource: str, kwargs) -> Optional[Any]:
-    gets = self._cached.get('get', {}).get(resource, [])
-    for get in gets:
-      if get['args'] == kwargs:
-        return get['result']
-    return None
-
-  def cache_get_result(self, resource: str, args, result):
-    if not self._update_on_miss:
-      return
-    gets = self._cached.get('get')
-    if gets is None:
-      gets = {}
-      self._cached['get'] = gets
-    resource_gets = gets.get(resource, [])
-    resource_gets.append({'args': args, 'result': result})
-    gets[resource] = resource_gets
-    with open(str(self._path), 'w') as f:
-      json.dump(self._cached, f)
-
-  def list(self, resource: str, kwargs) -> Optional[Any]:
-    resource_lists = self._cached.get('list', {}).get(resource, [])
-    for resource_list in resource_lists:
-      if resource_list['args'] == kwargs:
-        return resource_list['result']
-    return None
-
-  def cache_list_result(self, resource: str, args, result):
-    if not self._update_on_miss:
-      return
-    lists = self._cached.get('list')
-    if lists is None:
-      lists = {}
-      self._cached['list'] = lists
-    resource_lists = lists.get(resource, [])
-    resource_lists.append({'args': args, 'result': result})
-    lists[resource] = resource_lists
-    with open(str(self._path), 'w') as f:
-      json.dump(self._cached, f)
 
 
 class ClientProxy(object):
@@ -256,7 +157,9 @@ class EC2ClientProxy(ClientProxy):
       # TODO: look into this
       'describe_moving_addresses',
       # Failing in some cases, and we don't map
-      'describe_id_format'
+      'describe_id_format',
+      # not needed, it's on most return values
+      'describe_tags'
   ]
 
   EXTRA_ARGS = {
@@ -267,10 +170,7 @@ class EC2ClientProxy(ClientProxy):
           }]
       },
       'describe_snapshots': {
-          'Filters': [{
-              'Name': 'owner-alias',
-              'Values': ['self']
-          }]
+          'OwnerIds': ['self']
       }
   }
 
@@ -335,6 +235,11 @@ class S3ClientProxy(ClientProxy):
   }
   GET_PREFIX = 'get_bucket_'
   LIST_PREFIX = 'list_bucket_'
+  SKIPLIST = [
+      # deprecated methods covered by other calls
+      'get_bucket_notification',
+      'get_bucket_lifecycle'
+  ]
 
   def _patch_client(self):
     # Force loading of the pagination config
@@ -348,7 +253,9 @@ class S3ClientProxy(ClientProxy):
       }
 
   def _should_import(self, key: str) -> bool:
-    if key.startswith(self.LIST_PREFIX):
+    if key in self.SKIPLIST:
+      return False
+    elif key.startswith(self.LIST_PREFIX):
       return True
     elif key.startswith(self.GET_PREFIX):
       # Only return true if there is not a corresponding list call
@@ -452,32 +359,19 @@ class AWSFetch(object):
 
 
 class ServiceProxy(object):
-  def __init__(self, impl: ClientProxy, cache: ClientCache):
+  def __init__(self, impl: ClientProxy):
     self._impl = impl
-    self._cache = cache
 
   def resource_names(self) -> Iterator[str]:
     return self._impl.resource_names()
 
   def list(self, resource: str, **kwargs) -> Optional[Tuple[str, Any]]:
-    cached = self._cache.list(resource, kwargs)
-    if cached is None:
-      _log.info(f'cache miss list {resource} {kwargs}')
-      result = self._impl.list(resource, kwargs)
-      self._cache.cache_list_result(resource, kwargs, result)
-      return result
-    else:
-      return cached
+    _log.info(f'calling list {resource} {kwargs}')
+    return self._impl.list(resource, kwargs)
 
   def get(self, resource: str, **kwargs):
-    cached = self._cache.get(resource, kwargs)
-    if cached is None:
-      _log.info(f'cache miss get {resource} {kwargs}')
-      result = self._impl.get(resource, kwargs)
-      self._cache.cache_get_result(resource, kwargs, result)
-      return result
-    else:
-      return cached
+    _log.info(f'calling get {resource} {kwargs}')
+    return self._impl.get(resource, kwargs)
 
   def canonical_name(self, py_name: str) -> str:
     return self._impl.canonical_name(py_name)
@@ -486,22 +380,16 @@ class ServiceProxy(object):
 class Proxy(object):
   @classmethod
   def build(cls, boto: Boto, patch_id: Optional[int] = None) -> 'Proxy':
-    if patch_id is not None:
-      cache = Cache.patched(patch_id)
-    else:
-      cache = Cache.default()
-    return cls(AWSFetch(boto), cache)
+    return cls(AWSFetch(boto))
 
   @classmethod
   def dummy(cls, boto: Boto) -> 'Proxy':
-    return cls(AWSFetch(boto), Cache.dummy())
+    return cls(AWSFetch(boto))
 
-  def __init__(self, aws: AWSFetch, cache: Cache):
+  def __init__(self, aws: AWSFetch):
     self._aws = aws
-    self._cache = cache
 
   def service(self,
               service: str,
               region: Optional[str] = None) -> ServiceProxy:
-    return ServiceProxy(self._aws.client(service, region),
-                        self._cache.client(service, region))
+    return ServiceProxy(self._aws.client(service, region))

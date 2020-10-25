@@ -125,11 +125,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'subnet'
+  AND R.provider_type = 'Subnet'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_subnet;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_subnet IS 'ec2 subnet resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_subnet IS 'ec2 Subnet resources and their associated attributes.';
 

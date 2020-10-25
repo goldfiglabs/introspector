@@ -6,6 +6,7 @@ resources:
   uri:
     metric_name: MetricName
     metric_namespace: Namespace
+    metric_dimensions: Dimensions
   attributes:
     provider:
     - Namespace

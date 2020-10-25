@@ -90,11 +90,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'backup'
+  AND R.provider_type = 'Backup'
   AND R.service = 'dynamodb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_dynamodb_backup;
 
-COMMENT ON MATERIALIZED VIEW aws_dynamodb_backup IS 'dynamodb backup resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_dynamodb_backup IS 'dynamodb Backup resources and their associated attributes.';
 

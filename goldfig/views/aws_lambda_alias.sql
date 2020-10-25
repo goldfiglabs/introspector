@@ -75,27 +75,27 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'alias'
+  AND R.provider_type = 'Alias'
   AND R.service = 'lambda'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_lambda_alias;
 
-COMMENT ON MATERIALIZED VIEW aws_lambda_alias IS 'lambda alias resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_lambda_alias IS 'lambda Alias resources and their associated attributes.';
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_lambda_alias_functionversion CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_lambda_Alias_functionversion CASCADE;
 
-CREATE MATERIALIZED VIEW aws_lambda_alias_functionversion AS
+CREATE MATERIALIZED VIEW aws_lambda_Alias_functionversion AS
 SELECT
-  aws_lambda_alias.id AS alias_id,
+  aws_lambda_Alias.id AS Alias_id,
   aws_lambda_functionversion.id AS functionversion_id,
   (weight.value #>> '{}')::double precision AS weight
 FROM
-  resource AS aws_lambda_alias
+  resource AS aws_lambda_Alias
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_lambda_alias.id
+    ON RR.resource_id = aws_lambda_Alias.id
     AND RR.relation = 'forwards-to'
   INNER JOIN resource AS aws_lambda_functionversion
     ON aws_lambda_functionversion.id = RR.target_id
@@ -105,4 +105,4 @@ FROM
     AND weight.name = 'weight'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_lambda_alias_functionversion;
+REFRESH MATERIALIZED VIEW aws_lambda_Alias_functionversion;

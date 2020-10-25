@@ -70,11 +70,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'listener'
+  AND R.provider_type = 'Listener'
   AND R.service = 'elb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elb_listener;
 
-COMMENT ON MATERIALIZED VIEW aws_elb_listener IS 'elb listener resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_elb_listener IS 'elb Listener resources and their associated attributes.';
 

@@ -1,0 +1,42 @@
+version: 1
+resources:
+- service: ses
+  provider_type: Identity
+  name: id
+  uri:
+    id: id
+  attributes:
+    provider:
+    - DkimEnabled
+    - DkimVerificationStatus
+    - DkimTokens
+    - MailFromDomain
+    - MailFromDomainStatus
+    - BehaviorOnMXFailure
+    - BounceTopic
+    - ComplaintTopic
+    - DeliveryTopic
+    - ForwardingEnabled
+    - HeadersInBounceNotificationsEnabled
+    - HeadersInComplaintNotificationsEnabled
+    - HeadersInDeliveryNotificationsEnabled
+    - Policies
+    - VerificationStatus
+    - VerificationToken
+  resource_name: identity
+  relations:
+  - relation: publishes-to
+    path: BounceTopic
+    uri:
+      uri:
+        path: ''
+  - relation: publishes-to
+    path: ComplaintTopic
+    uri:
+      uri:
+        path: ''
+  - relation: publishes-to
+    path: DeliveryTopic
+    uri:
+      uri:
+        path: ''

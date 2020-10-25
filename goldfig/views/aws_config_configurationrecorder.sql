@@ -100,11 +100,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'configurationrecorder'
+  AND R.provider_type = 'ConfigurationRecorder'
   AND R.service = 'config'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_config_configurationrecorder;
 
-COMMENT ON MATERIALIZED VIEW aws_config_configurationrecorder IS 'config configurationrecorder resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_config_configurationrecorder IS 'config ConfigurationRecorder resources and their associated attributes.';
 

@@ -28,6 +28,7 @@ resources:
       Metadata:
         Tags:
           path: Tags
+          transform: aws_tags
   resource_name: subnet
   relations:
   - relation: in

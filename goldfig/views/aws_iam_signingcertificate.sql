@@ -65,11 +65,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'signingcertificate'
+  AND R.provider_type = 'SigningCertificate'
   AND R.service = 'iam'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_iam_signingcertificate;
 
-COMMENT ON MATERIALIZED VIEW aws_iam_signingcertificate IS 'iam signingcertificate resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_iam_signingcertificate IS 'iam SigningCertificate resources and their associated attributes.';
 

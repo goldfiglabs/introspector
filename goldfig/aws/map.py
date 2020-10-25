@@ -6,9 +6,10 @@ from typing import Dict, List, Optional
 from sqlalchemy.orm import Session
 
 from goldfig import PathStack, db_import_writer
-from goldfig.aws import account_paths_for_import, ProxyBuilder, load_boto_session
+from goldfig.aws import account_paths_for_import, load_boto_session
 from goldfig.aws.ec2_adjunct import find_adjunct_data
 from goldfig.aws.elb_adjunct import synthesize_endpoints
+from goldfig.aws.fetch import Proxy
 from goldfig.aws.uri import get_arn_fn
 from goldfig.delta.partial import map_partial_deletes, map_partial_prefix
 from goldfig.delta.resource import map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
@@ -161,7 +162,7 @@ def _get_mapper(db: Session,
 AWS_SOURCES = ['credentialreport']
 
 
-def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
+def map_import(db: Session, import_job_id: int):
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
@@ -175,7 +176,7 @@ def map_import(db: Session, import_job_id: int, proxy_builder: ProxyBuilder):
     uri_fn = get_arn_fn(account.scope)
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
     boto = load_boto_session(account)
-    proxy = proxy_builder(boto)
+    proxy = Proxy.build(boto)
     synthesize_account_root(proxy, db, import_job, path, account.scope)
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source,

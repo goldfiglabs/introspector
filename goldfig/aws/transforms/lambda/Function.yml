@@ -1,50 +1,50 @@
 version: 1
 resources:
-  - service: lambda
-    provider_type: Function
-    name: FunctionName
+- service: lambda
+  provider_type: Function
+  name: FunctionName
+  uri:
+    uri: FunctionArn
+  attributes:
+    provider:
+    - FunctionName
+    - FunctionArn
+    - Runtime
+    - Role
+    - Handler
+    - CodeSize
+    - Description
+    - Timeout
+    - MemorySize
+    - LastModified
+    - CodeSha256
+    - Version
+    - VpcConfig
+    - DeadLetterConfig
+    - Environment
+    - KMSKeyArn
+    - TracingConfig
+    - MasterArn
+    - RevisionId
+    - Layers
+    - State
+    - StateReason
+    - StateReasonCode
+    - LastUpdateStatus
+    - LastUpdateStatusReason
+    - LastUpdateStatusReasonCode
+    - FileSystemConfigs
+    - Tags
+    - Policy
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+        Region:
+          context: region
+  relations:
+  - relation: acts-as
+    path: Role
     uri:
-      uri: FunctionArn
-    attributes:
-      provider:
-        - FunctionName
-        - FunctionArn
-        - Runtime
-        - Role
-        - Handler
-        - CodeSize
-        - Description
-        - Timeout
-        - MemorySize
-        - LastModified
-        - CodeSha256
-        - Version
-        - VpcConfig
-        - DeadLetterConfig
-        - Environment
-        - KMSKeyArn
-        - TracingConfig
-        - MasterArn
-        - RevisionId
-        - Layers
-        - State
-        - StateReason
-        - StateReasonCode
-        - LastUpdateStatus
-        - LastUpdateStatusReason
-        - LastUpdateStatusReasonCode
-        - FileSystemConfigs
-        - Tags
-        - Policy
-      custom:
-        Metadata:
-          Tags:
-            path: Tags
-          Region:
-            context: region
-    relations:
-      - relation: acts-as
-        path: Role
-        uri:
-          uri:
-            path: ''
+      uri:
+        path: ''

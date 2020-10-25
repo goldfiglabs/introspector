@@ -96,11 +96,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'compositealarm'
+  AND R.provider_type = 'CompositeAlarm'
   AND R.service = 'cloudwatch'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_cloudwatch_compositealarm;
 
-COMMENT ON MATERIALIZED VIEW aws_cloudwatch_compositealarm IS 'cloudwatch compositealarm resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_cloudwatch_compositealarm IS 'cloudwatch CompositeAlarm resources and their associated attributes.';
 

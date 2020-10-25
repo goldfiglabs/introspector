@@ -1,7 +1,7 @@
 version: 1
 resources:
 - service: kms
-  provider_type: key
+  provider_type: Key
   name: KeyId
   uri:
     uri: Arn

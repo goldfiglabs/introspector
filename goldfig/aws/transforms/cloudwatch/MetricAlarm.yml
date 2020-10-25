@@ -51,9 +51,11 @@ resources:
       resource_name:
         value: metric
       metric_name:
-        path: metric_name
+        path: MetricName
       metric_namespace:
-        path: metric_namespace
+        path: Namespace
+      metric_dimensions:
+        path: Dimensions
   - relation: triggers
     path: AlarmActions
     uri:

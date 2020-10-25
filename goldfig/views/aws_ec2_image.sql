@@ -156,11 +156,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'image'
+  AND R.provider_type = 'Image'
   AND R.service = 'ec2'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_ec2_image;
 
-COMMENT ON MATERIALIZED VIEW aws_ec2_image IS 'ec2 image resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_ec2_image IS 'ec2 Image resources and their associated attributes.';
 

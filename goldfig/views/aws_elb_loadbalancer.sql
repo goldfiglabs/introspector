@@ -116,11 +116,11 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
-  AND LOWER(R.provider_type) = 'loadbalancer'
+  AND R.provider_type = 'LoadBalancer'
   AND R.service = 'elb'
 WITH NO DATA;
 
 REFRESH MATERIALIZED VIEW aws_elb_loadbalancer;
 
-COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'elb loadbalancer resources and their associated attributes.';
+COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'elb LoadBalancer resources and their associated attributes.';
 
