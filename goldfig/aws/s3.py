@@ -1,4 +1,5 @@
 import concurrent.futures as f
+import json
 import logging
 from typing import Dict, List, Tuple
 
@@ -33,8 +34,15 @@ def import_bucket(proxy: ServiceProxy, bucket_metadata):
         result[key] = attr_result[key]
       else:
         result[key] = attr_result
+      if key in ('Policy', ):
+        result[key] = json.loads(result[key])
     elif op_name == 'get_bucket_location':
       result['Location'] = {'LocationConstraint': 'us-east-1'}
+  public_conf_resp = proxy.get('get_public_access_block',
+                               Bucket=bucket_metadata['Name'])
+  if public_conf_resp is not None:
+    public_attrs = public_conf_resp['PublicAccessBlockConfiguration']
+    result.update(public_attrs)
   return result
 
 

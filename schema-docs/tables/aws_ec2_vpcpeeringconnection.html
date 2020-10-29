@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_cloudwatch_compositealarm - goldfig Database</title>
+        <title>aws_ec2_vpcpeeringconnection - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_cloudwatch_compositealarm</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>aws_ec2_vpcpeeringconnection</h1><p><span id="recordNumber">0</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>cloudwatch CompositeAlarm resources and their associated attributes.</p>
+                            <p>ec2 VpcPeeringConnection resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,24 +167,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="actionsenabled">actionsenabled</span></td>
-                                    <td>bool</td>
-                                    <td>1</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="alarmactions">alarmactions</span></td>
+                                    <td><span id="acceptervpcinfo">acceptervpcinfo</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -201,24 +184,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmarn">alarmarn</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="alarmconfigurationupdatedtimestamp">alarmconfigurationupdatedtimestamp</span></td>
+                                    <td><span id="expirationtime">expirationtime</span></td>
                                     <td>timestamptz</td>
                                     <td>35,6</td>
                                     <td title='nullable'>√</td>
@@ -235,58 +201,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmdescription">alarmdescription</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="alarmname">alarmname</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="alarmrule">alarmrule</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="insufficientdataactions">insufficientdataactions</span></td>
+                                    <td><span id="requestervpcinfo">requestervpcinfo</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -303,76 +218,8 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="okactions">okactions</span></td>
+                                    <td><span id="status">status</span></td>
                                     <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="statereason">statereason</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="statereasondata">statereasondata</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="stateupdatedtimestamp">stateupdatedtimestamp</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="statevalue">statevalue</span></td>
-                                    <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
@@ -391,6 +238,57 @@
                                     <td><span id="tags">tags</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="vpcpeeringconnectionid">vpcpeeringconnectionid</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_acceptervpc_id">_acceptervpc_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_requestervpc_id">_requestervpc_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -435,7 +333,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    ((actionsenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS actionsenabled,&#10;    alarmactions.attr_value AS alarmactions,&#10;    (alarmarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmarn,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((alarmconfigurationupdatedtimestamp.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS alarmconfigurationupdatedtimestamp,&#10;    (alarmdescription.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmdescription,&#10;    (alarmname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmname,&#10;    (alarmrule.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmrule,&#10;    insufficientdataactions.attr_value AS insufficientdataactions,&#10;    okactions.attr_value AS okactions,&#10;    (statereason.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereason,&#10;    (statereasondata.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereasondata,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((stateupdatedtimestamp.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS stateupdatedtimestamp,&#10;    (statevalue.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statevalue,&#10;    tags.attr_value AS tags,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN resource_attribute actionsenabled ON (((actionsenabled.resource_id = r.id) AND ((actionsenabled.type)::text = &#39;provider&#39;::text) AND (lower((actionsenabled.attr_name)::text) = &#39;actionsenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmactions ON (((alarmactions.resource_id = r.id) AND ((alarmactions.type)::text = &#39;provider&#39;::text) AND (lower((alarmactions.attr_name)::text) = &#39;alarmactions&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmarn ON (((alarmarn.resource_id = r.id) AND ((alarmarn.type)::text = &#39;provider&#39;::text) AND (lower((alarmarn.attr_name)::text) = &#39;alarmarn&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmconfigurationupdatedtimestamp ON (((alarmconfigurationupdatedtimestamp.resource_id = r.id) AND ((alarmconfigurationupdatedtimestamp.type)::text = &#39;provider&#39;::text) AND (lower((alarmconfigurationupdatedtimestamp.attr_name)::text) = &#39;alarmconfigurationupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmdescription ON (((alarmdescription.resource_id = r.id) AND ((alarmdescription.type)::text = &#39;provider&#39;::text) AND (lower((alarmdescription.attr_name)::text) = &#39;alarmdescription&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmname ON (((alarmname.resource_id = r.id) AND ((alarmname.type)::text = &#39;provider&#39;::text) AND (lower((alarmname.attr_name)::text) = &#39;alarmname&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmrule ON (((alarmrule.resource_id = r.id) AND ((alarmrule.type)::text = &#39;provider&#39;::text) AND (lower((alarmrule.attr_name)::text) = &#39;alarmrule&#39;::text))))&#10;     LEFT JOIN resource_attribute insufficientdataactions ON (((insufficientdataactions.resource_id = r.id) AND ((insufficientdataactions.type)::text = &#39;provider&#39;::text) AND (lower((insufficientdataactions.attr_name)::text) = &#39;insufficientdataactions&#39;::text))))&#10;     LEFT JOIN resource_attribute okactions ON (((okactions.resource_id = r.id) AND ((okactions.type)::text = &#39;provider&#39;::text) AND (lower((okactions.attr_name)::text) = &#39;okactions&#39;::text))))&#10;     LEFT JOIN resource_attribute statereason ON (((statereason.resource_id = r.id) AND ((statereason.type)::text = &#39;provider&#39;::text) AND (lower((statereason.attr_name)::text) = &#39;statereason&#39;::text))))&#10;     LEFT JOIN resource_attribute statereasondata ON (((statereasondata.resource_id = r.id) AND ((statereasondata.type)::text = &#39;provider&#39;::text) AND (lower((statereasondata.attr_name)::text) = &#39;statereasondata&#39;::text))))&#10;     LEFT JOIN resource_attribute stateupdatedtimestamp ON (((stateupdatedtimestamp.resource_id = r.id) AND ((stateupdatedtimestamp.type)::text = &#39;provider&#39;::text) AND (lower((stateupdatedtimestamp.attr_name)::text) = &#39;stateupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN resource_attribute statevalue ON (((statevalue.resource_id = r.id) AND ((statevalue.type)::text = &#39;provider&#39;::text) AND (lower((statevalue.attr_name)::text) = &#39;statevalue&#39;::text))))&#10;     LEFT JOIN resource_attribute tags ON (((tags.resource_id = r.id) AND ((tags.type)::text = &#39;provider&#39;::text) AND (lower((tags.attr_name)::text) = &#39;tags&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND ((r.provider_type)::text = &#39;CompositeAlarm&#39;::text) AND ((r.service)::text = &#39;cloudwatch&#39;::text));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    acceptervpcinfo.attr_value AS acceptervpcinfo,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((expirationtime.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS expirationtime,&#10;    requestervpcinfo.attr_value AS requestervpcinfo,&#10;    status.attr_value AS status,&#10;    tags.attr_value AS tags,&#10;    (vpcpeeringconnectionid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS vpcpeeringconnectionid,&#10;    _acceptervpc_id.target_id AS _acceptervpc_id,&#10;    _requestervpc_id.target_id AS _requestervpc_id,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN resource_attribute acceptervpcinfo ON (((acceptervpcinfo.resource_id = r.id) AND ((acceptervpcinfo.type)::text = &#39;provider&#39;::text) AND (lower((acceptervpcinfo.attr_name)::text) = &#39;acceptervpcinfo&#39;::text))))&#10;     LEFT JOIN resource_attribute expirationtime ON (((expirationtime.resource_id = r.id) AND ((expirationtime.type)::text = &#39;provider&#39;::text) AND (lower((expirationtime.attr_name)::text) = &#39;expirationtime&#39;::text))))&#10;     LEFT JOIN resource_attribute requestervpcinfo ON (((requestervpcinfo.resource_id = r.id) AND ((requestervpcinfo.type)::text = &#39;provider&#39;::text) AND (lower((requestervpcinfo.attr_name)::text) = &#39;requestervpcinfo&#39;::text))))&#10;     LEFT JOIN resource_attribute status ON (((status.resource_id = r.id) AND ((status.type)::text = &#39;provider&#39;::text) AND (lower((status.attr_name)::text) = &#39;status&#39;::text))))&#10;     LEFT JOIN resource_attribute tags ON (((tags.resource_id = r.id) AND ((tags.type)::text = &#39;provider&#39;::text) AND (lower((tags.attr_name)::text) = &#39;tags&#39;::text))))&#10;     LEFT JOIN resource_attribute vpcpeeringconnectionid ON (((vpcpeeringconnectionid.resource_id = r.id) AND ((vpcpeeringconnectionid.type)::text = &#39;provider&#39;::text) AND (lower((vpcpeeringconnectionid.attr_name)::text) = &#39;vpcpeeringconnectionid&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_ec2_vpc_relation.resource_id,&#10;            _aws_ec2_vpc.id AS target_id&#10;           FROM (resource_relation _aws_ec2_vpc_relation&#10;             JOIN resource _aws_ec2_vpc ON (((_aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id) AND ((_aws_ec2_vpc.provider_type)::text = &#39;Vpc&#39;::text) AND ((_aws_ec2_vpc.service)::text = &#39;ec2&#39;::text))))&#10;          WHERE ((_aws_ec2_vpc_relation.relation)::text = &#39;peers-to&#39;::text)) _acceptervpc_id ON ((_acceptervpc_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_ec2_vpc_relation.resource_id,&#10;            _aws_ec2_vpc.id AS target_id&#10;           FROM (resource_relation _aws_ec2_vpc_relation&#10;             JOIN resource _aws_ec2_vpc ON (((_aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id) AND ((_aws_ec2_vpc.provider_type)::text = &#39;Vpc&#39;::text) AND ((_aws_ec2_vpc.service)::text = &#39;ec2&#39;::text))))&#10;          WHERE ((_aws_ec2_vpc_relation.relation)::text = &#39;peers-from&#39;::text)) _requestervpc_id ON ((_requestervpc_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND ((r.provider_type)::text = &#39;VpcPeeringConnection&#39;::text) AND ((r.service)::text = &#39;ec2&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">

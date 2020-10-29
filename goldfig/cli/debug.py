@@ -8,7 +8,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from goldfig.aws import __file__ as aws_file
 from goldfig.account import reset_account
-from goldfig.bootstrap_db import import_session
+from goldfig.bootstrap_db import import_session, install_views
 from goldfig.gcp import get_gcloud_credentials, __file__ as gcp_file
 from goldfig.mapper import load_transforms, load_transform_schema
 from goldfig.models import ImportJob
@@ -72,3 +72,9 @@ def validate_transforms():
   _validate_provider_transforms(aws_file, 'aws', schema)
   _validate_provider_transforms(gcp_file, 'gcp', schema)
   print('done')
+
+
+@cmd.command('reinstall-views', help='Rerun all of the view files')
+def reinstall_views():
+  db = import_session()
+  install_views(db)

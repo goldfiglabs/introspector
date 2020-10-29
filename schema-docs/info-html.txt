@@ -1,5 +1,5 @@
-date=2020-10-09 11:17:19-0700
-os=Linux 4.15.0-118-generic
+date=2020-10-29 13:18:01-0700
+os=Linux 4.15.0-122-generic
 schemaspy-version=6.1.0
 schemaspy-build=6.1.0.41 2019-09-17 21:52:57
 diagramImplementation=Graphviz dot 2.40

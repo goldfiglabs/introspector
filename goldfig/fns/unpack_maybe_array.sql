@@ -4,7 +4,7 @@ $$
 	SELECT
 		val AS value
 	WHERE
-		jsonb_typeof(val) = 'object'
+		jsonb_typeof(val) != 'array'
 	UNION
 	SELECT
 		V.value as value

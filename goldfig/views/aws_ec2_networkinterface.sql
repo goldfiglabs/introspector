@@ -183,20 +183,24 @@ COMMENT ON MATERIALIZED VIEW aws_ec2_networkinterface IS 'ec2 NetworkInterface r
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_NetworkInterface_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_networkinterface_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_NetworkInterface_securitygroup AS
+CREATE MATERIALIZED VIEW aws_ec2_networkinterface_securitygroup AS
 SELECT
-  aws_ec2_NetworkInterface.id AS NetworkInterface_id,
+  aws_ec2_networkinterface.id AS networkinterface_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_ec2_NetworkInterface
+  resource AS aws_ec2_networkinterface
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_NetworkInterface.id
+    ON RR.resource_id = aws_ec2_networkinterface.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+  WHERE
+    aws_ec2_networkinterface.provider_type = 'NetworkInterface'
+    AND aws_ec2_networkinterface.service = 'ec2'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_NetworkInterface_securitygroup;
+REFRESH MATERIALIZED VIEW aws_ec2_networkinterface_securitygroup;

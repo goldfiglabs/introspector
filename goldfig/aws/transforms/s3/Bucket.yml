@@ -27,6 +27,10 @@ resources:
     - Tagging
     - Versioning
     - Website
+    - BlockPublicAcls
+    - IgnorePublicAcls
+    - BlockPublicPolicy
+    - RestrictPublicBuckets
     custom:
       Metadata:
         Region:

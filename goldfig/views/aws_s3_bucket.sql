@@ -25,6 +25,10 @@ SELECT
   tagging.attr_value::jsonb AS tagging,
   versioning.attr_value::jsonb AS versioning,
   website.attr_value::jsonb AS website,
+  (blockpublicacls.attr_value #>> '{}')::boolean AS blockpublicacls,
+  (ignorepublicacls.attr_value #>> '{}')::boolean AS ignorepublicacls,
+  (blockpublicpolicy.attr_value #>> '{}')::boolean AS blockpublicpolicy,
+  (restrictpublicbuckets.attr_value #>> '{}')::boolean AS restrictpublicbuckets,
   
     _account_id.target_id AS _account_id
 FROM
@@ -111,6 +115,22 @@ FROM
     ON website.resource_id = R.id
     AND website.type = 'provider'
     AND lower(website.attr_name) = 'website'
+  LEFT JOIN resource_attribute AS blockpublicacls
+    ON blockpublicacls.resource_id = R.id
+    AND blockpublicacls.type = 'provider'
+    AND lower(blockpublicacls.attr_name) = 'blockpublicacls'
+  LEFT JOIN resource_attribute AS ignorepublicacls
+    ON ignorepublicacls.resource_id = R.id
+    AND ignorepublicacls.type = 'provider'
+    AND lower(ignorepublicacls.attr_name) = 'ignorepublicacls'
+  LEFT JOIN resource_attribute AS blockpublicpolicy
+    ON blockpublicpolicy.resource_id = R.id
+    AND blockpublicpolicy.type = 'provider'
+    AND lower(blockpublicpolicy.attr_name) = 'blockpublicpolicy'
+  LEFT JOIN resource_attribute AS restrictpublicbuckets
+    ON restrictpublicbuckets.resource_id = R.id
+    AND restrictpublicbuckets.type = 'provider'
+    AND lower(restrictpublicbuckets.attr_name) = 'restrictpublicbuckets'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

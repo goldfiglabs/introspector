@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>aws_cloudwatch_compositealarm - goldfig Database</title>
+        <title>aws_ses_identity - goldfig Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>aws_cloudwatch_compositealarm</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>aws_ses_identity</h1><p><span id="recordNumber">0</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>cloudwatch CompositeAlarm resources and their associated attributes.</p>
+                            <p>ses Identity resources and their associated attributes.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -167,7 +167,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="actionsenabled">actionsenabled</span></td>
+                                    <td><span id="dkimenabled">dkimenabled</span></td>
                                     <td>bool</td>
                                     <td>1</td>
                                     <td title='nullable'>√</td>
@@ -184,7 +184,24 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmactions">alarmactions</span></td>
+                                    <td><span id="dkimverificationstatus">dkimverificationstatus</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="dkimtokens">dkimtokens</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -201,7 +218,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmarn">alarmarn</span></td>
+                                    <td><span id="mailfromdomain">mailfromdomain</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -218,24 +235,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmconfigurationupdatedtimestamp">alarmconfigurationupdatedtimestamp</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="alarmdescription">alarmdescription</span></td>
+                                    <td><span id="mailfromdomainstatus">mailfromdomainstatus</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -252,7 +252,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmname">alarmname</span></td>
+                                    <td><span id="behavioronmxfailure">behavioronmxfailure</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -269,7 +269,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="alarmrule">alarmrule</span></td>
+                                    <td><span id="bouncetopic">bouncetopic</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -286,7 +286,109 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="insufficientdataactions">insufficientdataactions</span></td>
+                                    <td><span id="complainttopic">complainttopic</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="deliverytopic">deliverytopic</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="forwardingenabled">forwardingenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="headersinbouncenotificationsenabled">headersinbouncenotificationsenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="headersincomplaintnotificationsenabled">headersincomplaintnotificationsenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="headersindeliverynotificationsenabled">headersindeliverynotificationsenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="policies">policies</span></td>
                                     <td>jsonb</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -303,24 +405,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="okactions">okactions</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="statereason">statereason</span></td>
+                                    <td><span id="verificationstatus">verificationstatus</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -337,7 +422,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="statereasondata">statereasondata</span></td>
+                                    <td><span id="verificationtoken">verificationtoken</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title='nullable'>√</td>
@@ -354,9 +439,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="stateupdatedtimestamp">stateupdatedtimestamp</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
+                                    <td><span id="_bouncetopic_id">_bouncetopic_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -371,9 +456,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="statevalue">statevalue</span></td>
-                                    <td>text</td>
-                                    <td>2147483647</td>
+                                    <td><span id="_complainttopic_id">_complainttopic_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -388,9 +473,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="tags">tags</span></td>
-                                    <td>jsonb</td>
-                                    <td>2147483647</td>
+                                    <td><span id="_deliverytopic_id">_deliverytopic_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -435,7 +520,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    ((actionsenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS actionsenabled,&#10;    alarmactions.attr_value AS alarmactions,&#10;    (alarmarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmarn,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((alarmconfigurationupdatedtimestamp.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS alarmconfigurationupdatedtimestamp,&#10;    (alarmdescription.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmdescription,&#10;    (alarmname.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmname,&#10;    (alarmrule.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS alarmrule,&#10;    insufficientdataactions.attr_value AS insufficientdataactions,&#10;    okactions.attr_value AS okactions,&#10;    (statereason.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereason,&#10;    (statereasondata.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statereasondata,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((stateupdatedtimestamp.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS stateupdatedtimestamp,&#10;    (statevalue.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS statevalue,&#10;    tags.attr_value AS tags,&#10;    _account_id.target_id AS _account_id&#10;   FROM ((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN resource_attribute actionsenabled ON (((actionsenabled.resource_id = r.id) AND ((actionsenabled.type)::text = &#39;provider&#39;::text) AND (lower((actionsenabled.attr_name)::text) = &#39;actionsenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmactions ON (((alarmactions.resource_id = r.id) AND ((alarmactions.type)::text = &#39;provider&#39;::text) AND (lower((alarmactions.attr_name)::text) = &#39;alarmactions&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmarn ON (((alarmarn.resource_id = r.id) AND ((alarmarn.type)::text = &#39;provider&#39;::text) AND (lower((alarmarn.attr_name)::text) = &#39;alarmarn&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmconfigurationupdatedtimestamp ON (((alarmconfigurationupdatedtimestamp.resource_id = r.id) AND ((alarmconfigurationupdatedtimestamp.type)::text = &#39;provider&#39;::text) AND (lower((alarmconfigurationupdatedtimestamp.attr_name)::text) = &#39;alarmconfigurationupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmdescription ON (((alarmdescription.resource_id = r.id) AND ((alarmdescription.type)::text = &#39;provider&#39;::text) AND (lower((alarmdescription.attr_name)::text) = &#39;alarmdescription&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmname ON (((alarmname.resource_id = r.id) AND ((alarmname.type)::text = &#39;provider&#39;::text) AND (lower((alarmname.attr_name)::text) = &#39;alarmname&#39;::text))))&#10;     LEFT JOIN resource_attribute alarmrule ON (((alarmrule.resource_id = r.id) AND ((alarmrule.type)::text = &#39;provider&#39;::text) AND (lower((alarmrule.attr_name)::text) = &#39;alarmrule&#39;::text))))&#10;     LEFT JOIN resource_attribute insufficientdataactions ON (((insufficientdataactions.resource_id = r.id) AND ((insufficientdataactions.type)::text = &#39;provider&#39;::text) AND (lower((insufficientdataactions.attr_name)::text) = &#39;insufficientdataactions&#39;::text))))&#10;     LEFT JOIN resource_attribute okactions ON (((okactions.resource_id = r.id) AND ((okactions.type)::text = &#39;provider&#39;::text) AND (lower((okactions.attr_name)::text) = &#39;okactions&#39;::text))))&#10;     LEFT JOIN resource_attribute statereason ON (((statereason.resource_id = r.id) AND ((statereason.type)::text = &#39;provider&#39;::text) AND (lower((statereason.attr_name)::text) = &#39;statereason&#39;::text))))&#10;     LEFT JOIN resource_attribute statereasondata ON (((statereasondata.resource_id = r.id) AND ((statereasondata.type)::text = &#39;provider&#39;::text) AND (lower((statereasondata.attr_name)::text) = &#39;statereasondata&#39;::text))))&#10;     LEFT JOIN resource_attribute stateupdatedtimestamp ON (((stateupdatedtimestamp.resource_id = r.id) AND ((stateupdatedtimestamp.type)::text = &#39;provider&#39;::text) AND (lower((stateupdatedtimestamp.attr_name)::text) = &#39;stateupdatedtimestamp&#39;::text))))&#10;     LEFT JOIN resource_attribute statevalue ON (((statevalue.resource_id = r.id) AND ((statevalue.type)::text = &#39;provider&#39;::text) AND (lower((statevalue.attr_name)::text) = &#39;statevalue&#39;::text))))&#10;     LEFT JOIN resource_attribute tags ON (((tags.resource_id = r.id) AND ((tags.type)::text = &#39;provider&#39;::text) AND (lower((tags.attr_name)::text) = &#39;tags&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND ((r.provider_type)::text = &#39;CompositeAlarm&#39;::text) AND ((r.service)::text = &#39;cloudwatch&#39;::text));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    ((dkimenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS dkimenabled,&#10;    (dkimverificationstatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dkimverificationstatus,&#10;    dkimtokens.attr_value AS dkimtokens,&#10;    (mailfromdomain.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS mailfromdomain,&#10;    (mailfromdomainstatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS mailfromdomainstatus,&#10;    (behavioronmxfailure.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS behavioronmxfailure,&#10;    (bouncetopic.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS bouncetopic,&#10;    (complainttopic.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS complainttopic,&#10;    (deliverytopic.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS deliverytopic,&#10;    ((forwardingenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS forwardingenabled,&#10;    ((headersinbouncenotificationsenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS headersinbouncenotificationsenabled,&#10;    ((headersincomplaintnotificationsenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS headersincomplaintnotificationsenabled,&#10;    ((headersindeliverynotificationsenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS headersindeliverynotificationsenabled,&#10;    policies.attr_value AS policies,&#10;    (verificationstatus.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS verificationstatus,&#10;    (verificationtoken.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS verificationtoken,&#10;    _bouncetopic_id.target_id AS _bouncetopic_id,&#10;    _complainttopic_id.target_id AS _complainttopic_id,&#10;    _deliverytopic_id.target_id AS _deliverytopic_id,&#10;    _account_id.target_id AS _account_id&#10;   FROM (((((((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN resource_attribute dkimenabled ON (((dkimenabled.resource_id = r.id) AND ((dkimenabled.type)::text = &#39;provider&#39;::text) AND (lower((dkimenabled.attr_name)::text) = &#39;dkimenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute dkimverificationstatus ON (((dkimverificationstatus.resource_id = r.id) AND ((dkimverificationstatus.type)::text = &#39;provider&#39;::text) AND (lower((dkimverificationstatus.attr_name)::text) = &#39;dkimverificationstatus&#39;::text))))&#10;     LEFT JOIN resource_attribute dkimtokens ON (((dkimtokens.resource_id = r.id) AND ((dkimtokens.type)::text = &#39;provider&#39;::text) AND (lower((dkimtokens.attr_name)::text) = &#39;dkimtokens&#39;::text))))&#10;     LEFT JOIN resource_attribute mailfromdomain ON (((mailfromdomain.resource_id = r.id) AND ((mailfromdomain.type)::text = &#39;provider&#39;::text) AND (lower((mailfromdomain.attr_name)::text) = &#39;mailfromdomain&#39;::text))))&#10;     LEFT JOIN resource_attribute mailfromdomainstatus ON (((mailfromdomainstatus.resource_id = r.id) AND ((mailfromdomainstatus.type)::text = &#39;provider&#39;::text) AND (lower((mailfromdomainstatus.attr_name)::text) = &#39;mailfromdomainstatus&#39;::text))))&#10;     LEFT JOIN resource_attribute behavioronmxfailure ON (((behavioronmxfailure.resource_id = r.id) AND ((behavioronmxfailure.type)::text = &#39;provider&#39;::text) AND (lower((behavioronmxfailure.attr_name)::text) = &#39;behavioronmxfailure&#39;::text))))&#10;     LEFT JOIN resource_attribute bouncetopic ON (((bouncetopic.resource_id = r.id) AND ((bouncetopic.type)::text = &#39;provider&#39;::text) AND (lower((bouncetopic.attr_name)::text) = &#39;bouncetopic&#39;::text))))&#10;     LEFT JOIN resource_attribute complainttopic ON (((complainttopic.resource_id = r.id) AND ((complainttopic.type)::text = &#39;provider&#39;::text) AND (lower((complainttopic.attr_name)::text) = &#39;complainttopic&#39;::text))))&#10;     LEFT JOIN resource_attribute deliverytopic ON (((deliverytopic.resource_id = r.id) AND ((deliverytopic.type)::text = &#39;provider&#39;::text) AND (lower((deliverytopic.attr_name)::text) = &#39;deliverytopic&#39;::text))))&#10;     LEFT JOIN resource_attribute forwardingenabled ON (((forwardingenabled.resource_id = r.id) AND ((forwardingenabled.type)::text = &#39;provider&#39;::text) AND (lower((forwardingenabled.attr_name)::text) = &#39;forwardingenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute headersinbouncenotificationsenabled ON (((headersinbouncenotificationsenabled.resource_id = r.id) AND ((headersinbouncenotificationsenabled.type)::text = &#39;provider&#39;::text) AND (lower((headersinbouncenotificationsenabled.attr_name)::text) = &#39;headersinbouncenotificationsenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute headersincomplaintnotificationsenabled ON (((headersincomplaintnotificationsenabled.resource_id = r.id) AND ((headersincomplaintnotificationsenabled.type)::text = &#39;provider&#39;::text) AND (lower((headersincomplaintnotificationsenabled.attr_name)::text) = &#39;headersincomplaintnotificationsenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute headersindeliverynotificationsenabled ON (((headersindeliverynotificationsenabled.resource_id = r.id) AND ((headersindeliverynotificationsenabled.type)::text = &#39;provider&#39;::text) AND (lower((headersindeliverynotificationsenabled.attr_name)::text) = &#39;headersindeliverynotificationsenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute policies ON (((policies.resource_id = r.id) AND ((policies.type)::text = &#39;provider&#39;::text) AND (lower((policies.attr_name)::text) = &#39;policies&#39;::text))))&#10;     LEFT JOIN resource_attribute verificationstatus ON (((verificationstatus.resource_id = r.id) AND ((verificationstatus.type)::text = &#39;provider&#39;::text) AND (lower((verificationstatus.attr_name)::text) = &#39;verificationstatus&#39;::text))))&#10;     LEFT JOIN resource_attribute verificationtoken ON (((verificationtoken.resource_id = r.id) AND ((verificationtoken.type)::text = &#39;provider&#39;::text) AND (lower((verificationtoken.attr_name)::text) = &#39;verificationtoken&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_sns_topic_relation.resource_id,&#10;            _aws_sns_topic.id AS target_id&#10;           FROM (resource_relation _aws_sns_topic_relation&#10;             JOIN resource _aws_sns_topic ON (((_aws_sns_topic_relation.target_id = _aws_sns_topic.id) AND ((_aws_sns_topic.provider_type)::text = &#39;Topic&#39;::text) AND ((_aws_sns_topic.service)::text = &#39;sns&#39;::text))))&#10;          WHERE ((_aws_sns_topic_relation.relation)::text = &#39;publishes-to&#39;::text)) _bouncetopic_id ON ((_bouncetopic_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_sns_topic_relation.resource_id,&#10;            _aws_sns_topic.id AS target_id&#10;           FROM (resource_relation _aws_sns_topic_relation&#10;             JOIN resource _aws_sns_topic ON (((_aws_sns_topic_relation.target_id = _aws_sns_topic.id) AND ((_aws_sns_topic.provider_type)::text = &#39;Topic&#39;::text) AND ((_aws_sns_topic.service)::text = &#39;sns&#39;::text))))&#10;          WHERE ((_aws_sns_topic_relation.relation)::text = &#39;publishes-to&#39;::text)) _complainttopic_id ON ((_complainttopic_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_sns_topic_relation.resource_id,&#10;            _aws_sns_topic.id AS target_id&#10;           FROM (resource_relation _aws_sns_topic_relation&#10;             JOIN resource _aws_sns_topic ON (((_aws_sns_topic_relation.target_id = _aws_sns_topic.id) AND ((_aws_sns_topic.provider_type)::text = &#39;Topic&#39;::text) AND ((_aws_sns_topic.service)::text = &#39;sns&#39;::text))))&#10;          WHERE ((_aws_sns_topic_relation.relation)::text = &#39;publishes-to&#39;::text)) _deliverytopic_id ON ((_deliverytopic_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND ((r.provider_type)::text = &#39;Identity&#39;::text) AND ((r.service)::text = &#39;ses&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">

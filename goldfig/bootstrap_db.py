@@ -116,7 +116,7 @@ def refresh_views(db: Session):
     db.execute('REFRESH MATERIALIZED VIEW ' + view)
 
 
-def _install_views(db: Session):
+def install_views(db: Session):
   path, files = _view_files()
   for fname in files:
     with open(os.path.join(path, fname), 'r') as f:
@@ -150,7 +150,7 @@ def _install_schema(db: Session) -> None:
     db.commit()
   elif version.version != SCHEMA_VERSION:
     raise NotImplementedError('Need schema migration')
-  _install_views(db)
+  install_views(db)
   _install_functions(db)
   db.commit()
 
