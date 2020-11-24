@@ -1,0 +1,51 @@
+version: 1
+resources:
+- service: autoscaling
+  provider_type: AutoScalingGroup
+  name: AutoScalingGroupName
+  uri:
+    uri: AutoScalingGroupARN
+  attributes:
+    provider:
+    - AutoScalingGroupName
+    - AutoScalingGroupARN
+    - LaunchConfigurationName
+    - LaunchTemplate
+    - MixedInstancesPolicy
+    - MinSize
+    - MaxSize
+    - DesiredCapacity
+    - DefaultCooldown
+    - AvailabilityZones
+    - LoadBalancerNames
+    - TargetGroupARNs
+    - HealthCheckType
+    - HealthCheckGracePeriod
+    - Instances
+    - CreatedTime
+    - SuspendedProcesses
+    - PlacementGroup
+    - VPCZoneIdentifier
+    - EnabledMetrics
+    - Status
+    - Tags
+    - TerminationPolicies
+    - NewInstancesProtectedFromScaleIn
+    - ServiceLinkedRoleARN
+    - MaxInstanceLifetime
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: autoScalingGroup
+  relations:
+  - relation: launches-with
+    path: LaunchConfigurationName
+    uri:
+      service:
+        value: autoscaling
+      resource_name:
+        value: launchConfiguration
+      id:
+        path: ''

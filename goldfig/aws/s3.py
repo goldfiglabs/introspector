@@ -1,21 +1,14 @@
-import concurrent.futures as f
 import json
 import logging
-from typing import Dict, List, Tuple
+from typing import Any, Dict, Iterator, Tuple
 
-from sqlalchemy.orm import Session
-
-from goldfig import ImportWriter, db_import_writer, PathStack
-from goldfig.aws import (load_boto_session, load_boto_session_from_config,
-                         account_paths_for_import)
-from goldfig.aws.fetch import Proxy, ServiceProxy
-from goldfig.bootstrap_db import import_session
-from goldfig.models import ImportJob, ProviderCredential
+from goldfig.aws.fetch import ServiceProxy
+from goldfig.aws.svc import GlobalService
 
 _log = logging.getLogger(__name__)
 
 
-def import_bucket(proxy: ServiceProxy, bucket_metadata):
+def _import_bucket(proxy: ServiceProxy, bucket_metadata) -> Dict:
   _log.info(f'Importing {bucket_metadata["Name"]}')
   result = bucket_metadata.copy()
   for op_name in proxy.resource_names():
@@ -46,53 +39,12 @@ def import_bucket(proxy: ServiceProxy, bucket_metadata):
   return result
 
 
-def _import_s3(service_proxy: ServiceProxy):
+def _import_s3(service_proxy: ServiceProxy) -> Iterator[Tuple[str, Any]]:
   result = service_proxy.list('list_buckets')
   if result is not None:
     buckets = result[1]
     for bucket in buckets['Buckets']:
-      yield import_bucket(service_proxy, bucket)
+      yield 'Bucket', _import_bucket(service_proxy, bucket)
 
 
-def import_account_s3_to_db(db: Session, import_job_id: int):
-  job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, 's3', phase=0, source='base')
-  for path, account in account_paths_for_import(db, job):
-    boto = load_boto_session(account)
-    proxy = Proxy.build(boto)
-    ps = PathStack.from_import_job(job).scope(path)
-    _import_s3_to_db(proxy, writer, ps)
-
-
-def _import_s3_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack):
-  service_proxy = proxy.service('s3')
-  for bucket in _import_s3(service_proxy):
-    region = bucket["Location"]["LocationConstraint"]
-    writer(ps.scope(region), 'Bucket', bucket)
-
-
-def _async_proxy(ps: PathStack, import_job_id: int, config: Dict, f):
-  db = import_session()
-  boto = load_boto_session_from_config(config)
-  proxy = Proxy.build(boto)
-  writer = db_import_writer(db, import_job_id, 's3', phase=0, source='base')
-  f(proxy, writer, ps)
-  db.commit()
-
-
-def import_account_s3_with_pool(pool: f.ProcessPoolExecutor,
-                                import_job_id: int, ps: PathStack,
-                                accounts: List[Tuple[str,
-                                                     ProviderCredential]]):
-  results: List[f.Future] = []
-
-  def queue_job(fn, path: str, account: ProviderCredential):
-    return pool.submit(_async_proxy,
-                       import_job_id=import_job_id,
-                       ps=ps.scope(path),
-                       config=account.config,
-                       f=fn)
-
-  for path, account in accounts:
-    results.append(queue_job(_import_s3_to_db, path, account))
-  return results
+SVC = GlobalService('s3', _import_s3)

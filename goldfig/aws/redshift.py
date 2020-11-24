@@ -1,16 +1,16 @@
-from dis import dis
 import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
 
 def _import_cluster(proxy: ServiceProxy, cluster: Dict) -> Dict[str, Any]:
   cluster_id = cluster['ClusterIdentifier']
-  logging_status = proxy.get('describe_logging_status', ClusterIdentifier=cluster_id)
+  logging_status = proxy.get('describe_logging_status',
+                             ClusterIdentifier=cluster_id)
   cluster['LoggingStatus'] = logging_status
   return cluster
 
@@ -30,8 +30,4 @@ def _import_redshift_region(
   yield from _import_clusters(proxy, region)
 
 
-import_account_redshift_region_to_db = make_import_to_db(
-    'redshift', _import_redshift_region)
-
-import_account_redshift_region_with_pool = make_import_with_pool(
-    'redshift', _import_redshift_region)
+SVC = RegionalService('redshift', _import_redshift_region)

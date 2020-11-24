@@ -299,24 +299,28 @@ COMMENT ON MATERIALIZED VIEW aws_redshift_cluster IS 'redshift Cluster resources
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_redshift_Cluster_ec2_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_redshift_cluster_ec2_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_redshift_Cluster_ec2_securitygroup AS
+CREATE MATERIALIZED VIEW aws_redshift_cluster_ec2_securitygroup AS
 SELECT
-  aws_redshift_Cluster.id AS Cluster_id,
+  aws_redshift_cluster.id AS cluster_id,
   aws_ec2_securitygroup.id AS securitygroup_id,
   Status.value #>> '{}' AS status
 FROM
-  resource AS aws_redshift_Cluster
+  resource AS aws_redshift_cluster
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_redshift_Cluster.id
+    ON RR.resource_id = aws_redshift_cluster.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
   LEFT JOIN resource_relation_attribute AS Status
     ON Status.relation_id = RR.id
     AND Status.name = 'Status'
+  WHERE
+    aws_redshift_cluster.provider_type = 'Cluster'
+    AND aws_redshift_cluster.service = 'redshift'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_redshift_Cluster_ec2_securitygroup;
+REFRESH MATERIALIZED VIEW aws_redshift_cluster_ec2_securitygroup;

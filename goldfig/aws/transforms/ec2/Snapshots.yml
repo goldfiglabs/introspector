@@ -21,6 +21,7 @@ resources:
     - VolumeSize
     - OwnerAlias
     - Tags
+    - CreateVolumePermissions
     custom:
       Metadata:
         Tags:

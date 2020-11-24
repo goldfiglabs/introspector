@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Iterator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -43,8 +43,4 @@ def _import_cloudwatch_region(proxy: ServiceProxy,
   yield from _import_metrics(proxy)
 
 
-import_account_cloudwatch_region_to_db = make_import_to_db(
-    'cloudwatch', _import_cloudwatch_region)
-
-import_account_cloudwatch_region_with_pool = make_import_with_pool(
-    'cloudwatch', _import_cloudwatch_region)
+SVC = RegionalService('cloudwatch', _import_cloudwatch_region)

@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Iterator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -35,8 +35,4 @@ def _import_config_region(proxy: ServiceProxy,
   yield from _import_recorders(proxy)
 
 
-import_account_config_region_to_db = make_import_to_db('config',
-                                                       _import_config_region)
-
-import_account_config_region_with_pool = make_import_with_pool(
-    'config', _import_config_region)
+SVC = RegionalService('config', _import_config_region)

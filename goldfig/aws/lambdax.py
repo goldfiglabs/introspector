@@ -5,7 +5,7 @@ from typing import Any, Dict, Generator, Optional, Tuple
 from botocore.exceptions import ClientError
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -61,11 +61,9 @@ def _import_functions(proxy: ServiceProxy):
 def _import_lambda_region(
     proxy: ServiceProxy,
     region: str) -> Generator[Tuple[str, Any], None, None]:
+  _log.info(f'Importing functions in {region}')
   yield from _import_functions(proxy)
   # TODO: layers, event sources
 
 
-import_account_lambda_region_with_pool = make_import_with_pool(
-    'lambda', _import_lambda_region)
-import_account_lambda_region_to_db = make_import_to_db('lambda',
-                                                       _import_lambda_region)
+SVC = RegionalService('lambda', _import_lambda_region)

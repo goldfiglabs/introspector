@@ -1,9 +1,8 @@
-from dis import dis
 import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -39,8 +38,4 @@ def _import_apigatewayv2_region(
   yield from _import_apis(proxy, region)
 
 
-import_account_apigatewayv2_region_to_db = make_import_to_db(
-    'apigatewayv2', _import_apigatewayv2_region)
-
-import_account_apigatewayv2_region_with_pool = make_import_with_pool(
-    'apigatewayv2', _import_apigatewayv2_region)
+SVC = RegionalService('apigatewayv2', _import_apigatewayv2_region)

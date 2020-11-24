@@ -1,7 +1,6 @@
-from goldfig.aws.iam import synthesize_account_root
-from goldfig.error import GFError, GFInternal
+from contextlib import contextmanager
 import os
-from typing import Dict, List, Optional
+from typing import ContextManager, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -10,9 +9,11 @@ from goldfig.aws import account_paths_for_import, load_boto_session
 from goldfig.aws.ec2_adjunct import find_adjunct_data
 from goldfig.aws.elb_adjunct import synthesize_endpoints
 from goldfig.aws.fetch import Proxy
+from goldfig.aws.iam import synthesize_account_root
 from goldfig.aws.uri import get_arn_fn
 from goldfig.delta.partial import map_partial_deletes, map_partial_prefix
 from goldfig.delta.resource import map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
+from goldfig.error import GFError, GFInternal
 from goldfig.mapper import DivisionURI, load_transforms, Mapper
 from goldfig.models import ImportJob
 
@@ -137,8 +138,7 @@ class AWSDivisionURI(DivisionURI):
       raise GFInternal(f'Unknown AWS graph node {tail}')
 
 
-def _get_mapper(db: Session,
-                import_job: ImportJob,
+def _get_mapper(import_job: ImportJob,
                 extra_attrs=None,
                 extra_fns=None) -> Mapper:
   org_config = import_job.configuration['aws_org']
@@ -162,37 +162,48 @@ def _get_mapper(db: Session,
 AWS_SOURCES = ['credentialreport']
 
 
-def map_import(db: Session, import_job_id: int):
+def service_gate(service: Optional[str]):
+  if service is None:
+    return lambda _: True
+  else:
+    return lambda target: target == service
+
+
+def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
-  mapper = _get_mapper(db, import_job)
+  mapper = _get_mapper(import_job)
   adjunct_writer = db_import_writer(db,
                                     import_job.id,
                                     'ec2',
                                     phase=1,
                                     source='base')
+  gate = service_gate(service)
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope)
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
     boto = load_boto_session(account)
     proxy = Proxy.build(boto)
-    synthesize_account_root(proxy, db, import_job, path, account.scope)
+    if gate('iam'):
+      synthesize_account_root(proxy, db, import_job, path, account.scope)
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source,
                          import_job.path_prefix, uri_fn)
-      map_partial_deletes(db, import_job, source)
-    # Additional ec2 work
-    find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
-                      import_job)
-    # Additional elb work
-    synthesize_endpoints(db, import_job)
+      map_partial_deletes(db, import_job, source, service)
+    if gate('ec2'):
+      # Additional ec2 work
+      find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
+                        import_job)
+    if gate('elb'):
+      # Additional elb work
+      synthesize_endpoints(db, import_job)
 
     # Re-map anything we've added
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
 
     # Handle deletes
-    map_resource_deletes(db, ps.scope(path).path(), import_job, service=None)
+    map_resource_deletes(db, ps.scope(path).path(), import_job, service)
 
     found_relations = map_resource_relations(db, import_job,
                                              import_job.path_prefix, mapper,

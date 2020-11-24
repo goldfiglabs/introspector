@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -57,7 +57,4 @@ def _import_ses_region(proxy: ServiceProxy,
   yield from _import_identities(proxy, region)
 
 
-import_account_ses_region_to_db = make_import_to_db('ses', _import_ses_region)
-
-import_account_ses_region_with_pool = make_import_with_pool(
-    'ses', _import_ses_region)
+SVC = RegionalService('ses', _import_ses_region)

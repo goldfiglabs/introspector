@@ -1,11 +1,11 @@
 import json
 import logging
-from typing import Any, Dict, Iterator, Tuple
+from typing import Any, Iterator, Tuple
 
 from botocore.exceptions import ClientError
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -51,6 +51,4 @@ def _import_kms_region(proxy: ServiceProxy,
   yield from _import_keys(proxy)
 
 
-import_account_kms_region_to_db = make_import_to_db('kms', _import_kms_region)
-import_account_kms_region_with_pool = make_import_with_pool(
-    'kms', _import_kms_region)
+SVC = RegionalService('kms', _import_kms_region)

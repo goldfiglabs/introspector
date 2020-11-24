@@ -48,3 +48,30 @@ resources:
     uri:
       uri:
         path: ''
+  - relation: in
+    path: VpcConfig.VpcId
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: vpc
+      service:
+        value: ec2
+  - relation: in
+    path: VpcConfig.SecurityGroupIds
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: security-group
+      service:
+        value: ec2
+  - relation: in
+    path: VpcConfig.SubnetIds
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: subnet
+      service:
+        value: ec2

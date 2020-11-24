@@ -55,6 +55,7 @@ resources:
     - HibernationOptions
     - Licenses
     - MetadataOptions
+    - UserData
     custom:
       Metadata:
         Zone:

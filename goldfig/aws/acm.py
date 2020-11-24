@@ -1,9 +1,8 @@
-from dis import dis
 import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -18,7 +17,7 @@ def _import_certificate(proxy: ServiceProxy, summary: Dict) -> Dict[str, Any]:
   return certificate
 
 
-def _import_certificates(proxy: ServiceProxy, region: str):
+def _import_certificates(proxy: ServiceProxy):
   certificates_resp = proxy.list('list_certificates')
   if certificates_resp is not None:
     certificates = certificates_resp[1]['CertificateSummaryList']
@@ -28,11 +27,8 @@ def _import_certificates(proxy: ServiceProxy, region: str):
 
 def _import_acm_region(proxy: ServiceProxy,
                        region: str) -> Generator[Tuple[str, Any], None, None]:
-  _log.info(f'importing Certificates')
-  yield from _import_certificates(proxy, region)
+  _log.info(f'importing Certificates {region}')
+  yield from _import_certificates(proxy)
 
 
-import_account_acm_region_to_db = make_import_to_db('acm', _import_acm_region)
-
-import_account_acm_region_with_pool = make_import_with_pool(
-    'acm', _import_acm_region)
+SVC = RegionalService('acm', _import_acm_region)

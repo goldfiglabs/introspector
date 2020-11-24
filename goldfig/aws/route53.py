@@ -1,7 +1,7 @@
 from typing import Any, Dict, Iterator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_global_import_to_db, make_global_import_with_pool
+from goldfig.aws.svc import GlobalService
 
 
 def _import_hosted_zone(proxy: ServiceProxy, hosted_zone: Dict):
@@ -43,8 +43,4 @@ def _import_route53(proxy: ServiceProxy) -> Iterator[Tuple[str, Any]]:
       yield 'HostedZone', _import_hosted_zone(proxy, zone)
 
 
-import_account_route53_to_db = make_global_import_to_db(
-    'route53', [_import_route53])
-
-import_account_route53_with_pool = make_global_import_with_pool(
-    'route53', [_import_route53])
+SVC = GlobalService('route53', _import_route53)

@@ -3,7 +3,7 @@ import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -70,6 +70,8 @@ def _import_subscriptions(proxy: ServiceProxy):
   subs_resp = proxy.list('list_subscriptions')
   if subs_resp is not None:
     for subscription_data in subs_resp[1]['Subscriptions']:
+      if subscription_data['SubscriptionArn'] == 'PendingConfirmation':
+        continue
       yield 'Subscription', _import_subscription(proxy, subscription_data)
 
 
@@ -80,7 +82,4 @@ def _import_sns_region(proxy: ServiceProxy,
   yield from _import_subscriptions(proxy)
 
 
-import_account_sns_region_to_db = make_import_to_db('sns', _import_sns_region)
-
-import_account_sns_region_with_pool = make_import_with_pool(
-    'sns', _import_sns_region)
+SVC = RegionalService('sns', _import_sns_region)

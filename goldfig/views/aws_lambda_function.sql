@@ -36,6 +36,7 @@ SELECT
   Policy.attr_value::jsonb AS policy,
   
     _iam_role_id.target_id AS _iam_role_id,
+    _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -172,6 +173,19 @@ FROM
   ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
+      _aws_ec2_vpc_relation.resource_id AS resource_id,
+      _aws_ec2_vpc.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_vpc_relation
+      INNER JOIN resource AS _aws_ec2_vpc
+        ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
+        AND _aws_ec2_vpc.provider_type = 'Vpc'
+        AND _aws_ec2_vpc.service = 'ec2'
+    WHERE
+      _aws_ec2_vpc_relation.relation = 'in'
+  ) AS _ec2_vpc_id ON _ec2_vpc_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
@@ -193,3 +207,49 @@ REFRESH MATERIALIZED VIEW aws_lambda_function;
 
 COMMENT ON MATERIALIZED VIEW aws_lambda_function IS 'lambda Function resources and their associated attributes.';
 
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_lambda_function_ec2_securitygroup CASCADE;
+
+CREATE MATERIALIZED VIEW aws_lambda_function_ec2_securitygroup AS
+SELECT
+  aws_lambda_function.id AS function_id,
+  aws_ec2_securitygroup.id AS securitygroup_id
+FROM
+  resource AS aws_lambda_function
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_lambda_function.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_securitygroup
+    ON aws_ec2_securitygroup.id = RR.target_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+  WHERE
+    aws_lambda_function.provider_type = 'Function'
+    AND aws_lambda_function.service = 'lambda'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_lambda_function_ec2_securitygroup;
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_lambda_function_ec2_subnet CASCADE;
+
+CREATE MATERIALIZED VIEW aws_lambda_function_ec2_subnet AS
+SELECT
+  aws_lambda_function.id AS function_id,
+  aws_ec2_subnet.id AS subnet_id
+FROM
+  resource AS aws_lambda_function
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_lambda_function.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_subnet
+    ON aws_ec2_subnet.id = RR.target_id
+    AND aws_ec2_subnet.provider_type = 'Subnet'
+    AND aws_ec2_subnet.service = 'ec2'
+  WHERE
+    aws_lambda_function.provider_type = 'Function'
+    AND aws_lambda_function.service = 'lambda'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_lambda_function_ec2_subnet;

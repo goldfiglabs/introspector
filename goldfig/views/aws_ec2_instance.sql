@@ -52,6 +52,7 @@ SELECT
   hibernationoptions.attr_value::jsonb AS hibernationoptions,
   licenses.attr_value::jsonb AS licenses,
   metadataoptions.attr_value::jsonb AS metadataoptions,
+  userdata.attr_value #>> '{}' AS userdata,
   
     _image_id.target_id AS _image_id,
     _iam_instanceprofile_id.target_id AS _iam_instanceprofile_id,
@@ -250,6 +251,10 @@ FROM
     ON metadataoptions.resource_id = R.id
     AND metadataoptions.type = 'provider'
     AND lower(metadataoptions.attr_name) = 'metadataoptions'
+  LEFT JOIN resource_attribute AS userdata
+    ON userdata.resource_id = R.id
+    AND userdata.type = 'provider'
+    AND lower(userdata.attr_name) = 'userdata'
   LEFT JOIN (
     SELECT
       _aws_ec2_image_relation.resource_id AS resource_id,
@@ -327,11 +332,11 @@ COMMENT ON MATERIALIZED VIEW aws_ec2_instance IS 'ec2 Instance resources and the
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_Instance_volume CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_volume CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_Instance_volume AS
+CREATE MATERIALIZED VIEW aws_ec2_instance_volume AS
 SELECT
-  aws_ec2_Instance.id AS Instance_id,
+  aws_ec2_instance.id AS instance_id,
   aws_ec2_volume.id AS volume_id,
   (DeleteOnTermiation.value #>> '{}')::boolean AS deleteontermiation,
   (TO_TIMESTAMP(AttachTime.value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS attachtime,
@@ -339,13 +344,14 @@ SELECT
   Status.value #>> '{}' AS status,
   DeviceName.value #>> '{}' AS devicename
 FROM
-  resource AS aws_ec2_Instance
+  resource AS aws_ec2_instance
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_Instance.id
+    ON RR.resource_id = aws_ec2_instance.id
     AND RR.relation = 'attached'
   INNER JOIN resource AS aws_ec2_volume
     ON aws_ec2_volume.id = RR.target_id
     AND aws_ec2_volume.provider_type = 'Volume'
+    AND aws_ec2_volume.service = 'ec2'
   LEFT JOIN resource_relation_attribute AS DeleteOnTermiation
     ON DeleteOnTermiation.relation_id = RR.id
     AND DeleteOnTermiation.name = 'DeleteOnTermiation'
@@ -361,25 +367,32 @@ FROM
   LEFT JOIN resource_relation_attribute AS DeviceName
     ON DeviceName.relation_id = RR.id
     AND DeviceName.name = 'DeviceName'
+  WHERE
+    aws_ec2_instance.provider_type = 'Instance'
+    AND aws_ec2_instance.service = 'ec2'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_Instance_volume;
+REFRESH MATERIALIZED VIEW aws_ec2_instance_volume;
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_ec2_Instance_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_ec2_instance_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_ec2_Instance_securitygroup AS
+CREATE MATERIALIZED VIEW aws_ec2_instance_securitygroup AS
 SELECT
-  aws_ec2_Instance.id AS Instance_id,
+  aws_ec2_instance.id AS instance_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_ec2_Instance
+  resource AS aws_ec2_instance
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_ec2_Instance.id
+    ON RR.resource_id = aws_ec2_instance.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+  WHERE
+    aws_ec2_instance.provider_type = 'Instance'
+    AND aws_ec2_instance.service = 'ec2'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_ec2_Instance_securitygroup;
+REFRESH MATERIALIZED VIEW aws_ec2_instance_securitygroup;

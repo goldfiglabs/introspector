@@ -88,34 +88,68 @@ def apply_partial(db: Session, import_job: ImportJob, source: str,
       db.add(previous)
 
 
-def map_partial_deletes(db: Session, import_job: ImportJob, source: str):
-  deletes = db.execute(
-      '''
-    SELECT
-      R.id,
-      R.uri,
-      Raw.id AS raw_id
-    FROM
-      resource AS R
-      INNER JOIN resource_raw AS Raw
-        ON Raw.resource_id = R.id
-        AND Raw.source = :source
-    WHERE
-      R.provider_account_id = :provider_account_id
-      AND R.uri NOT IN (
-        SELECT
-          uri
-        FROM
-          mapped_uri
-        WHERE
-          source = :source
-          AND import_job_id = :import_job_id
-      )
-  ''', {
-          'source': source,
-          'import_job_id': import_job.id,
-          'provider_account_id': import_job.provider_account_id
-      })
+def map_partial_deletes(db: Session,
+                        import_job: ImportJob,
+                        source: str,
+                        service: Optional[str] = None):
+  if service is None:
+    deletes = db.execute(
+        '''
+      SELECT
+        R.id,
+        R.uri,
+        Raw.id AS raw_id
+      FROM
+        resource AS R
+        INNER JOIN resource_raw AS Raw
+          ON Raw.resource_id = R.id
+          AND Raw.source = :source
+      WHERE
+        R.provider_account_id = :provider_account_id
+        AND R.uri NOT IN (
+          SELECT
+            uri
+          FROM
+            mapped_uri
+          WHERE
+            source = :source
+            AND import_job_id = :import_job_id
+        )
+    ''', {
+            'source': source,
+            'import_job_id': import_job.id,
+            'provider_account_id': import_job.provider_account_id
+        })
+  else:
+    deletes = db.execute(
+        '''
+      SELECT
+        R.id,
+        R.uri,
+        Raw.id AS raw_id
+      FROM
+        resource AS R
+        INNER JOIN resource_raw AS Raw
+          ON Raw.resource_id = R.id
+          AND Raw.source = :source
+      WHERE
+        R.provider_account_id = :provider_account_id
+        AND R.service = :service
+        AND R.uri NOT IN (
+          SELECT
+            uri
+          FROM
+            mapped_uri
+          WHERE
+            source = :source
+            AND import_job_id = :import_job_id
+        )
+    ''', {
+            'service': service,
+            'source': source,
+            'import_job_id': import_job.id,
+            'provider_account_id': import_job.provider_account_id
+        })
   for delete in deletes:
     uri = delete['uri']
     resource_id = delete['id']

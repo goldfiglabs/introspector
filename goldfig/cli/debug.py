@@ -6,12 +6,14 @@ import click
 import jsonschema
 from sqlalchemy.orm.attributes import flag_modified
 
-from goldfig.aws import __file__ as aws_file
+from goldfig.aws import __file__ as aws_file, account_paths_for_import
+from goldfig.aws.map import _get_mapper
+from goldfig.aws.uri import get_arn_fn
 from goldfig.account import reset_account
-from goldfig.bootstrap_db import import_session, install_views
+from goldfig.bootstrap_db import import_session, install_views, readonly_session
 from goldfig.gcp import get_gcloud_credentials, __file__ as gcp_file
 from goldfig.mapper import load_transforms, load_transform_schema
-from goldfig.models import ImportJob
+from goldfig.models import ImportJob, RawImport
 
 
 @click.group('debug', hidden=True)
@@ -78,3 +80,20 @@ def validate_transforms():
 def reinstall_views():
   db = import_session()
   install_views(db)
+
+
+@cmd.command('map-resource', help='Try mapping a specific raw import')
+@click.argument('import_id', type=int, required=True)
+def map_resource(import_id: int):
+  db = readonly_session()
+  raw = db.query(RawImport).get(import_id)
+  import_job: ImportJob = db.query(ImportJob).get(raw.import_job_id)
+  mapper = _get_mapper(import_job)
+  print(raw.raw_resources())
+  import_resource_name = raw.resource_name
+  _, creds = account_paths_for_import(db, import_job)[0]
+  uri_fn = get_arn_fn(creds.scope)
+  results = list(
+      mapper.map_resources(raw.raw_resources(), raw.context, raw.service,
+                           import_resource_name, uri_fn))
+  print(results)

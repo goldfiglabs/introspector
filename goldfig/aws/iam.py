@@ -1,21 +1,19 @@
-import concurrent.futures as f
 import csv
-from functools import partial
+from goldfig import ImportWriter
 from io import StringIO
 import logging
 import time
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, SSLError
 from sqlalchemy.orm import Session
 
-from goldfig import ImportWriter, db_import_writer, PathStack
-from goldfig.aws import load_boto_session, load_boto_session_from_config, account_paths_for_import, walk_graph
 from goldfig.aws.fetch import Proxy, ServiceProxy
-from goldfig.bootstrap_db import import_session
+from goldfig.aws.svc import GlobalService, GlobalResourceSpec
+
 from goldfig.delta.resource import apply_mapped_attrs
 from goldfig.error import GFError, GFInternal
-from goldfig.models import ImportJob, ProviderCredential
+from goldfig.models import ImportJob
 
 _log = logging.getLogger(__name__)
 
@@ -34,12 +32,10 @@ _USER_ATTRS = {
 }
 
 
-def _import_password_policy(proxy: ServiceProxy, ps: PathStack,
-                            writer: ImportWriter, account_id: str):
+def _import_password_policy(proxy: ServiceProxy):
   result = proxy.get('get_account_password_policy')
   if result is not None:
-    writer(ps, 'PasswordPolicy', result['PasswordPolicy'],
-           {'account_id': account_id})
+    yield 'PasswordPolicy', result['PasswordPolicy']
 
 
 def _unpack(tup: Optional[Tuple[str, Dict]]) -> Dict:
@@ -63,18 +59,29 @@ def _post_process_report_row(row: Dict[str, str]) -> Dict[str, Any]:
   return result
 
 
-def _import_credential_report(proxy: ServiceProxy, ps: PathStack,
-                              writer: ImportWriter):
-  writer = writer.for_source('credentialreport')
+def _import_credential_report(proxy: ServiceProxy):
+  #writer = writer.for_source('credentialreport')
   # Kick off the report
-  try:
-    proxy.get('generate_credential_report')
-  except ClientError as e:
-    is_throttled = e.response.get('Error', {}).get('Code') == 'Throttling'
-    # If we're throttled, we've at least kicked it off already
-    _log.error('credential report error', exc_info=e)
-    if not is_throttled:
-      raise
+  started = False
+  init_attempts = 0
+  while not started:
+    try:
+      proxy.get('generate_credential_report')
+      started = True
+    except ClientError as e:
+      is_throttled = e.response.get('Error', {}).get('Code') == 'Throttling'
+      # If we're throttled, we've at least kicked it off already
+      _log.error('credential report error', exc_info=e)
+      if not is_throttled:
+        raise
+      else:
+        started = True
+    except SSLError:
+      # wait and try again?
+      init_attempts += 1
+      if init_attempts >= 3:
+        raise GFError('Failed to generate credential report, SSL Error')
+      time.sleep(0.1)
   attempts = 0
   report = None
   while attempts < 20 and report is None:
@@ -89,10 +96,11 @@ def _import_credential_report(proxy: ServiceProxy, ps: PathStack,
   reader = csv.DictReader(StringIO(decoded))
   for row in reader:
     processed = _post_process_report_row(row)
-    writer(ps, 'CredentialReport', processed)
+    #writer(ps, 'CredentialReport', processed)
+    yield 'CredentialReport', processed
 
 
-def _import_users(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
+def _import_users(proxy: ServiceProxy):
   users = _unpack(proxy.list('list_users'))
   for user in users['Users']:
     user_data = user.copy()
@@ -112,13 +120,13 @@ def _import_users(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
     if login_profile is not None:
       login_profile = login_profile['LoginProfile']
     user_data['LoginProfile'] = login_profile
-    writer(ps, 'user', user_data)
+    yield 'user', user_data
 
 
 _GROUP_ATTRS = {'AttachedPolicies': 'list_attached_group_policies'}
 
 
-def _import_groups(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
+def _import_groups(proxy: ServiceProxy):
   groups = _unpack(proxy.list('list_groups'))
   for group in groups.get('Groups'):
     group_data = group.copy()
@@ -128,10 +136,10 @@ def _import_groups(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
       if op_result is not None:
         group_data[attr] = op_result[1][attr]
     group_data['PolicyList'] = _fetch_inline_policies(proxy, 'group', name)
-    writer(ps, 'group', group_data)
+    yield 'group', group_data
 
 
-def _import_policies(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
+def _import_policies(proxy: ServiceProxy):
   results = proxy.list('list_policies', Scope='Local')
   if results is not None:
     policies = results[1]
@@ -152,7 +160,7 @@ def _import_policies(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
       if op_result is not None:
         for attr in ['PolicyGroups', 'PolicyUsers', 'PolicyRoles']:
           policy_data[attr] = op_result[1][attr]
-      writer(ps, 'policy', policy_data)
+      yield 'policy', policy_data
   # TODO: fix this cut + paste
   aws_policies = proxy.list('list_policies', Scope='AWS', OnlyAttached=True)
   if aws_policies is not None:
@@ -173,14 +181,13 @@ def _import_policies(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
       if op_result is not None:
         for attr in ['PolicyGroups', 'PolicyUsers', 'PolicyRoles']:
           policy_data[attr] = op_result[1][attr]
-      writer(ps, 'policy', policy_data)
+      yield 'policy', policy_data
 
 
-def _import_instance_profiles(proxy: ServiceProxy, ps: PathStack,
-                              writer: ImportWriter):
+def _import_instance_profiles(proxy: ServiceProxy):
   profiles = _unpack(proxy.list('list_instance_profiles'))
   for profile in profiles['InstanceProfiles']:
-    writer(ps, 'instance-profile', profile)
+    yield 'instance-profile', profile
 
 
 def _fetch_inline_policies(proxy: ServiceProxy, principal: str, name: str):
@@ -207,7 +214,7 @@ _ROLE_ATTRS = {
 }
 
 
-def _import_roles(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
+def _import_roles(proxy: ServiceProxy):
   roles = _unpack(proxy.list('list_roles'))
   for role in roles['Roles']:
     role_data = proxy.get('get_role', RoleName=role['RoleName'])['Role']
@@ -216,226 +223,19 @@ def _import_roles(proxy: ServiceProxy, ps: PathStack, writer: ImportWriter):
       op_result = _unpack(proxy.list(op, RoleName=name))
       role_data[attr] = op_result.get(attr)
     role_data['PolicyList'] = _fetch_inline_policies(proxy, 'role', name)
-    writer(ps, 'role', role_data)
+    yield 'role', role_data
 
 
-_ACCOUNT_ATTRS: Dict[str, str] = {
-    # TODO: these should probably be resources
-    # 'AccountAliases': 'list_account_aliases',
-    # 'OpenIDConnectProviderList': 'list_open_id_connect_providers',
-    # 'SAMLProviderList': 'list_saml_providers',
-    # 'ServerCertificateMetadataList': 'list_server_certificates',
-    # 'VirtualMFADevices': 'list_virtual_mfa_devices',
-}
+def _credential_report_writer(writer: ImportWriter) -> ImportWriter:
+  return writer.for_source('credentialreport')
 
 
-def _import_account(proxy: Proxy, master_account_proxy: Proxy, ps: PathStack,
-                    writer: ImportWriter, account: Dict,
-                    is_master_account: bool):
-  if is_master_account:
-    iam = proxy.service('iam')
-    for attr, op in _ACCOUNT_ATTRS.items():
-      result = iam.list(op)
-      if result is not None:
-        account[attr] = result[1][attr]
-    organizations = proxy.service('organizations')
-    service_policies = organizations.list(
-        'list_policies_for_target',
-        TargetId=account['Id'],
-        Filter='SERVICE_CONTROL_POLICY')[1]['Policies']
-    account['ServiceControlPolicies'] = service_policies
-    tag_policies = organizations.list('list_policies_for_target',
-                                      TargetId=account['Id'],
-                                      Filter='TAG_POLICY')[1]['Policies']
-    account['TagPolicies'] = tag_policies
-  organizations = master_account_proxy.service('organizations')
-  tags = organizations.list('list_tags_for_resource',
-                            ResourceId=account['Id'])[1]['Tags']
-  account['Tags'] = tags
-  writer(ps, 'Account', account)
-
-
-def _import_organization(ps: PathStack, writer: ImportWriter,
-                         organization: Dict):
-  writer(ps, 'Organization', organization)
-
-
-def _import_root(proxy: Proxy, ps: PathStack, writer: ImportWriter,
-                 root: Dict):
-  organizations = proxy.service('organizations')
-  service_policies = organizations.list(
-      'list_policies_for_target',
-      TargetId=root['Id'],
-      Filter='SERVICE_CONTROL_POLICY')[1]['Policies']
-  root['ServiceControlPolicies'] = service_policies
-  tag_policies = organizations.list('list_policies_for_target',
-                                    TargetId=root['Id'],
-                                    Filter='TAG_POLICY')[1]['Policies']
-  root['TagPolicies'] = tag_policies
-  writer(ps, 'Root', root)
-
-
-def _import_organizational_unit(proxy: Proxy, ps: PathStack,
-                                writer: ImportWriter, ou: Dict):
-  organizations = proxy.service('organizations')
-  service_policies = organizations.list(
-      'list_policies_for_target',
-      TargetId=ou['Id'],
-      Filter='SERVICE_CONTROL_POLICY')[1]['Policies']
-  ou['ServiceControlPolicies'] = service_policies
-  tag_policies = organizations.list('list_policies_for_target',
-                                    TargetId=ou['Id'],
-                                    Filter='TAG_POLICY')[1]['Policies']
-  ou['TagPolicies'] = tag_policies
-  writer(ps, 'OrganizationalUnit', ou)
-
-
-class _AccountProxies:
-  def __init__(self, credentials: List[ProviderCredential],
-               master_account_arn: str):
-    self._credentials = credentials
-    self._master_account_arn = master_account_arn
-    self._cache: Dict[str, Proxy] = {}
-
-  def master_account_proxy(self):
-    return self.account_proxy(self._master_account_arn)
-
-  def account_proxy(self, arn: str) -> Proxy:
-    cached = self._cache.get(arn)
-    if cached is None:
-      cached = self._make_proxy(arn)
-    return cached
-
-  def _make_proxy(self, arn: str) -> Proxy:
-    creds = self.credentials_for_arn(arn)
-    boto = load_boto_session(creds)
-    proxy = Proxy.build(boto)
-    self._cache[arn] = proxy
-    return proxy
-
-  def credentials_for_arn(self, arn: str) -> ProviderCredential:
-    account_id = arn.split(':')[-1].split('/')[-1]
-    return next(cred for cred in self._credentials if cred.scope == account_id)
-
-
-def _import_graph(
-    import_job: ImportJob, writer: ImportWriter,
-    account_credentials: List[ProviderCredential],
-    import_iam_fn: Callable[[PathStack, ProviderCredential], List[f.Future]]
-) -> List[f.Future]:
-  config = import_job.configuration
-  org = config['aws_org']
-  is_mocked = org['Id'].startswith('OrgDummy')
-  master_account_arn = org['MasterAccountArn']
-  proxies = _AccountProxies(account_credentials, master_account_arn)
-  ps = PathStack.from_import_job(import_job)
-  results = []
-  for path, typ, entry in walk_graph(org, config['aws_graph']):
-    if is_mocked:
-      writer(ps, typ, entry)
-      if typ == 'Account':
-        results += import_iam_fn(ps.scope(path),
-                                 proxies.credentials_for_arn(entry['Arn']))
-    elif typ == 'Organization':
-      _import_organization(ps, writer, entry)
-    elif typ == 'Root':
-      _import_root(proxies.master_account_proxy(), ps.scope(path), writer,
-                   entry)
-    elif typ == 'OrganizationalUnit':
-      _import_organizational_unit(proxies.master_account_proxy(),
-                                  ps.scope(path), writer, entry)
-    elif typ == 'Account':
-      is_master_account = entry['Arn'] == master_account_arn
-      proxy = proxies.master_account_proxy()
-      _import_account(proxy, proxy, ps.scope(path), writer, entry,
-                      is_master_account)
-      if is_master_account:
-        results += import_iam_fn(ps.scope(path),
-                                 proxies.credentials_for_arn(entry['Arn']))
-    else:
-      raise GFInternal(f'Unknown AWS graph type {typ}')
-  return results
-
-
-def _import_iam(iam: ServiceProxy, writer: ImportWriter, ps: PathStack,
-                account_id: str):
-  _import_credential_report(iam, ps, writer)
-  _import_users(iam, ps, writer)
-  _import_groups(iam, ps, writer)
-  _import_policies(iam, ps, writer)
-  _import_roles(iam, ps, writer)
-  _import_instance_profiles(iam, ps, writer)
-  _import_password_policy(iam, ps, writer, account_id)
-
-
-def _async_proxy(ps: PathStack, import_job_id: int, config: Dict, f):
-  db = import_session()
-  boto = load_boto_session_from_config(config)
-  proxy = Proxy.build(boto)
-  writer = db_import_writer(db, import_job_id, 'iam', phase=0, source='base')
-  service_proxy = proxy.service('iam')
-  f(service_proxy, ps, writer)
-  db.commit()
-
-
-def _import_account_iam_with_pool(ps: PathStack, account: ProviderCredential,
-                                  pool: f.ProcessPoolExecutor, import_job_id):
-  results: List[f.Future] = []
-
-  def queue_job(fn):
-    return pool.submit(_async_proxy,
-                       ps=ps,
-                       import_job_id=import_job_id,
-                       config=account.config,
-                       f=fn)
-
-  results = [
-      queue_job(f)
-      for f in (_import_credential_report, _import_roles, _import_users,
-                _import_groups, _import_policies, _import_instance_profiles,
-                partial(_import_password_policy, account_id=account.scope))
-  ]
-  return results
-
-
-def import_account_iam_with_pool(
-    pool: f.ProcessPoolExecutor, import_job_id: int, ps: PathStack,
-    account_paths: List[Tuple[str, ProviderCredential]]):
-  def import_iam_fn(ps: PathStack, credential: ProviderCredential):
-    return _import_account_iam_with_pool(ps, credential, pool, import_job_id)
-
-  db = import_session()
-  writer = db_import_writer(db,
-                            import_job_id,
-                            'organizations',
-                            phase=0,
-                            source='base')
-  import_job: ImportJob = db.query(ImportJob).get(import_job_id)
-  accounts = list(map(lambda i: i[1], account_paths))
-  results = _import_graph(import_job, writer, accounts, import_iam_fn)
-  db.commit()
-  return results
-
-
-def import_account_iam_to_db(db: Session, import_job_id: int):
-  job: ImportJob = db.query(ImportJob).get(import_job_id)
-  account_paths = account_paths_for_import(db, job)
-  # drop the paths, we don't need them here
-  accounts = list(map(lambda i: i[1], account_paths))
-  writer = db_import_writer(db,
-                            job.id,
-                            'organizations',
-                            phase=0,
-                            source='base')
-
-  def import_iam_fn(ps: PathStack, credential: ProviderCredential):
-    boto = load_boto_session(credential)
-    proxy = Proxy.build(boto)
-    iam = proxy.service('iam')
-    _import_iam(iam, writer, ps, credential.scope)
-    return []
-
-  _import_graph(job, writer, accounts, import_iam_fn)
+SVC = GlobalService('iam', [
+    GlobalResourceSpec(fn=_import_credential_report,
+                       writer_transform=_credential_report_writer),
+    _import_users, _import_groups, _import_policies, _import_roles,
+    _import_instance_profiles, _import_password_policy
+])
 
 
 def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,

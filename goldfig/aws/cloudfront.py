@@ -1,9 +1,8 @@
-from dis import dis
 import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_global_import_to_db, make_global_import_with_pool
+from goldfig.aws.svc import GlobalService
 
 _log = logging.getLogger(__name__)
 
@@ -36,8 +35,4 @@ def _import_cloudfront(
   yield from _import_distributions(proxy)
 
 
-import_account_cloudfront_to_db = make_global_import_to_db(
-    'cloudfront', [_import_cloudfront])
-
-import_account_cloudfront_with_pool = make_global_import_with_pool(
-    'cloudfront', [_import_cloudfront])
+SVC = GlobalService('cloudfront', _import_cloudfront)

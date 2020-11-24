@@ -9,7 +9,7 @@ from goldfig.delta import json_diff
 from goldfig.delta.attrs import diff_attrs
 from goldfig.delta.types import Raw
 from goldfig.error import GFInternal
-from goldfig.mapper import Mapper
+from goldfig.mapper import Mapper, Uri
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
                             ResourceAttribute, ResourceDelta,
                             ResourceAttributeDelta, ResourceRelation,
@@ -46,22 +46,24 @@ def map_resource_relations(db: Session,
                                      raw_import.context, raw_import.service,
                                      import_resource_name, uri_fn)
     _log.debug(f'checking for map {raw_import.path}, {import_resource_name}')
-    for parent_uri, relation_type, target_uri, attrs in relations:
+    for parent_uri_spec, relation_type, target_uri_spec, attrs in relations:
       # TODO: pull out this
-      _log.info(f'{parent_uri} {relation_type} {target_uri}')
-      parent = Resource.get_by_uri(db, parent_uri, provider_account_id)
+      _log.info(f'{parent_uri_spec} {relation_type} {target_uri_spec}')
+      parent = Resource.get_by_uri(db, parent_uri_spec, provider_account_id)
       # TODO: accumulate errors on import into an import report
       if parent is None:
         _log.warn(
-            f'Missing parent for relation {parent_uri} {relation_type} {target_uri} ({provider_account_id})'
+            f'Missing parent for relation {parent_uri_spec} {relation_type} {target_uri_spec} ({provider_account_id})'
         )
         continue
-      target = Resource.get_by_uri(db, target_uri, provider_account_id)
+      parent_uri = parent.uri
+      target = Resource.get_by_uri(db, target_uri_spec, provider_account_id)
       if target is None:
         _log.warn(
-            f'Missing target for relation {parent_uri} {relation_type} [{target_uri}] ({provider_account_id})'
+            f'Missing target for relation {parent_uri} {relation_type} [{target_uri_spec}] ({provider_account_id})'
         )
         continue
+      target_uri = target.uri
       relation = ResourceRelation(resource_id=parent.id,
                                   target_id=target.id,
                                   relation=relation_type,
@@ -82,14 +84,19 @@ def map_resource_relations(db: Session,
   return found_relations
 
 
-def map_relation_deletes(db: Session, import_job: ImportJob, path_prefix: str,
-                         found_relations: Set[int]):
+def map_relation_deletes(db: Session,
+                         import_job: ImportJob,
+                         path_prefix: str,
+                         found_relations: Set[int],
+                         service: Optional[str] = None):
   deletes = db.query(ResourceRelation).filter(
       ~ResourceRelation.id.in_(found_relations), ).join(
           ResourceRelation.resource, aliased=True).filter(
               Resource.provider_account_id == import_job.provider_account_id,
               or_(Resource.path.like(f'{path_prefix}$%'),
                   Resource.path == path_prefix))
+  if service is not None:
+    deletes = deletes.filter(Resource.service == service)
   for deleted in deletes:
     parent = db.query(Resource).get(deleted.resource_id)
     parent_uri = parent.uri
@@ -278,7 +285,7 @@ def map_resource_prefix(db: Session,
       if resource_name is not None \
         else raw_import.resource_name
     for mapped, attrs in mapper.map_resources(raw_import.raw_resources(),
-                                              raw_import.context,
+                                              raw_import.context or {},
                                               raw_import.service,
                                               import_resource_name, uri_fn):
       apply_mapped_attrs(db,

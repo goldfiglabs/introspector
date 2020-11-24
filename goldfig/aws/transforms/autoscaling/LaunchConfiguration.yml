@@ -1,0 +1,48 @@
+version: 1
+resources:
+- service: autoscaling
+  provider_type: LaunchConfiguration
+  name: LaunchConfigurationName
+  uri:
+    uri: LaunchConfigurationARN
+  attributes:
+    provider:
+    - LaunchConfigurationName
+    - LaunchConfigurationARN
+    - ImageId
+    - KeyName
+    - SecurityGroups
+    - ClassicLinkVPCId
+    - ClassicLinkVPCSecurityGroups
+    - UserData
+    - InstanceType
+    - KernelId
+    - RamdiskId
+    - BlockDeviceMappings
+    - InstanceMonitoring
+    - SpotPrice
+    - IamInstanceProfile
+    - CreatedTime
+    - EbsOptimized
+    - AssociatePublicIpAddress
+    - PlacementTenancy
+  resource_name: launchConfiguration
+  relations:
+  - relation: imaged
+    path: ImageId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: image
+      id:
+        path: ''
+  - relation: launches-into
+    path: SecurityGroups
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: security-group
+      id:
+        path: ''

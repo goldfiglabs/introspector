@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import partial
-from goldfig.delta import attrs
 import json
 import logging
 import os
@@ -17,6 +16,10 @@ ValueTransform = Callable[[Any], Any]
 ValueTransforms = Dict[str, ValueTransform]
 
 Context = Dict[str, str]
+
+LikeExpr = Tuple[str, str]
+Uri = Union[str, LikeExpr]
+UriFn = Callable[..., Uri]
 
 
 @dataclass
@@ -373,8 +376,9 @@ class Mapper:
       yield from self._map_resources_v1(raw_list, ctx or {}, service,
                                         resource_name, raw_uri_fn, parent_args)
 
-  def _map_spec_relations_v1(self, spec, uri_fn, uri_args, raw, ctx,
-                             parent_kwargs: Dict):
+  def _map_spec_relations_v1(
+      self, spec, uri_fn: UriFn, uri_args, raw: Any, ctx: Context,
+      parent_kwargs: Dict) -> Iterator[Tuple[Uri, str, Uri, List[Any]]]:
     relation_specs = spec.get('relations', [])
     service = spec['service']
     try:
@@ -399,7 +403,9 @@ class Mapper:
       yield from self._map_relation(relation_spec, source_uri, uri_args,
                                     uri_fn, raw, parent_kwargs, service, ctx)
 
-  def _map_in_relation(self, path: str, category: str, resource_uri: str):
+  def _map_in_relation(
+      self, path: str, category: str,
+      resource_uri: Uri) -> Iterator[Tuple[Uri, str, str, List[Any]]]:
     if category == 'Organization':
       # Orgs are not in anything
       return
@@ -409,9 +415,10 @@ class Mapper:
       division_uri = self._division_uri.uri_for_path(path)
     yield resource_uri, 'in', division_uri, []
 
-  def _map_relation_spec_v1(self, spec, path: str, raw_list, ctx: Dict,
-                            resource_name: str, raw_uri_fn,
-                            parent_args: Optional[Dict]):
+  def _map_relation_spec_v1(
+      self, spec, path: str, raw_list, ctx: Dict, resource_name: str,
+      raw_uri_fn, parent_args: Optional[Dict]
+  ) -> Iterator[Tuple[Uri, str, Uri, List[Any]]]:
     resource_name = spec.get('resource_name', resource_name)
     parent_kwargs = {} if parent_args is None else parent_args
     for raw in raw_list:
@@ -421,14 +428,16 @@ class Mapper:
       yield from self._map_spec_relations_v1(spec, raw_uri_fn, uri_args, raw,
                                              ctx, parent_kwargs)
 
-  def _map_relations_v1(self,
-                        path: str,
-                        raw_list,
-                        ctx,
-                        service: str,
-                        resource_name: str,
-                        raw_uri_fn,
-                        parent_args: Optional[Dict] = None):
+  def _map_relations_v1(
+      self,
+      path: str,
+      raw_list,
+      ctx: Context,
+      service: str,
+      resource_name: str,
+      raw_uri_fn: UriFn,
+      parent_args: Optional[Dict] = None
+  ) -> Iterator[Tuple[Uri, str, Uri, List[Any]]]:
     # TODO: validate?
     transform = self._find_transform(service, resource_name)
     version = transform.spec.get('version', 0)
@@ -460,14 +469,16 @@ class Mapper:
                                               resource_name=subresource_name),
                                       parent_args=parent_params)
 
-  def map_relations(self,
-                    path: str,
-                    raw_list,
-                    ctx,
-                    service: str,
-                    resource_name: str,
-                    raw_uri_fn,
-                    parent_args: Optional[Dict] = None):
+  def map_relations(
+      self,
+      path: str,
+      raw_list,
+      ctx: Context,
+      service: str,
+      resource_name: str,
+      raw_uri_fn: UriFn,
+      parent_args: Optional[Dict] = None
+  ) -> Iterator[Tuple[Uri, str, Uri, List[Any]]]:
     # TODO: ctx for uris?
     # TODO: document hierarchy of args for uri fns
     transform = self._find_transform(service, resource_name)

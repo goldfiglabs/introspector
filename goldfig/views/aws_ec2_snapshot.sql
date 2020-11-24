@@ -19,6 +19,7 @@ SELECT
   (volumesize.attr_value #>> '{}')::integer AS volumesize,
   owneralias.attr_value #>> '{}' AS owneralias,
   tags.attr_value::jsonb AS tags,
+  createvolumepermissions.attr_value::jsonb AS createvolumepermissions,
   
     _kms_key_id.target_id AS _kms_key_id,
     _volume_id.target_id AS _volume_id,
@@ -83,6 +84,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS createvolumepermissions
+    ON createvolumepermissions.resource_id = R.id
+    AND createvolumepermissions.type = 'provider'
+    AND lower(createvolumepermissions.attr_name) = 'createvolumepermissions'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,

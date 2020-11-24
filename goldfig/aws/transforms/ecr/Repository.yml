@@ -1,0 +1,24 @@
+version: 1
+resources:
+- service: ecr
+  provider_type: Repository
+  name: repositoryName
+  uri:
+    uri: repositoryArn
+  attributes:
+    provider:
+    - repositoryArn
+    - registryId
+    - repositoryName
+    - repositoryUri
+    - createdAt
+    - imageTagMutability
+    - imageScanningConfiguration
+    - Tags
+    - Policy
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: repository

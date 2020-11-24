@@ -1,7 +1,7 @@
 import logging
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -44,7 +44,4 @@ def _import_elb_region(proxy: ServiceProxy, region: str):
         yield 'LoadBalander', import_elb(proxy, elb)
 
 
-import_account_elb_region_to_db = make_import_to_db('elb', _import_elb_region)
-
-import_account_elb_region_with_pool = make_import_with_pool(
-    'elb', _import_elb_region)
+SVC = RegionalService('elb', _import_elb_region)

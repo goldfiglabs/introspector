@@ -2,7 +2,7 @@ import logging
 from typing import Any, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -31,7 +31,4 @@ def _import_rds_region(proxy: ServiceProxy,
     _log.info(f'Done with {resource}')
 
 
-import_account_rds_region_with_pool = make_import_with_pool(
-    'rds', _import_rds_region)
-
-import_account_rds_region_to_db = make_import_to_db('rds', _import_rds_region)
+SVC = RegionalService('rds', _import_rds_region)

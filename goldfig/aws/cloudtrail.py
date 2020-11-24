@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict, Generator, Tuple
 
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -44,8 +44,4 @@ def _import_cloudtrail_region(
   yield from _import_trails(proxy, region)
 
 
-import_account_cloudtrail_region_to_db = make_import_to_db(
-    'cloudtrail', _import_cloudtrail_region)
-
-import_account_cloudtrail_region_with_pool = make_import_with_pool(
-    'cloudtrail', _import_cloudtrail_region)
+SVC = RegionalService('cloudtrail', _import_cloudtrail_region)

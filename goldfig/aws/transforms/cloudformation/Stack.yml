@@ -1,0 +1,49 @@
+version: 1
+resources:
+- service: cloudformation
+  provider_type: Stack
+  name: StackName
+  uri:
+    stackName: StackName
+    id: StackId
+  attributes:
+    provider:
+    - StackId
+    - StackName
+    - ChangeSetId
+    - Description
+    - Parameters
+    - CreationTime
+    - DeletionTime
+    - LastUpdatedTime
+    - RollbackConfiguration
+    - StackStatus
+    - StackStatusReason
+    - DisableRollback
+    - NotificationARNs
+    - TimeoutInMinutes
+    - Capabilities
+    - Outputs
+    - RoleARN
+    - Tags
+    - EnableTerminationProtection
+    - ParentId
+    - RootId
+    - DriftInformation
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: stack
+  relations:
+  - relation: acts-as
+    path: RoleARN
+    uri:
+      uri:
+        path: ''
+  - relation: publishes-to
+    path: NotificationARNs
+    uri:
+      uri:
+        path: ''

@@ -1,10 +1,9 @@
+import json
 import logging
 from typing import Any, Dict, Generator, Tuple
 
-from botocore.exceptions import ClientError
-
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 from goldfig.error import GFNoAccess
 
 _log = logging.getLogger(__name__)
@@ -18,6 +17,7 @@ def _import_queue(proxy: ServiceProxy, queue_url: str) -> Dict[str, Any]:
     raise GFNoAccess('sqs', 'get_queue_attributes')
   attrs = attrs_resp['Attributes']
   attrs['url'] = queue_url
+  attrs['Policy'] = json.loads(attrs.get('Policy', 'null'))
   tags_resp = proxy.get('list_queue_tags', QueueUrl=queue_url)
   if tags_resp is not None:
     attrs['Tags'] = tags_resp['Tags']
@@ -41,7 +41,4 @@ def _import_sqs_region(proxy: ServiceProxy,
   yield from _import_queues(proxy, region)
 
 
-import_account_sqs_region_to_db = make_import_to_db('sqs', _import_sqs_region)
-
-import_account_sqs_region_with_pool = make_import_with_pool(
-    'sqs', _import_sqs_region)
+SVC = RegionalService('sqs', _import_sqs_region)

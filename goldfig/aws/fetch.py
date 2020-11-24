@@ -159,7 +159,9 @@ class EC2ClientProxy(ClientProxy):
       # Failing in some cases, and we don't map
       'describe_id_format',
       # not needed, it's on most return values
-      'describe_tags'
+      'describe_tags',
+      # Not top level
+      'describe_instance_attribute'
   ]
 
   EXTRA_ARGS = {

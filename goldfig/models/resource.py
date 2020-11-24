@@ -1,7 +1,9 @@
+from typing import Optional
 from sqlalchemy import Column, Enum, ForeignKey, func, Index, Integer, String, text, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import JSONB
 
+from goldfig.mapper import Uri
 from goldfig.models.base import Base
 
 
@@ -88,10 +90,15 @@ class Resource(Base):
   attributes = relationship('ResourceAttribute', cascade='delete')
 
   @classmethod
-  def get_by_uri(cls, session, uri, provider_account_id):
-    return session.query(Resource).filter(
-        Resource.provider_account_id == provider_account_id,
-        Resource.uri == uri).one_or_none()
+  def get_by_uri(cls, session, uri: Uri,
+                 provider_account_id: int) -> Optional['Resource']:
+    q = session.query(Resource).filter(
+        Resource.provider_account_id == provider_account_id)
+    if isinstance(uri, str):
+      q = q.filter(Resource.uri == uri)
+    else:
+      q = q.filter(Resource.uri.like(f'{uri[0]}%{uri[1]}'))
+    return q.one_or_none()
 
 
 class ResourceRaw(Base):

@@ -2,6 +2,7 @@ from functools import partial
 from typing import Dict, Optional
 
 from goldfig.error import GFError, GFInternal
+from goldfig.mapper import Uri
 
 
 def _iam_uri_fn(resource_name, **kwargs):
@@ -83,6 +84,19 @@ def _logs_uri_fn(partition: str, account_id: str, resource_name: str,
   raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
 
 
+def _cloudformation_uri_fn(partition: str, account_id: str, resource_name: str,
+                           **kwargs) -> str:
+  region = _get_with_parent('region', kwargs)
+  if region is None:
+    raise GFInternal(
+        f'Missing region for cloudformation {resource_name} in {kwargs}')
+  if resource_name == 'stack':
+    stack_name = kwargs['stackName']
+    stack_id = kwargs['id']
+    return f'arn:{partition}:cloudformation:{region}:{account_id}:stack/{stack_name}/{stack_id}'
+  raise GFInternal(f'Unknown cloudformation resource {resource_name}')
+
+
 def _config_uri_fn(resource_name: str, **kwargs):
   if resource_name == 'ConfigurationRecorder':
     name = kwargs['name']
@@ -156,7 +170,7 @@ def _cloudwatch_metrics(**kwargs) -> str:
   return f'metrics/{region}/{namespace}/{name}/{flattened}'
 
 
-def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
+def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
   if 'uri' in kwargs:
     return kwargs['uri']
   resource_name = kwargs.pop('resource_name')
@@ -182,6 +196,9 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
     return _redshift_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'cloudwatch' and resource_name == 'metric':
     return _cloudwatch_metrics(**kwargs)
+  elif service == 'cloudformation':
+    return _cloudformation_uri_fn(partition, account_id, resource_name,
+                                  **kwargs)
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
@@ -191,8 +208,13 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> str:
       region = ''
     else:
       raise GFInternal(f'Missing region in {kwargs} for service {service}')
-  if service in ('kms', 'route53', 'ssm'):
-    return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}/{id}'
+  if service == 'autoscaling' and resource_name == 'launchConfiguration':
+    return (
+        f'arn:{partition}:{service}:{region}:{account_id}:launchConfiguration:',
+        f'launchConfigurationName/{id}')
+  if service in ('autoscaling', 'kms', 'route53', 'ssm'):
+    return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name}/{id}'
+  # TODO: remove .lower() call. make resource_name required, then verify it?
   return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
 
 

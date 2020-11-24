@@ -1,15 +1,9 @@
-import concurrent.futures as f
 import logging
 from typing import Any, Dict, Generator, Iterator, List, Tuple
 
-from sqlalchemy.orm import Session
-
-from goldfig import ImportWriter, db_import_writer, PathStack
-from goldfig.aws import (account_paths_for_import, load_boto_session,
-                         load_boto_session_from_config)
+from goldfig import ImportWriter, PathStack
 from goldfig.aws.fetch import Proxy, ServiceProxy
-from goldfig.bootstrap_db import import_session
-from goldfig.models import ImportJob, ProviderCredential
+from goldfig.aws.svc import RegionalService
 
 _log = logging.getLogger(__name__)
 
@@ -26,63 +20,48 @@ def _synthesize_defaults(proxy: ServiceProxy,
   yield 'Defaults', defaults
 
 
+def _add_user_data(proxy: ServiceProxy, response: Dict):
+  reservations = response.get('Reservations', [])
+  for reservation in reservations:
+    instances = reservation.get('Instances', [])
+    for instance in instances:
+      instance_id = instance['InstanceId']
+      user_data = proxy.get('describe_instance_attribute',
+                            InstanceId=instance_id,
+                            Attribute='userData')
+      instance['UserData'] = user_data['UserData'].get('Value')
+
+
+def _add_launch_permissions(proxy: ServiceProxy, response: Dict):
+  snapshots = response.get('Snapshots', [])
+  for snapshot in snapshots:
+    snapshot_id = snapshot['SnapshotId']
+    permission_resp = proxy.get('describe_snapshot_attribute',
+                                SnapshotId=snapshot_id,
+                                Attribute='createVolumePermission')
+    permissions = permission_resp.get('CreateVolumePermissions', [])
+    snapshot['CreateVolumePermissions'] = permissions
+
+
+# TODO: add to transform for snapshots
+
+
 def _import_ec2_region(proxy: ServiceProxy,
                        region: str) -> Generator[Tuple[str, Any], None, None]:
   for resource in proxy.resource_names():
     _log.info(f'importing {resource}')
     result = proxy.list(resource)
     if result is not None:
+      if resource == 'describe_instances':
+        _add_user_data(proxy, result[1])
+      elif resource == 'describe_snapshots':
+        _add_launch_permissions(proxy, result[1])
       yield result[0], result[1]
     _log.info(f'done with {resource}')
   yield from _synthesize_defaults(proxy, region)
 
 
-def import_account_ec2_region_to_db(db: Session, import_job_id: int,
-                                    region: str):
-  job: ImportJob = db.query(ImportJob).get(import_job_id)
-  writer = db_import_writer(db, job.id, 'ec2', phase=0, source='base')
-  for path, account in account_paths_for_import(db, job):
-    boto = load_boto_session(account)
-    proxy = Proxy.build(boto)
-    ps = PathStack.from_import_job(job).scope(path)
-    _import_ec2_region_to_db(proxy, writer, ps, region)
-
-
-def _import_ec2_region_to_db(proxy: Proxy, writer: ImportWriter, ps: PathStack,
-                             region: str):
-  service_proxy = proxy.service('ec2', region)
-  ps = ps.scope(region)
-  for resource_name, raw_resources in _import_ec2_region(
-      service_proxy, region):
-    writer(ps, resource_name, raw_resources, {'region': region})
-
-
-def _async_proxy(ps: PathStack, import_job_id: int, region: str, config: Dict,
-                 f):
-  db = import_session()
-  boto = load_boto_session_from_config(config)
-  proxy = Proxy.build(boto)
-  writer = db_import_writer(db, import_job_id, 'ec2', phase=0, source='base')
-  f(proxy, writer, ps, region)
-  db.commit()
-
-
-def import_account_ec2_region_with_pool(
-    pool: f.ProcessPoolExecutor, import_job_id: int, region: str,
-    ps: PathStack, accounts: List[Tuple[str, ProviderCredential]]):
-  results: List[f.Future] = []
-
-  def queue_job(fn, path: str, account: ProviderCredential):
-    return pool.submit(_async_proxy,
-                       import_job_id=import_job_id,
-                       region=region,
-                       ps=ps.scope(path),
-                       config=account.config,
-                       f=fn)
-
-  for path, account in accounts:
-    results.append(queue_job(_import_ec2_region_to_db, path, account))
-  return results
+SVC = RegionalService('ec2', _import_ec2_region)
 
 
 def add_amis_to_import_job(proxy: Proxy, writer: ImportWriter, ps: PathStack,

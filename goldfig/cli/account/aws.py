@@ -95,9 +95,15 @@ def cmd():
               default=False,
               is_flag=True,
               help='Skip prompts for adding accounts')
+@click.option('-s',
+              '--service',
+              default=None,
+              type=str,
+              required=False,
+              help='Only import the specified service')
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
 def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
-                   dry_run: bool):
+                   dry_run: bool, service: Optional[str]):
   db = import_session()
   provider = _find_provider(db, account, force=force)
   boto = load_boto_for_provider(db, provider)
@@ -107,7 +113,7 @@ def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
   db.flush()
   region_cache = RegionCache(boto)
   if debug:
-    run_single_session(db, import_job.id, region_cache)
+    run_single_session(db, import_job.id, region_cache, service)
     db.flush()
     map_import(db, import_job.id)
     refresh_views(db)
@@ -118,12 +124,13 @@ def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
     accounts = account_paths_for_import(db, import_job)
     db.commit()
     # No db required for parallel invocation
-    exceptions = run_parallel_session(region_cache, accounts, import_job)
+    exceptions = run_parallel_session(region_cache, accounts, import_job,
+                                      service)
     # Make certain we're using the current db session
     import_job = db.query(ImportJob).get(import_job.id)
     if len(exceptions) == 0:
       db.commit()
-      map_import(db, import_job.id)
+      map_import(db, import_job.id, service)
       db.commit()
       refresh_views(db)
       import_job.mark_complete(exceptions=[])

@@ -1,10 +1,8 @@
 import logging
 from typing import Any, Dict, Generator, Tuple
 
-from botocore.exceptions import ClientError
-
 from goldfig.aws.fetch import ServiceProxy
-from goldfig.aws.svc import make_import_to_db, make_import_with_pool
+from goldfig.aws.svc import RegionalService
 from goldfig.error import GFNoAccess
 
 _log = logging.getLogger(__name__)
@@ -57,8 +55,4 @@ def _import_dynamodb_region(
   yield from _import_backups(proxy, region)
 
 
-import_account_dynamodb_region_to_db = make_import_to_db(
-    'dynamodb', _import_dynamodb_region)
-
-import_account_dynamodb_region_with_pool = make_import_with_pool(
-    'dynamodb', _import_dynamodb_region)
+SVC = RegionalService('dynamodb', _import_dynamodb_region)
