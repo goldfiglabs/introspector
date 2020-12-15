@@ -240,7 +240,8 @@ class S3ClientProxy(ClientProxy):
   SKIPLIST = [
       # deprecated methods covered by other calls
       'get_bucket_notification',
-      'get_bucket_lifecycle'
+      'get_bucket_lifecycle',
+      'list_bucket_intelligent_tiering_configurations'
   ]
 
   def _patch_client(self):
@@ -306,7 +307,10 @@ class RDSClientProxy(ClientProxy):
       'describe_valid_db_instance_modifications',
       'describe_option_group_options',
       'describe_db_proxies',  # Not sure why this comes back with unknown
-      'describe_global_clusters'
+      'describe_global_clusters',
+      # migrating away
+      'describe_db_snapshots',
+      'describe_db_cluster_snapshots'
   ]
 
   def _should_import(self, key: str) -> bool:

@@ -210,4 +210,4 @@ def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
                                              uri_fn)
 
     map_relation_deletes(db, import_job, import_job.path_prefix,
-                         found_relations)
+                         found_relations, service)

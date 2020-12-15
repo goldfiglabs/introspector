@@ -1,0 +1,69 @@
+version: 1
+resources:
+- service: rds
+  provider_type: DBSnapshot
+  name: DBSnapshotIdentifier
+  uri:
+    uri: DBSnapshotArn
+  attributes:
+    provider:
+    - DBSnapshotIdentifier
+    - DBInstanceIdentifier
+    - SnapshotCreateTime
+    - Engine
+    - AllocatedStorage
+    - Status
+    - Port
+    - AvailabilityZone
+    - VpcId
+    - InstanceCreateTime
+    - MasterUsername
+    - EngineVersion
+    - LicenseModel
+    - SnapshotType
+    - Iops
+    - OptionGroupName
+    - PercentProgress
+    - SourceRegion
+    - SourceDBSnapshotIdentifier
+    - StorageType
+    - TdeCredentialArn
+    - Encrypted
+    - KmsKeyId
+    - DBSnapshotArn
+    - Timezone
+    - IAMDatabaseAuthenticationEnabled
+    - ProcessorFeatures
+    - DbiResourceId
+    - TagList
+    - restore
+    custom:
+      Metadata:
+        Tags:
+          path: TagList
+          transform: aws_tags
+  resource_name: snapshot
+  relations:
+  - relation: encrypted-with
+    path: KmsKeyId
+    uri:
+      uri:
+        path: ''
+  - relation: in
+    path: VpcId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      id:
+        path: ''
+  - relation: imaged
+    path: DBInstanceIdentifier
+    uri:
+      service:
+        value: rds
+      resource_name:
+        value: db
+      id:
+        path: ''

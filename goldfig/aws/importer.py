@@ -1,5 +1,6 @@
 import concurrent.futures as f
 import importlib
+import logging
 import os
 from typing import List, Optional, Tuple, Union
 
@@ -13,10 +14,12 @@ from goldfig.models import ImportJob, ProviderCredential
 SVC_MODULES = [
     'acm', 'apigateway', 'apigatewayv2', 'autoscaling', 'cloudformation',
     'cloudfront', 'cloudtrail', 'cloudwatch', 'config', 'dynamodb', 'ec2',
-    'ecr', 'ecs', 'elb', 'elbv2', 'iam', 'kms', 'lambdax', 'logs',
+    'ecr', 'ecs', 'eks', 'elb', 'elbv2', 'es', 'iam', 'kms', 'lambdax', 'logs',
     'organizations', 'rds', 'redshift', 'route53', 's3', 'ses', 'sns', 'sqs',
     'ssm'
 ]
+
+_log = logging.getLogger(__name__)
 
 
 def run_single_session(db: Session,
@@ -60,13 +63,17 @@ def run_parallel_session(region_cache: RegionCache,
       module = importlib.import_module(f'{PKG_ROOT}.{module_name}')
       svc: Union[RegionalService, GlobalService] = module.SVC
       if service is None or service == svc.name:
+        _log.info(f'importing {svc.name}')
         if isinstance(svc, RegionalService):
           fn = svc.pool_fn()
           for region in region_cache.regions_for_service(svc.name):
+            _log.info(f'region {region}')
             results += fn(pool, import_job.id, region, ps, accounts)
         else:
           fn = svc.pool_fn()
           results += fn(pool, import_job.id, ps, accounts)
+      else:
+        _log.debug(f'skipped {svc.name}')
 
     f.wait(results, return_when='FIRST_EXCEPTION')
     # raise any exceptions

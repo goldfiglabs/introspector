@@ -1,0 +1,58 @@
+version: 1
+resources:
+- service: eks
+  provider_type: Nodegroup
+  name: nodegroupName
+  uri:
+    uri: nodegroupArn
+  attributes:
+    provider:
+    - nodegroupName
+    - nodegroupArn
+    - clusterName
+    - version
+    - releaseVersion
+    - createdAt
+    - modifiedAt
+    - status
+    - scalingConfig
+    - instanceTypes
+    - subnets
+    - remoteAccess
+    - amiType
+    - nodeRole
+    - labels
+    - resources
+    - diskSize
+    - health
+    - tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: nodegroup
+  relations:
+  - relation: in
+    path: clusterName
+    uri:
+      resource_name:
+        value: cluster
+      service:
+        value: eks
+      id:
+        path: ''
+  - relation: in
+    path: subnets
+    uri:
+      resource_name:
+        value: subnet
+      service:
+        value: ec2
+      id:
+        path: ''
+  - relation: acts-as
+    path: nodeRole
+    uri:
+      uri:
+        path: ''

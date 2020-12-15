@@ -45,6 +45,26 @@ resources:
       resource_name:
         value: Listener
     invert: true
+  - relation: in
+    path: SecurityGroups
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: security-group
+      service:
+        value: ec2
+  - relation: sends-from
+    path: SourceSecurityGroup
+    uri:
+      name:
+        path: GroupName
+      service:
+        value: ec2
+      resource_name:
+        value: security-group
+      account_id:
+        path: OwnerAlias
 subresources:
 - type: Listener
   key: ListenerDescriptions

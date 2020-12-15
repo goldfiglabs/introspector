@@ -1,0 +1,48 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: Address
+  name: AllocationId
+  uri:
+    id: AllocationId
+  attributes:
+    provider:
+    - InstanceId
+    - PublicIp
+    - AllocationId
+    - AssociationId
+    - Domain
+    - NetworkInterfaceId
+    - NetworkInterfaceOwnerId
+    - PrivateIpAddress
+    - Tags
+    - PublicIpv4Pool
+    - NetworkBorderGroup
+    - CustomerOwnedIp
+    - CustomerOwnedIpv4Pool
+    - CarrierIp
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: address
+  relations:
+  - relation: assigned-to
+    path: NetworkInterfaceId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: network-interface
+      id:
+        path: ''
+  - relation: assigned-to
+    path: InstanceId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: instance
+      id:
+        path: ''

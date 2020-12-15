@@ -26,6 +26,7 @@ SELECT
   placementtenancy.attr_value #>> '{}' AS placementtenancy,
   
     _ec2_image_id.target_id AS _ec2_image_id,
+    _iam_instanceprofile_id.target_id AS _iam_instanceprofile_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -120,6 +121,19 @@ FROM
     WHERE
       _aws_ec2_image_relation.relation = 'imaged'
   ) AS _ec2_image_id ON _ec2_image_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_iam_instanceprofile_relation.resource_id AS resource_id,
+      _aws_iam_instanceprofile.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_instanceprofile_relation
+      INNER JOIN resource AS _aws_iam_instanceprofile
+        ON _aws_iam_instanceprofile_relation.target_id = _aws_iam_instanceprofile.id
+        AND _aws_iam_instanceprofile.provider_type = 'InstanceProfile'
+        AND _aws_iam_instanceprofile.service = 'iam'
+    WHERE
+      _aws_iam_instanceprofile_relation.relation = 'acts-as'
+  ) AS _iam_instanceprofile_id ON _iam_instanceprofile_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

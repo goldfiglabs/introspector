@@ -9,7 +9,7 @@ from goldfig.delta import json_diff
 from goldfig.delta.attrs import diff_attrs
 from goldfig.delta.types import Raw
 from goldfig.error import GFInternal
-from goldfig.mapper import Mapper, Uri
+from goldfig.mapper import Mapper
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
                             ResourceAttribute, ResourceDelta,
                             ResourceAttributeDelta, ResourceRelation,
@@ -34,8 +34,7 @@ def map_resource_relations(db: Session,
   provider_account_id = import_job.provider_account_id
   imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
-      or_(RawImport.path.like(f'{path_prefix}%'),
-          RawImport.path == path_prefix))
+      RawImport.path.like(f'{path_prefix}%'))
   found_relations = set()
   for raw_import in imports:
     import_resource_name = resource_name \
@@ -93,11 +92,11 @@ def map_relation_deletes(db: Session,
       ~ResourceRelation.id.in_(found_relations), ).join(
           ResourceRelation.resource, aliased=True).filter(
               Resource.provider_account_id == import_job.provider_account_id,
-              or_(Resource.path.like(f'{path_prefix}$%'),
-                  Resource.path == path_prefix))
+              Resource.path.like(f'{path_prefix}%'))
   if service is not None:
     deletes = deletes.filter(Resource.service == service)
   for deleted in deletes:
+    _log.info(f'Deleting relation {deleted.id}')
     parent = db.query(Resource).get(deleted.resource_id)
     parent_uri = parent.uri
     target = db.query(Resource).get(deleted.target_id)

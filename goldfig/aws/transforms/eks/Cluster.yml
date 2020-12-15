@@ -26,6 +26,7 @@ resources:
       Metadata:
         Tags:
           path: Tags
+  resource_name: cluster
   relations:
   - relation: acts-as
     path: roleArn

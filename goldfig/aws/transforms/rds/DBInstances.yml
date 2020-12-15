@@ -32,10 +32,12 @@ resources:
     - ReadReplicaSourceDBInstanceIdentifier
     - ReadReplicaDBInstanceIdentifiers
     - ReadReplicaDBClusterIdentifiers
+    - ReplicaMode
     - LicenseModel
     - Iops
     - OptionGroupMemberships
     - CharacterSetName
+    - NcharCharacterSetName
     - SecondaryAvailabilityZone
     - PubliclyAccessible
     - StatusInfos
@@ -65,11 +67,11 @@ resources:
     - AssociatedRoles
     - ListenerEndpoint
     - MaxAllocatedStorage
-    - Tags
+    - TagList
     custom:
       Metadata:
         Tags:
-          path: Tags
+          path: TagList
           transform: aws_tags
         Region:
           context: region

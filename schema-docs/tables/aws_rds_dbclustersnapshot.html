@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>aws_rds_dbclustersnapshot - goldfig Database</title>
+        <!-- Tell the browser to be responsive to screen width -->
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
+        <!-- Bootstrap 3.3.5 -->
+        <link rel="stylesheet" href="../bower/admin-lte/bootstrap/css/bootstrap.min.css">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="../bower/font-awesome/css/font-awesome.min.css">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="../bower/ionicons/css/ionicons.min.css">
+        <!-- DataTables -->
+        <link rel="stylesheet" href="../bower/datatables.net-bs/css/dataTables.bootstrap.min.css">
+        <link rel="stylesheet" href="../bower/datatables.net-buttons-bs/css/buttons.bootstrap.min.css">
+        <!-- Code Mirror -->
+        <link rel="stylesheet" href="../bower/codemirror/codemirror.css">
+        <!-- Fonts -->
+        <link href='../fonts/indieflower/indie-flower.css' rel='stylesheet' type='text/css'>
+        <link href='../fonts/source-sans-pro/source-sans-pro.css' rel='stylesheet' type='text/css'>
+
+        <!-- Theme style -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/AdminLTE.min.css">
+        <!-- Salvattore -->
+        <link rel="stylesheet" href="../bower/salvattore/salvattore.css">
+        <!-- AdminLTE Skins. Choose a skin from the css/skins
+           folder instead of downloading all of them to reduce the load. -->
+        <link rel="stylesheet" href="../bower/admin-lte/dist/css/skins/_all-skins.min.css">
+        <!-- SchemaSpy -->
+        <link rel="stylesheet" href="../schemaSpy.css">
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="../bower/html5shiv/html5shiv.min.js"></script>
+        <script src="../bower/respond/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <!-- ADD THE CLASS layout-top-nav TO REMOVE THE SIDEBAR. -->
+    <body class="hold-transition skin-blue layout-top-nav">
+        <div class="wrapper">
+            <header class="main-header">
+                <nav class="navbar navbar-static-top">
+                    <div class="container">
+                        <div class="navbar-header">
+                            <a href="../index.html" class="navbar-brand"><b>goldfig</b> Database</a>
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse"><i class="fa fa-bars"></i></button>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse pull-left" id="navbar-collapse">
+                            <ul class="nav navbar-nav">
+                                <li><a href="../index.html">Tables <span class="sr-only">(current)</span></a></li>
+                                <li><a href="../columns.html" title="All of the columns in the schema">Columns</a></li>
+                                <li><a href="../constraints.html" title="Useful for diagnosing error messages that just give constraint name or number">Constraints</a></li>
+                                <li><a href="../relationships.html" title="Diagram of table relationships">Relationships</a></li>
+                                <li><a href="../orphans.html" title="View of tables with neither parents nor children">Orphan&nbsp;Tables</a></li>
+                                <li><a href="../anomalies.html" title="Things that might not be quite right">Anomalies</a></li>
+                                <li><a href="../routines.html" title="Procedures and functions">Routines</a></li>
+                            </ul>
+                        </div>
+                        <!-- /.navbar-collapse -->
+                        <!-- Navbar Right Menu -->
+                    </div>
+                    <!-- /.container-fluid -->
+                </nav>
+            </header>
+            <!-- Main content -->
+            <!-- Full Width Column -->
+            <div class="content-wrapper">
+                <!-- Content Header (Page header) -->
+                <section class="content-header">
+                    <h1>aws_rds_dbclustersnapshot</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-text-o"></i>
+                            <h3 id="Description" class="box-title">Description</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div><!-- /.box-header -->
+                        <div class="box-body clearfix">
+                            <p>rds DBClusterSnapshot resources and their associated attributes.</p>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <!-- Main content -->
+                <section class="content">
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
+                            <h3 id="Columns" class="box-title">Columns</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <table id="standard_table" class="table table-bordered table-striped dataTable" role="grid">
+                                <thead align='left'>
+                                <tr>
+                                    <th>Column</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th title='Are nulls allowed?'>Nulls</th>
+                                    <th title='Is column automatically updated?'>Auto</th>
+                                    <th title='Default value'>Default</th>
+                                    <th title='Columns in tables that reference this column'>Children</th>
+                                    <th title='Columns in tables that are referenced by this column'>Parents</th>
+                                    <th title='Comments' class="toggle"><span>Comments</span></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td><span id="resource_id">resource_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="uri">uri</span></td>
+                                    <td>varchar</td>
+                                    <td>1024</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="provider_account_id">provider_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="availabilityzones">availabilityzones</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="dbclustersnapshotidentifier">dbclustersnapshotidentifier</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="dbclusteridentifier">dbclusteridentifier</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="snapshotcreatetime">snapshotcreatetime</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="engine">engine</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="allocatedstorage">allocatedstorage</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="status">status</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="port">port</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="vpcid">vpcid</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="clustercreatetime">clustercreatetime</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="masterusername">masterusername</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="engineversion">engineversion</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="licensemodel">licensemodel</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="snapshottype">snapshottype</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="percentprogress">percentprogress</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="storageencrypted">storageencrypted</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="kmskeyid">kmskeyid</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="dbclustersnapshotarn">dbclustersnapshotarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="sourcedbclustersnapshotarn">sourcedbclustersnapshotarn</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="iamdatabaseauthenticationenabled">iamdatabaseauthenticationenabled</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="taglist">taglist</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="restore">restore</span></td>
+                                    <td>jsonb</td>
+                                    <td>2147483647</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_kms_key_id">_kms_key_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_ec2_vpc_id">_ec2_vpc_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_dbcluster_id">_dbcluster_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="_account_id">_account_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-code-o"></i>
+                            <h3 id="ViewDefinition" class="box-title">View Definition</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT r.id AS resource_id,&#10;    r.uri,&#10;    r.provider_account_id,&#10;    availabilityzones.attr_value AS availabilityzones,&#10;    (dbclustersnapshotidentifier.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dbclustersnapshotidentifier,&#10;    (dbclusteridentifier.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dbclusteridentifier,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((snapshotcreatetime.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS snapshotcreatetime,&#10;    (engine.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS engine,&#10;    ((allocatedstorage.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::integer AS allocatedstorage,&#10;    (status.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS status,&#10;    ((port.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::integer AS port,&#10;    (vpcid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS vpcid,&#10;    timezone(&#39;00:00&#39;::text, (to_timestamp((clustercreatetime.attr_value #&gt;&gt; &#39;{}&#39;::text[]), &#39;YYYY-MM-DD&quot;T&quot;HH24:MI:SS&#39;::text))::timestamp without time zone) AS clustercreatetime,&#10;    (masterusername.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS masterusername,&#10;    (engineversion.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS engineversion,&#10;    (licensemodel.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS licensemodel,&#10;    (snapshottype.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS snapshottype,&#10;    ((percentprogress.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::integer AS percentprogress,&#10;    ((storageencrypted.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS storageencrypted,&#10;    (kmskeyid.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS kmskeyid,&#10;    (dbclustersnapshotarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS dbclustersnapshotarn,&#10;    (sourcedbclustersnapshotarn.attr_value #&gt;&gt; &#39;{}&#39;::text[]) AS sourcedbclustersnapshotarn,&#10;    ((iamdatabaseauthenticationenabled.attr_value #&gt;&gt; &#39;{}&#39;::text[]))::boolean AS iamdatabaseauthenticationenabled,&#10;    taglist.attr_value AS taglist,&#10;    restore.attr_value AS restore,&#10;    _kms_key_id.target_id AS _kms_key_id,&#10;    _ec2_vpc_id.target_id AS _ec2_vpc_id,&#10;    _dbcluster_id.target_id AS _dbcluster_id,&#10;    _account_id.target_id AS _account_id&#10;   FROM (((((((((((((((((((((((((((resource r&#10;     JOIN provider_account pa ON ((pa.id = r.provider_account_id)))&#10;     LEFT JOIN resource_attribute availabilityzones ON (((availabilityzones.resource_id = r.id) AND ((availabilityzones.type)::text = &#39;provider&#39;::text) AND (lower((availabilityzones.attr_name)::text) = &#39;availabilityzones&#39;::text))))&#10;     LEFT JOIN resource_attribute dbclustersnapshotidentifier ON (((dbclustersnapshotidentifier.resource_id = r.id) AND ((dbclustersnapshotidentifier.type)::text = &#39;provider&#39;::text) AND (lower((dbclustersnapshotidentifier.attr_name)::text) = &#39;dbclustersnapshotidentifier&#39;::text))))&#10;     LEFT JOIN resource_attribute dbclusteridentifier ON (((dbclusteridentifier.resource_id = r.id) AND ((dbclusteridentifier.type)::text = &#39;provider&#39;::text) AND (lower((dbclusteridentifier.attr_name)::text) = &#39;dbclusteridentifier&#39;::text))))&#10;     LEFT JOIN resource_attribute snapshotcreatetime ON (((snapshotcreatetime.resource_id = r.id) AND ((snapshotcreatetime.type)::text = &#39;provider&#39;::text) AND (lower((snapshotcreatetime.attr_name)::text) = &#39;snapshotcreatetime&#39;::text))))&#10;     LEFT JOIN resource_attribute engine ON (((engine.resource_id = r.id) AND ((engine.type)::text = &#39;provider&#39;::text) AND (lower((engine.attr_name)::text) = &#39;engine&#39;::text))))&#10;     LEFT JOIN resource_attribute allocatedstorage ON (((allocatedstorage.resource_id = r.id) AND ((allocatedstorage.type)::text = &#39;provider&#39;::text) AND (lower((allocatedstorage.attr_name)::text) = &#39;allocatedstorage&#39;::text))))&#10;     LEFT JOIN resource_attribute status ON (((status.resource_id = r.id) AND ((status.type)::text = &#39;provider&#39;::text) AND (lower((status.attr_name)::text) = &#39;status&#39;::text))))&#10;     LEFT JOIN resource_attribute port ON (((port.resource_id = r.id) AND ((port.type)::text = &#39;provider&#39;::text) AND (lower((port.attr_name)::text) = &#39;port&#39;::text))))&#10;     LEFT JOIN resource_attribute vpcid ON (((vpcid.resource_id = r.id) AND ((vpcid.type)::text = &#39;provider&#39;::text) AND (lower((vpcid.attr_name)::text) = &#39;vpcid&#39;::text))))&#10;     LEFT JOIN resource_attribute clustercreatetime ON (((clustercreatetime.resource_id = r.id) AND ((clustercreatetime.type)::text = &#39;provider&#39;::text) AND (lower((clustercreatetime.attr_name)::text) = &#39;clustercreatetime&#39;::text))))&#10;     LEFT JOIN resource_attribute masterusername ON (((masterusername.resource_id = r.id) AND ((masterusername.type)::text = &#39;provider&#39;::text) AND (lower((masterusername.attr_name)::text) = &#39;masterusername&#39;::text))))&#10;     LEFT JOIN resource_attribute engineversion ON (((engineversion.resource_id = r.id) AND ((engineversion.type)::text = &#39;provider&#39;::text) AND (lower((engineversion.attr_name)::text) = &#39;engineversion&#39;::text))))&#10;     LEFT JOIN resource_attribute licensemodel ON (((licensemodel.resource_id = r.id) AND ((licensemodel.type)::text = &#39;provider&#39;::text) AND (lower((licensemodel.attr_name)::text) = &#39;licensemodel&#39;::text))))&#10;     LEFT JOIN resource_attribute snapshottype ON (((snapshottype.resource_id = r.id) AND ((snapshottype.type)::text = &#39;provider&#39;::text) AND (lower((snapshottype.attr_name)::text) = &#39;snapshottype&#39;::text))))&#10;     LEFT JOIN resource_attribute percentprogress ON (((percentprogress.resource_id = r.id) AND ((percentprogress.type)::text = &#39;provider&#39;::text) AND (lower((percentprogress.attr_name)::text) = &#39;percentprogress&#39;::text))))&#10;     LEFT JOIN resource_attribute storageencrypted ON (((storageencrypted.resource_id = r.id) AND ((storageencrypted.type)::text = &#39;provider&#39;::text) AND (lower((storageencrypted.attr_name)::text) = &#39;storageencrypted&#39;::text))))&#10;     LEFT JOIN resource_attribute kmskeyid ON (((kmskeyid.resource_id = r.id) AND ((kmskeyid.type)::text = &#39;provider&#39;::text) AND (lower((kmskeyid.attr_name)::text) = &#39;kmskeyid&#39;::text))))&#10;     LEFT JOIN resource_attribute dbclustersnapshotarn ON (((dbclustersnapshotarn.resource_id = r.id) AND ((dbclustersnapshotarn.type)::text = &#39;provider&#39;::text) AND (lower((dbclustersnapshotarn.attr_name)::text) = &#39;dbclustersnapshotarn&#39;::text))))&#10;     LEFT JOIN resource_attribute sourcedbclustersnapshotarn ON (((sourcedbclustersnapshotarn.resource_id = r.id) AND ((sourcedbclustersnapshotarn.type)::text = &#39;provider&#39;::text) AND (lower((sourcedbclustersnapshotarn.attr_name)::text) = &#39;sourcedbclustersnapshotarn&#39;::text))))&#10;     LEFT JOIN resource_attribute iamdatabaseauthenticationenabled ON (((iamdatabaseauthenticationenabled.resource_id = r.id) AND ((iamdatabaseauthenticationenabled.type)::text = &#39;provider&#39;::text) AND (lower((iamdatabaseauthenticationenabled.attr_name)::text) = &#39;iamdatabaseauthenticationenabled&#39;::text))))&#10;     LEFT JOIN resource_attribute taglist ON (((taglist.resource_id = r.id) AND ((taglist.type)::text = &#39;provider&#39;::text) AND (lower((taglist.attr_name)::text) = &#39;taglist&#39;::text))))&#10;     LEFT JOIN resource_attribute restore ON (((restore.resource_id = r.id) AND ((restore.type)::text = &#39;provider&#39;::text) AND (lower((restore.attr_name)::text) = &#39;restore&#39;::text))))&#10;     LEFT JOIN ( SELECT _aws_kms_key_relation.resource_id,&#10;            _aws_kms_key.id AS target_id&#10;           FROM (resource_relation _aws_kms_key_relation&#10;             JOIN resource _aws_kms_key ON (((_aws_kms_key_relation.target_id = _aws_kms_key.id) AND ((_aws_kms_key.provider_type)::text = &#39;Key&#39;::text) AND ((_aws_kms_key.service)::text = &#39;kms&#39;::text))))&#10;          WHERE ((_aws_kms_key_relation.relation)::text = &#39;encrypted-with&#39;::text)) _kms_key_id ON ((_kms_key_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_ec2_vpc_relation.resource_id,&#10;            _aws_ec2_vpc.id AS target_id&#10;           FROM (resource_relation _aws_ec2_vpc_relation&#10;             JOIN resource _aws_ec2_vpc ON (((_aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id) AND ((_aws_ec2_vpc.provider_type)::text = &#39;Vpc&#39;::text) AND ((_aws_ec2_vpc.service)::text = &#39;ec2&#39;::text))))&#10;          WHERE ((_aws_ec2_vpc_relation.relation)::text = &#39;in&#39;::text)) _ec2_vpc_id ON ((_ec2_vpc_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_rds_dbcluster_relation.resource_id,&#10;            _aws_rds_dbcluster.id AS target_id&#10;           FROM (resource_relation _aws_rds_dbcluster_relation&#10;             JOIN resource _aws_rds_dbcluster ON (((_aws_rds_dbcluster_relation.target_id = _aws_rds_dbcluster.id) AND ((_aws_rds_dbcluster.provider_type)::text = &#39;DBCluster&#39;::text) AND ((_aws_rds_dbcluster.service)::text = &#39;rds&#39;::text))))&#10;          WHERE ((_aws_rds_dbcluster_relation.relation)::text = &#39;imaged&#39;::text)) _dbcluster_id ON ((_dbcluster_id.resource_id = r.id)))&#10;     LEFT JOIN ( SELECT _aws_organizations_account_relation.resource_id,&#10;            _aws_organizations_account.id AS target_id&#10;           FROM (resource_relation _aws_organizations_account_relation&#10;             JOIN resource _aws_organizations_account ON (((_aws_organizations_account_relation.target_id = _aws_organizations_account.id) AND ((_aws_organizations_account.provider_type)::text = &#39;Account&#39;::text) AND ((_aws_organizations_account.service)::text = &#39;organizations&#39;::text))))&#10;          WHERE ((_aws_organizations_account_relation.relation)::text = &#39;in&#39;::text)) _account_id ON ((_account_id.resource_id = r.id)))&#10;  WHERE ((pa.provider = &#39;aws&#39;::provider) AND ((r.provider_type)::text = &#39;DBClusterSnapshot&#39;::text) AND ((r.service)::text = &#39;rds&#39;::text));</textarea>
+                            <div style="padding-top: 5px;"><hr></div>
+                            <div class="box box-solid">
+                                <div class="box-header with-border">
+                                    <i class="fa fa-puzzle-piece"></i>
+                                    <h3 class="box-title">Possibly Referenced Tables/Views</h3>
+                                </div>
+                                <!-- /.box-header -->
+                                <div class="box-body">
+                                    <ul class="list-unstyled">
+                                        <li><a href="resource.html">resource</a></li>
+                                        <li><a href="provider_account.html">provider_account</a></li>
+                                        <li><a href="resource_attribute.html">resource_attribute</a></li>
+                                        <li><a href="resource_relation.html">resource_relation</a></li>
+                                    </ul>
+                                </div><!-- /.box-body -->
+                            </div>
+                        </div><!-- /.box-body -->
+                    </div>
+                </section>
+                <script>
+                    var config = {
+                        pagination: true
+                    }
+                </script>
+            </div>
+            <!-- /.content-wrapper -->
+            <footer class="main-footer">
+                <div>
+                    <div class="pull-right hidden-xs">
+                        <a href="https://github.com/schemaspy/schemaspy" title="GitHub for SchemaSpy"><i class="fa fa-github-square fa-2x"></i></a>
+                        <a href="http://stackoverflow.com/questions/tagged/schemaspy" title="StackOverflow for SchemaSpy"><i class="fa fa-stack-overflow fa-2x"></i></a>
+                    </div>
+                    <strong>Generated by <a href="http://schemaspy.org/" class="logo-text"><i class="fa fa-database"></i> SchemaSpy 6.1.0</a></strong>
+                </div>
+                <!-- /.container -->
+            </footer>
+        </div>
+        <!-- ./wrapper -->
+
+        <!-- jQuery 2.2.3 -->
+        <script src="../bower/admin-lte/plugins/jQuery/jquery-2.2.3.min.js"></script>
+        <script src="../bower/admin-lte/plugins/jQueryUI/jquery-ui.min.js"></script>
+        <!-- Bootstrap 3.3.5 -->
+        <script src="../bower/admin-lte/bootstrap/js/bootstrap.min.js"></script>
+        <!-- DataTables -->
+        <script src="../bower/datatables.net/jquery.dataTables.min.js"></script>
+        <script src="../bower/datatables.net-bs/js/dataTables.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/dataTables.buttons.min.js"></script>
+        <script src="../bower/datatables.net-buttons-bs/js/buttons.bootstrap.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.html5.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.print.min.js"></script>
+        <script src="../bower/datatables.net-buttons/buttons.colVis.min.js"></script>
+        <!-- SheetJS -->
+        <script src="../bower/js-xlsx/xlsx.full.min.js"></script>
+        <!-- pdfmake -->
+        <script src="../bower/pdfmake/pdfmake.min.js"></script>
+        <script src="../bower/pdfmake/vfs_fonts.js"></script>
+        <!-- SlimScroll -->
+        <script src="../bower/admin-lte/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+        <!-- FastClick -->
+        <script src="../bower/admin-lte/plugins/fastclick/fastclick.js"></script>
+        <!-- Salvattore -->
+        <script src="../bower/salvattore/salvattore.min.js"></script>
+        <!-- AnchorJS -->
+        <script src="../bower/anchor-js/anchor.min.js"></script>
+        <!-- CodeMirror -->
+        <script src="../bower/codemirror/codemirror.js"></script>
+        <script src="../bower/codemirror/sql.js"></script>
+        <!-- AdminLTE App -->
+        <script src="../bower/admin-lte/dist/js/app.min.js"></script>
+        <script src="table.js"></script>
+        <script src="../schemaSpy.js"></script>
+    </body>
+</html>

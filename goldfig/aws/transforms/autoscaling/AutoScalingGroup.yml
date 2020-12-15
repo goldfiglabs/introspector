@@ -49,3 +49,8 @@ resources:
         value: launchConfiguration
       id:
         path: ''
+  - relation: acts-as
+    path: ServiceLinkedRoleARN
+    uri:
+      uri:
+        path: ''

@@ -4,8 +4,7 @@ resources:
   provider_type: Stack
   name: StackName
   uri:
-    stackName: StackName
-    id: StackId
+    uri: StackId
   attributes:
     provider:
     - StackId

@@ -59,13 +59,13 @@ resources:
     - CopyTagsToSnapshot
     - CrossAccountClone
     - DomainMemberships
+    - TagList
     - GlobalWriteForwardingStatus
     - GlobalWriteForwardingRequested
-    - Tags
     custom:
       Metadata:
         Tags:
-          path: Tags
+          path: TagList
           transform: aws_tags
         Region:
           context: region

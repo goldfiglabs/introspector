@@ -1,18 +1,21 @@
 from functools import partial
 from typing import Dict, Optional
 
+from sqlalchemy.orm import Session
+
 from goldfig.error import GFError, GFInternal
-from goldfig.mapper import Uri
+from goldfig.models.resource import Uri, UriFn
 
 
-def _iam_uri_fn(resource_name, **kwargs):
+def _iam_uri_fn(resource_name: str, partition: str, account_id: str, **kwargs):
   if resource_name == 'policy-version':
     return f'{kwargs["policy_arn"]}:{kwargs["version_id"]}'
   elif resource_name in ('RolePolicy', 'UserPolicy', 'GroupPolicy'):
     return f'{kwargs["arn"]}:{kwargs["policy_name"]}'
   elif resource_name == 'PasswordPolicy':
-    account_id = _get_with_parent('account_id', kwargs)
     return f'{account_id}/PasswordPolicy'
+  elif resource_name == 'instance-profile':
+    return f'arn:{partition}:iam::{account_id}:{resource_name}/{kwargs["id"]}'
   raise GFInternal(f'Failed IAM ARN ({resource_name}) {kwargs}')
 
 
@@ -59,7 +62,21 @@ def _get_with_parent(key: str, args: Dict) -> Optional[str]:
   return None
 
 
-def _ec2_arn_fn(resource_name, account, partition, **kwargs) -> str:
+def _security_group_by_name(partition: str, **kwargs):
+  from goldfig.models.resource import Resource, ResourceId
+
+  def _f(db: Session, provider_account_id: int) -> Optional[ResourceId]:
+    name = kwargs['name']
+    return Resource.get_by_attrs(db, provider_account_id, 'SecurityGroup',
+                                 {'GroupName': name})
+
+  return _f
+
+
+def _ec2_arn_fn(resource_name, account: str, partition: str, **kwargs) -> Uri:
+  # handle security group by name
+  if resource_name == 'security-group' and 'id' not in kwargs:
+    return _security_group_by_name(partition, **kwargs)
   id = kwargs['id']
   region = _get_with_parent('region', kwargs)
   if region is None:
@@ -84,17 +101,17 @@ def _logs_uri_fn(partition: str, account_id: str, resource_name: str,
   raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
 
 
-def _cloudformation_uri_fn(partition: str, account_id: str, resource_name: str,
-                           **kwargs) -> str:
-  region = _get_with_parent('region', kwargs)
-  if region is None:
-    raise GFInternal(
-        f'Missing region for cloudformation {resource_name} in {kwargs}')
-  if resource_name == 'stack':
-    stack_name = kwargs['stackName']
-    stack_id = kwargs['id']
-    return f'arn:{partition}:cloudformation:{region}:{account_id}:stack/{stack_name}/{stack_id}'
-  raise GFInternal(f'Unknown cloudformation resource {resource_name}')
+# def _cloudformation_uri_fn(partition: str, account_id: str, resource_name: str,
+#                            **kwargs) -> str:
+#   region = _get_with_parent('region', kwargs)
+#   if region is None:
+#     raise GFInternal(
+#         f'Missing region for cloudformation {resource_name} in {kwargs}')
+#   if resource_name == 'stack':
+#     stack_name = kwargs['stackName']
+#     stack_id = kwargs['id']
+#     return f'arn:{partition}:cloudformation:{region}:{account_id}:stack/{stack_name}/{stack_id}'
+#   raise GFInternal(f'Unknown cloudformation resource {resource_name}')
 
 
 def _config_uri_fn(resource_name: str, **kwargs):
@@ -183,7 +200,7 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
   elif service == 'elb':
     return _elb_arn_fn(resource_name, partition, account_id, **kwargs)
   elif service == 'iam':
-    return _iam_uri_fn(resource_name, **kwargs)
+    return _iam_uri_fn(resource_name, partition, account_id, **kwargs)
   elif service == 'logs':
     return _logs_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'config':
@@ -196,9 +213,9 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
     return _redshift_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'cloudwatch' and resource_name == 'metric':
     return _cloudwatch_metrics(**kwargs)
-  elif service == 'cloudformation':
-    return _cloudformation_uri_fn(partition, account_id, resource_name,
-                                  **kwargs)
+  # elif service == 'cloudformation':
+  #   return _cloudformation_uri_fn(partition, account_id, resource_name,
+  #                                 **kwargs)
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
@@ -212,7 +229,7 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
     return (
         f'arn:{partition}:{service}:{region}:{account_id}:launchConfiguration:',
         f'launchConfigurationName/{id}')
-  if service in ('autoscaling', 'kms', 'route53', 'ssm'):
+  if service in ('autoscaling', 'kms', 'route53', 'ssm', 'eks'):
     return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name}/{id}'
   # TODO: remove .lower() call. make resource_name required, then verify it?
   return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
@@ -220,7 +237,7 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
 
 def get_arn_fn(master_account: str,
                partition='aws',
-               subaccount: Optional[str] = None):
+               subaccount: Optional[str] = None) -> UriFn:
   if subaccount is None:
     account_id = master_account
   elif subaccount != master_account:

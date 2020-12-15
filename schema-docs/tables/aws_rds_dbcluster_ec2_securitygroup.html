@@ -150,7 +150,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_rds_dbcluster.id AS dbcluster_id,&#10;    aws_ec2_securitygroup.id AS securitygroup_id&#10;   FROM ((resource aws_rds_dbcluster&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_rds_dbcluster.id) AND ((rr.relation)::text = &#39;in&#39;::text))))&#10;     JOIN resource aws_ec2_securitygroup ON (((aws_ec2_securitygroup.id = rr.target_id) AND ((aws_ec2_securitygroup.provider_type)::text = &#39;SecurityGroup&#39;::text))));</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT aws_rds_dbcluster.id AS dbcluster_id,&#10;    aws_ec2_securitygroup.id AS securitygroup_id&#10;   FROM ((resource aws_rds_dbcluster&#10;     JOIN resource_relation rr ON (((rr.resource_id = aws_rds_dbcluster.id) AND ((rr.relation)::text = &#39;in&#39;::text))))&#10;     JOIN resource aws_ec2_securitygroup ON (((aws_ec2_securitygroup.id = rr.target_id) AND ((aws_ec2_securitygroup.provider_type)::text = &#39;SecurityGroup&#39;::text) AND ((aws_ec2_securitygroup.service)::text = &#39;ec2&#39;::text))))&#10;  WHERE (((aws_rds_dbcluster.provider_type)::text = &#39;DBCluster&#39;::text) AND ((aws_rds_dbcluster.service)::text = &#39;rds&#39;::text));</textarea>
                             <div style="padding-top: 5px;"><hr></div>
                             <div class="box box-solid">
                                 <div class="box-header with-border">

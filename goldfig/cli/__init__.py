@@ -7,6 +7,7 @@ import click
 from goldfig.cli.account import cmd as account
 from goldfig.cli.cis import cmd as cis
 from goldfig.cli.debug import cmd as debug
+from goldfig.cli.iam import cmd as iam
 from goldfig.cli.init import cmd as init
 from goldfig.cli.internal import cmd as internal
 from goldfig.cli.meta import cmd as meta
@@ -27,6 +28,7 @@ cli.add_command(internal)
 cli.add_command(status)
 cli.add_command(meta)
 cli.add_command(debug)
+cli.add_command(iam)
 cli.add_command(tags)
 cli.add_command(query)
 cli.add_command(cis)

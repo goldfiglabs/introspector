@@ -1,10 +1,25 @@
-from typing import Optional
+from dataclasses import dataclass
+from typing import Callable, Dict, Optional, Tuple, Union
+
+from psycopg2 import sql
+from psycopg2.extras import DictCursor
 from sqlalchemy import Column, Enum, ForeignKey, func, Index, Integer, String, text, UniqueConstraint, CheckConstraint
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from sqlalchemy.dialects.postgresql import JSONB
 
-from goldfig.mapper import Uri
 from goldfig.models.base import Base
+
+
+@dataclass
+class ResourceId:
+  id: int
+  uri: str
+
+
+DbFn = Callable[[Session, int], Optional[ResourceId]]
+LikeExpr = Tuple[str, str]
+Uri = Union[str, LikeExpr, DbFn]
+UriFn = Callable[..., Uri]
 
 
 class ResourceRelation(Base):
@@ -91,14 +106,62 @@ class Resource(Base):
 
   @classmethod
   def get_by_uri(cls, session, uri: Uri,
-                 provider_account_id: int) -> Optional['Resource']:
-    q = session.query(Resource).filter(
-        Resource.provider_account_id == provider_account_id)
-    if isinstance(uri, str):
-      q = q.filter(Resource.uri == uri)
+                 provider_account_id: int) -> Optional[ResourceId]:
+    if callable(uri):
+      return uri(session, provider_account_id)
     else:
-      q = q.filter(Resource.uri.like(f'{uri[0]}%{uri[1]}'))
-    return q.one_or_none()
+      q = session.query(Resource).filter(
+          Resource.provider_account_id == provider_account_id)
+      if isinstance(uri, str):
+        q = q.filter(Resource.uri == uri)
+      else:
+        q = q.filter(Resource.uri.like(f'{uri[0]}%{uri[1]}'))
+      r = q.one_or_none()
+      if r is not None:
+        return ResourceId(id=r.id, uri=r.uri)
+      return None
+
+  @classmethod
+  def get_by_attrs(cls, session: Session, provider_account_id: int,
+                   provider_type: str,
+                   attrs: Dict[str, str]) -> Optional[ResourceId]:
+    conn = session.connection()
+    with conn.connection.cursor(cursor_factory=DictCursor) as cursor:
+      joins = []
+      values = {}
+      for i, (k, v) in enumerate(attrs.items()):
+        value = f'v_{i}'
+        name = f'n_{i}'
+        tbl = f't_{i}'
+        values[value] = sql.Literal(v)
+        values[name] = sql.Literal(k)
+        values[tbl] = sql.Identifier(k)
+        joins.append('''INNER JOIN resource_attribute AS {{{tbl}}}
+              ON {{{tbl}}}.type = 'provider'
+              AND {{{tbl}}}.attr_name = {{{name}}}
+              AND {{{tbl}}}.attr_value #>> '{{{{}}}}' = {{{value}}}
+              AND {{{tbl}}}.resource_id = R.id
+          '''.format(tbl=tbl, name=name, value=value))
+      txt = '\n'.join(joins)
+      values['provider_type'] = sql.Literal(provider_type)
+      values['provider_account_id'] = sql.Literal(provider_account_id)
+      q = f'''
+        SELECT
+          R.id,
+          R.uri
+        FROM
+          resource AS R
+          {txt}
+        WHERE
+          R.provider_type = {{provider_type}}
+          AND R.provider_account_id = {{provider_account_id}}
+        '''
+      query = sql.SQL(q).format(**values)
+      cursor.execute(query)
+      row = cursor.fetchone()
+      if row is None:
+        return None
+      return ResourceId(id=row['id'], uri=row['uri'])
 
 
 class ResourceRaw(Base):

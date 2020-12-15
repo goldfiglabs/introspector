@@ -33,6 +33,7 @@ SELECT
   (maxinstancelifetime.attr_value #>> '{}')::integer AS maxinstancelifetime,
   
     _launchconfiguration_id.target_id AS _launchconfiguration_id,
+    _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -155,6 +156,19 @@ FROM
     WHERE
       _aws_autoscaling_launchconfiguration_relation.relation = 'launches-with'
   ) AS _launchconfiguration_id ON _launchconfiguration_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
+      _aws_iam_role_relation.resource_id AS resource_id,
+      _aws_iam_role.id AS target_id
+    FROM
+      resource_relation AS _aws_iam_role_relation
+      INNER JOIN resource AS _aws_iam_role
+        ON _aws_iam_role_relation.target_id = _aws_iam_role.id
+        AND _aws_iam_role.provider_type = 'Role'
+        AND _aws_iam_role.service = 'iam'
+    WHERE
+      _aws_iam_role_relation.relation = 'acts-as'
+  ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,

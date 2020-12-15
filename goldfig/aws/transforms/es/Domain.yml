@@ -1,0 +1,67 @@
+version: 1
+resources:
+- service: es
+  provider_type: Domain
+  name: DomainName
+  uri:
+    uri: ARN
+  attributes:
+    provider:
+    - DomainId
+    - DomainName
+    - ARN
+    - Created
+    - Deleted
+    - Endpoint
+    - Endpoints
+    - Processing
+    - UpgradeProcessing
+    - ElasticsearchVersion
+    - ElasticsearchClusterConfig
+    - EBSOptions
+    - AccessPolicies
+    - SnapshotOptions
+    - VPCOptions
+    - CognitoOptions
+    - EncryptionAtRestOptions
+    - NodeToNodeEncryptionOptions
+    - AdvancedOptions
+    - LogPublishingOptions
+    - ServiceSoftwareOptions
+    - DomainEndpointOptions
+    - AdvancedSecurityOptions
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: domain
+  relations:
+  - relation: in
+    path: VPCOptions.VPCId
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: vpc
+      id:
+        path: ''
+  - relation: in
+    path: VPCOptions.SubnetIds
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: subnet
+      id:
+        path: ''
+  - relation: in
+    path: VPCOptions.SecurityGroupIds
+    uri:
+      service:
+        value: ec2
+      resource_name:
+        value: security-group
+      id:
+        path: ''

@@ -9,6 +9,7 @@ import yaml
 import jmespath
 
 from goldfig.error import GFError, GFInternal
+from goldfig.models.resource import Uri, UriFn
 
 _log = logging.getLogger(__name__)
 
@@ -16,10 +17,6 @@ ValueTransform = Callable[[Any], Any]
 ValueTransforms = Dict[str, ValueTransform]
 
 Context = Dict[str, str]
-
-LikeExpr = Tuple[str, str]
-Uri = Union[str, LikeExpr]
-UriFn = Callable[..., Uri]
 
 
 @dataclass

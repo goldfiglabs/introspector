@@ -24,6 +24,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   attributes.attr_value::jsonb AS attributes,
   
+    _ec2_securitygroup_id.target_id AS _ec2_securitygroup_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -103,6 +104,19 @@ FROM
     AND lower(attributes.attr_name) = 'attributes'
   LEFT JOIN (
     SELECT
+      _aws_ec2_securitygroup_relation.resource_id AS resource_id,
+      _aws_ec2_securitygroup.id AS target_id
+    FROM
+      resource_relation AS _aws_ec2_securitygroup_relation
+      INNER JOIN resource AS _aws_ec2_securitygroup
+        ON _aws_ec2_securitygroup_relation.target_id = _aws_ec2_securitygroup.id
+        AND _aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+        AND _aws_ec2_securitygroup.service = 'ec2'
+    WHERE
+      _aws_ec2_securitygroup_relation.relation = 'sends-from'
+  ) AS _ec2_securitygroup_id ON _ec2_securitygroup_id.resource_id = R.id
+  LEFT JOIN (
+    SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
@@ -124,3 +138,26 @@ REFRESH MATERIALIZED VIEW aws_elb_loadbalancer;
 
 COMMENT ON MATERIALIZED VIEW aws_elb_loadbalancer IS 'elb LoadBalancer resources and their associated attributes.';
 
+
+
+DROP MATERIALIZED VIEW IF EXISTS aws_elb_loadbalancer_ec2_securitygroup CASCADE;
+
+CREATE MATERIALIZED VIEW aws_elb_loadbalancer_ec2_securitygroup AS
+SELECT
+  aws_elb_loadbalancer.id AS loadbalancer_id,
+  aws_ec2_securitygroup.id AS securitygroup_id
+FROM
+  resource AS aws_elb_loadbalancer
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_elb_loadbalancer.id
+    AND RR.relation = 'in'
+  INNER JOIN resource AS aws_ec2_securitygroup
+    ON aws_ec2_securitygroup.id = RR.target_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+  WHERE
+    aws_elb_loadbalancer.provider_type = 'LoadBalancer'
+    AND aws_elb_loadbalancer.service = 'elb'
+WITH NO DATA;
+
+REFRESH MATERIALIZED VIEW aws_elb_loadbalancer_ec2_securitygroup;

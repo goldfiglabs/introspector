@@ -46,3 +46,12 @@ resources:
         value: security-group
       id:
         path: ''
+  - relation: acts-as
+    path: IamInstanceProfile
+    uri:
+      id:
+        path: ''
+      service:
+        value: iam
+      resource_name:
+        value: instance-profile

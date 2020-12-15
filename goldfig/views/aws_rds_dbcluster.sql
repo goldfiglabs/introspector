@@ -57,9 +57,9 @@ SELECT
   (copytagstosnapshot.attr_value #>> '{}')::boolean AS copytagstosnapshot,
   (crossaccountclone.attr_value #>> '{}')::boolean AS crossaccountclone,
   domainmemberships.attr_value::jsonb AS domainmemberships,
+  taglist.attr_value::jsonb AS taglist,
   globalwriteforwardingstatus.attr_value #>> '{}' AS globalwriteforwardingstatus,
   (globalwriteforwardingrequested.attr_value #>> '{}')::boolean AS globalwriteforwardingrequested,
-  tags.attr_value::jsonb AS tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -274,6 +274,10 @@ FROM
     ON domainmemberships.resource_id = R.id
     AND domainmemberships.type = 'provider'
     AND lower(domainmemberships.attr_name) = 'domainmemberships'
+  LEFT JOIN resource_attribute AS taglist
+    ON taglist.resource_id = R.id
+    AND taglist.type = 'provider'
+    AND lower(taglist.attr_name) = 'taglist'
   LEFT JOIN resource_attribute AS globalwriteforwardingstatus
     ON globalwriteforwardingstatus.resource_id = R.id
     AND globalwriteforwardingstatus.type = 'provider'
@@ -282,10 +286,6 @@ FROM
     ON globalwriteforwardingrequested.resource_id = R.id
     AND globalwriteforwardingrequested.type = 'provider'
     AND lower(globalwriteforwardingrequested.attr_name) = 'globalwriteforwardingrequested'
-  LEFT JOIN resource_attribute AS tags
-    ON tags.resource_id = R.id
-    AND tags.type = 'provider'
-    AND lower(tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -311,20 +311,24 @@ COMMENT ON MATERIALIZED VIEW aws_rds_dbcluster IS 'rds DBCluster resources and t
 
 
 
-DROP MATERIALIZED VIEW IF EXISTS aws_rds_DBCluster_ec2_securitygroup CASCADE;
+DROP MATERIALIZED VIEW IF EXISTS aws_rds_dbcluster_ec2_securitygroup CASCADE;
 
-CREATE MATERIALIZED VIEW aws_rds_DBCluster_ec2_securitygroup AS
+CREATE MATERIALIZED VIEW aws_rds_dbcluster_ec2_securitygroup AS
 SELECT
-  aws_rds_DBCluster.id AS DBCluster_id,
+  aws_rds_dbcluster.id AS dbcluster_id,
   aws_ec2_securitygroup.id AS securitygroup_id
 FROM
-  resource AS aws_rds_DBCluster
+  resource AS aws_rds_dbcluster
   INNER JOIN resource_relation AS RR
-    ON RR.resource_id = aws_rds_DBCluster.id
+    ON RR.resource_id = aws_rds_dbcluster.id
     AND RR.relation = 'in'
   INNER JOIN resource AS aws_ec2_securitygroup
     ON aws_ec2_securitygroup.id = RR.target_id
     AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+  WHERE
+    aws_rds_dbcluster.provider_type = 'DBCluster'
+    AND aws_rds_dbcluster.service = 'rds'
 WITH NO DATA;
 
-REFRESH MATERIALIZED VIEW aws_rds_DBCluster_ec2_securitygroup;
+REFRESH MATERIALIZED VIEW aws_rds_dbcluster_ec2_securitygroup;

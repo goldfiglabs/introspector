@@ -41,7 +41,7 @@ def _import_elb_region(proxy: ServiceProxy, region: str):
     elbs = result[1]
     for elb in elbs.get('LoadBalancerDescriptions', []):
       if not _is_v2(elb['LoadBalancerName']):
-        yield 'LoadBalander', import_elb(proxy, elb)
+        yield 'LoadBalancer', import_elb(proxy, elb)
 
 
 SVC = RegionalService('elb', _import_elb_region)
