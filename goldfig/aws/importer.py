@@ -68,10 +68,12 @@ def run_parallel_session(region_cache: RegionCache,
           fn = svc.pool_fn()
           for region in region_cache.regions_for_service(svc.name):
             _log.info(f'region {region}')
-            results += fn(pool, import_job.id, region, ps, accounts)
+            results += fn(pool, import_job.id, import_job.provider_account_id,
+                          region, ps, accounts)
         else:
           fn = svc.pool_fn()
-          results += fn(pool, import_job.id, ps, accounts)
+          results += fn(pool, import_job.id, import_job.provider_account_id,
+                        ps, accounts)
       else:
         _log.debug(f'skipped {svc.name}')
 

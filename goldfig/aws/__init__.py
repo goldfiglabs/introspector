@@ -8,7 +8,7 @@ from dateutil.tz import tzutc
 from sqlalchemy.orm import Session
 
 from goldfig.aws.fetch import Proxy
-from goldfig.error import GFInternal
+from goldfig.error import GFInternal, GFError
 from goldfig.models import ImportJob, ProviderAccount, ProviderCredential
 
 _log = logging.getLogger(__name__)
@@ -30,8 +30,8 @@ def get_boto_session() -> boto.Session:
   return session
 
 
-def create_provider_and_credential(db: Session, proxy: Proxy,
-                                   identity) -> ProviderAccount:
+def _create_provider_and_credential(db: Session, proxy: Proxy,
+                                    identity) -> ProviderAccount:
   account_id = identity['Account']
   org = proxy.service('organizations')
   try:
@@ -73,20 +73,43 @@ def walk_graph(org, graph) -> Generator[Tuple[str, str, Dict], None, None]:
         yield f'{entry_path}/{account["Id"]}', 'Account', account
 
 
-def load_boto_for_provider(db: Session,
-                           provider: ProviderAccount) -> boto.Session:
-  accounts = ProviderCredential.for_provider(db, provider.id)
-  if len(accounts) != 1:
-    raise NotImplementedError(
-        'Currently only one AWS account per org is supported')
-  account = accounts[0]
-  return load_boto_session(account)
+ConfirmAcct = Callable[[Dict], bool]
 
 
-def build_aws_import_job(session: boto.Session) -> Dict:
+def build_aws_import_job(db: Session, session: boto.Session,
+                         confirm: ConfirmAcct) -> ImportJob:
   proxy = Proxy.build(session)
   sts = session.create_client('sts')
   identity = sts.get_caller_identity()
+  provider = _get_or_create_provider(db, proxy, identity, confirm)
+  desc = _build_import_job_desc(proxy, identity)
+  return ImportJob.create(provider, desc)
+
+
+def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
+                            confirm: ConfirmAcct) -> ProviderAccount:
+  org = proxy.service('organizations')
+  try:
+    org_resp = org.get('describe_organization')['Organization']
+    org_id = org_resp['Id']
+  except botocore.exceptions.ClientError as e:
+    code = e.response.get('Error', {}).get('Code')
+    if code == 'AWSOrganizationsNotInUseException':
+      org_id = f'OrgDummy:{identity["Account"]}'
+    else:
+      raise
+  account = db.query(ProviderAccount).filter(
+      ProviderAccount.provider == 'aws',
+      ProviderAccount.name == org_id).one_or_none()
+  if account is not None:
+    return account
+  add = confirm(identity)
+  if not add:
+    raise GFError('User cancelled')
+  return _create_provider_and_credential(db, proxy, identity)
+
+
+def _build_import_job_desc(proxy: Proxy, identity: Dict) -> Dict:
   account_id = identity['Account']
   org, graph = _build_org_graph(proxy, account_id)
   return {

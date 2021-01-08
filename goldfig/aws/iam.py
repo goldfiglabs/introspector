@@ -1,16 +1,16 @@
 import csv
-from goldfig import ImportWriter
 from io import StringIO
 import logging
 import time
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from botocore.exceptions import ClientError, SSLError
 from sqlalchemy.orm import Session
 
+from goldfig import ImportWriter
+from goldfig.mapper import MappedAttribute, MappedResource
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.aws.svc import GlobalService, GlobalResourceSpec
-
 from goldfig.delta.resource import apply_mapped_attrs
 from goldfig.error import GFError, GFInternal
 from goldfig.models import ImportJob
@@ -87,7 +87,8 @@ def _import_credential_report(proxy: ServiceProxy):
   while attempts < 20 and report is None:
     try:
       report = proxy.get('get_credential_report')
-    except:
+    except Exception as e:
+      _log.error('credenetial report fetch error', exc_info=e)
       attempts += 1
       time.sleep(0.1)
   if report is None:
@@ -96,7 +97,6 @@ def _import_credential_report(proxy: ServiceProxy):
   reader = csv.DictReader(StringIO(decoded))
   for row in reader:
     processed = _post_process_report_row(row)
-    #writer(ps, 'CredentialReport', processed)
     yield 'CredentialReport', processed
 
 
@@ -252,25 +252,27 @@ def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,
         break
 
   arn = f'arn:aws:iam::{account_id}:root'
-  mapped = {
-      'name': '<root account>',
-      'uri': arn,
-      'provider_type': 'RootAccount',
-      'raw': {
+  mapped = MappedResource(
+      name='<root account>',
+      uri=arn,
+      provider_type='RootAccount',
+      raw={
           'Arn': arn,
           'has_virtual_mfa': has_virtual_mfa
       },
-      'service': 'iam'
-  }
-  attrs = [{
-      'type': 'provider',
-      'name': 'Arn',
-      'value': arn
-  }, {
-      'type': 'provider',
-      'name': 'has_virtual_mfa',
-      'value': has_virtual_mfa
-  }]
+      service='iam',
+      category=None
+  )
+  attrs: List[MappedAttribute] = [
+    MappedAttribute(
+      type='provider',
+      name='Arn',
+      value=arn
+  ), MappedAttribute(
+      type='provider',
+      name='has_virtual_mfa',
+      value=has_virtual_mfa
+  )]
   apply_mapped_attrs(db,
                      import_job,
                      path,

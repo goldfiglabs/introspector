@@ -37,6 +37,7 @@ class _AccountProxies:
 
   def credentials_for_arn(self, arn: str) -> ProviderCredential:
     account_id = arn.split(':')[-1].split('/')[-1]
+    print(account_id, arn, self._credentials)
     return next(cred for cred in self._credentials if cred.scope == account_id)
 
 
@@ -129,12 +130,13 @@ def _import_graph(
 
 def _async_proxy(import_job_id: int, svc_name: str):
   db = import_session()
+  import_job = db.query(ImportJob).get(import_job_id)
   writer = db_import_writer(db,
                             import_job_id,
+                            import_job.provider_account_id,
                             svc_name,
                             phase=0,
                             source='base')
-  import_job = db.query(ImportJob).get(import_job_id)
   accounts = list(map(lambda t: t[1], account_paths_for_import(db,
                                                                import_job)))
   _import_graph(import_job, writer, accounts)
@@ -148,7 +150,7 @@ class OrgImport(GlobalService):
   def _make_global_import_with_pool(
       self, _: List[GlobalResourceSpec]) -> GlobalPoolImportFn:
     def import_with_pool(
-        pool: f.ProcessPoolExecutor, import_job_id: int, _: PathStack,
+        pool: f.ProcessPoolExecutor, import_job_id: int, provider_account_id: int, _: PathStack,
         __: List[Tuple[str, ProviderCredential]]) -> List[f.Future]:
       future = pool.submit(_async_proxy,
                            import_job_id=import_job_id,
@@ -161,7 +163,12 @@ class OrgImport(GlobalService):
       self, _: List[GlobalResourceSpec]) -> GlobalDbImportFn:
     def import_to_db(db: Session, import_job_id: int):
       job: ImportJob = db.query(ImportJob).get(import_job_id)
-      writer = db_import_writer(db, job.id, self.name, phase=0, source='base')
+      writer = db_import_writer(db,
+                                job.id,
+                                job.provider_account_id,
+                                self.name,
+                                phase=0,
+                                source='base')
       accounts = list(map(lambda t: t[1], account_paths_for_import(db, job)))
       _import_graph(job, writer, accounts)
 

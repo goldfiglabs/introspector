@@ -1,10 +1,8 @@
-from typing import List, Optional
+from typing import Optional
 
 import click
-from sqlalchemy.orm import Session
 
-from goldfig.bootstrap_db import readonly_session
-from goldfig.error import GFError
+from goldfig.cli.provider import provider_scoped_db
 from goldfig.models import ProviderAccount
 from goldfig.tools.tags import find_untagged, tag_report
 
@@ -12,25 +10,6 @@ from goldfig.tools.tags import find_untagged, tag_report
 @click.group('tags', help='Tools for working with tagged resources')
 def cmd():
   pass
-
-
-def _provider_for_spec(db: Session,
-                       provider_spec: Optional[str]) -> List[ProviderAccount]:
-  if provider_spec is None:
-    # Get single provider
-    providers = db.query(ProviderAccount).all()
-  else:
-    # Get by provider type
-    if provider_spec in ('gcp', 'aws'):
-      providers = list(
-          db.query(ProviderAccount).filter(
-              ProviderAccount.provider == provider_spec))
-    else:
-      # Get by account id?
-      providers = list(
-          db.query(ProviderAccount).filter(
-              ProviderAccount.name == provider_spec))
-  return providers
 
 
 @cmd.command('find-untagged', help='A tool to find resources missing tags')
@@ -44,18 +23,15 @@ def _provider_for_spec(db: Session,
     'Either a provider type (gcp, aws) or account id to restrict the resources scanned. Default is to scan all accounts'
 )
 def find_untagged_cmd(provider_spec: Optional[str]):
-  db = readonly_session()
-  providers = _provider_for_spec(db, provider_spec)
-  if len(providers) == 0:
-    raise GFError(f'No providers found matching "{provider_spec}"')
-  for provider in providers:
-    print(
-        f'Untagged resources for {provider.provider} account {provider.name}')
-    uris = find_untagged(db, provider.id)
-    if len(uris) > 0:
-      print('\t' + '\n\t'.join(uris))
-    else:
-      print('\tNONE')
+  scoped_db = provider_scoped_db(provider_spec)
+  provider = scoped_db.db.query(ProviderAccount).get(
+      scoped_db.provider_account_id)
+  print(f'Untagged resources for {provider.provider} account {provider.name}')
+  uris = find_untagged(scoped_db.db, provider.id)
+  if len(uris) > 0:
+    print('\t' + '\n\t'.join(uris))
+  else:
+    print('\tNONE')
 
 
 def _sanitize(s: str) -> str:
@@ -77,16 +53,14 @@ def _sanitize(s: str) -> str:
     'Either a provider type (gcp, aws) or account id to restrict the resources scanned. Default is to scan all accounts'
 )
 def report_tags_cmd(provider_spec: Optional[str]):
-  db = readonly_session()
-  providers = _provider_for_spec(db, provider_spec)
-  if len(providers) == 0:
-    raise GFError(f'No providers found matching "{provider_spec}"')
-  for provider in providers:
-    report = tag_report(db, provider.id)
-    print(f'Tags in {provider.provider} account {provider.name}')
-    if len(report) == 0:
-      print('NONE')
-    else:
-      for key, values in report.items():
-        sanitized = [_sanitize(s) for s in values]
-        print(f'({len(sanitized)}) ' + key.ljust(30) + ',  '.join(sanitized))
+  scoped_db = provider_scoped_db(provider_spec)
+  provider = scoped_db.db.query(ProviderAccount).get(
+      scoped_db.provider_account_id)
+  report = tag_report(scoped_db.db, provider.id)
+  print(f'Tags in {provider.provider} account {provider.name}')
+  if len(report) == 0:
+    print('NONE')
+  else:
+    for key, values in report.items():
+      sanitized = [_sanitize(s) for s in values]
+      print(f'({len(sanitized)}) ' + key.ljust(30) + ',  '.join(sanitized))

@@ -29,6 +29,7 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
           MappedURI(uri=partial.target_uri,
                     source=source,
                     import_job_id=import_job.id,
+                    provider_account_id=import_job.provider_account_id,
                     raw_import_id=raw_import.id))
       target: Optional[Resource] = db.query(Resource).filter(
           Resource.uri == partial.target_uri, Resource.provider_account_id ==
@@ -39,9 +40,11 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
       resource_attrs = [
           ResourceAttribute(resource_id=target.id,
                             source=source,
-                            attr_type=attr['type'],
-                            name=attr['name'],
-                            value=attr['value']) for attr in partial.attrs
+                            attr_type=attr.type,
+                            name=attr.name,
+                            value=attr.value,
+                            provider_account_id=import_job.provider_account_id)
+          for attr in partial.attrs
       ]
       apply_partial(db, import_job, source, partial.target_uri, target.id,
                     partial.raw, resource_attrs)
@@ -59,7 +62,11 @@ def apply_partial(db: Session, import_job: ImportJob, source: str,
   if previous is None:
     # first import for this partial
     _log.info(f'Partial from {source} added to {target_uri}')
-    db.add(ResourceRaw(resource_id=target_id, source=source, raw=raw))
+    db.add(
+        ResourceRaw(resource_id=target_id,
+                    source=source,
+                    raw=raw,
+                    provider_account_id=import_job.provider_account_id))
     for attr in attrs:
       db.add(attr)
     db.flush()  # need attribute ids below
@@ -69,21 +76,25 @@ def apply_partial(db: Session, import_job: ImportJob, source: str,
                           change_details={
                               'source_added': source,
                               'raw': raw
-                          })
+                          },
+                          provider_account_id=import_job.provider_account_id)
     db.add(delta)
     for attr in attrs:
-      attr_delta = ResourceAttributeDelta(resource_delta=delta,
-                                          resource_attribute_id=attr.id,
-                                          change_type='add',
-                                          change_details={
-                                              'type': attr.attr_type,
-                                              'name': attr.name,
-                                              'value': attr.value
-                                          })
+      attr_delta = ResourceAttributeDelta(
+          resource_delta=delta,
+          resource_attribute_id=attr.id,
+          change_type='add',
+          change_details={
+              'type': attr.attr_type,
+              'name': attr.name,
+              'value': attr.value
+          },
+          provider_account_id=import_job.provider_account_id)
       db.add(attr_delta)
   else:
-    if diff_attrs(db, target_id, source, import_job.id, target_uri,
-                  previous.raw, raw, attrs):
+    if diff_attrs(db, target_id, source, import_job.id,
+                  import_job.provider_account_id, target_uri, previous.raw,
+                  raw, attrs):
       previous.raw = raw
       db.add(previous)
 
@@ -154,7 +165,8 @@ def map_partial_deletes(db: Session,
     uri = delete['uri']
     resource_id = delete['id']
     raw_id = delete['raw_id']
-    delta = ResourceDelta(import_job=import_job,
+    delta = ResourceDelta(provider_account_id=import_job.provider_account_id,
+                          import_job=import_job,
                           resource_id=resource_id,
                           change_type='update',
                           change_details={'source_deleted': source})
@@ -164,14 +176,16 @@ def map_partial_deletes(db: Session,
         ResourceAttribute).filter(ResourceAttribute.resource_id == resource_id,
                                   ResourceAttribute.source == source)
     for attr in existing_attrs:
-      attr_delta = ResourceAttributeDelta(resource_delta=delta,
-                                          resource_attribute_id=attr.id,
-                                          change_type='delete',
-                                          change_details={
-                                              'type': attr.attr_type,
-                                              'name': attr.name,
-                                              'value': attr.value
-                                          })
+      attr_delta = ResourceAttributeDelta(
+          provider_account_id=import_job.provider_account_id,
+          resource_delta=delta,
+          resource_attribute_id=attr.id,
+          change_type='delete',
+          change_details={
+              'type': attr.attr_type,
+              'name': attr.name,
+              'value': attr.value
+          })
       db.add(attr_delta)
       db.delete(attr)
     _log.info(f'Delete source {source} for {uri}')

@@ -12,7 +12,7 @@ pipenv lock -r > requirements.txt
 
 GOLDFIG_DOCKER_REPO=${DOCKER_REPO:-goldfig}
 IMAGE="${GOLDFIG_DOCKER_REPO}/${PACKAGE}"
-docker build -t ${IMAGE} .
+DOCKER_BUILDKIT=1 docker build -t ${IMAGE} .
 
 echo "Building launcher"
 launcher/build.sh

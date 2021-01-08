@@ -6,3 +6,4 @@ __pycache__/
 /pg_data
 /gf
 dist/
+dbmate

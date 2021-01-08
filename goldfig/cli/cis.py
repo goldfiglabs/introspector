@@ -3,8 +3,8 @@ from typing import Optional
 
 import click
 
-from goldfig.bootstrap_db import readonly_session
-from goldfig.tools.cis import ALL_BENCHMARKS, provider_for_spec
+from goldfig.cli.provider import provider_scoped_db
+from goldfig.tools.cis import ALL_BENCHMARKS
 import goldfig.tools.cis.aws_foundation as aws_foundation
 
 
@@ -34,18 +34,18 @@ def cmd():
     'A comma-separated list of key-value pairs specifying the architecture tier tags for the benchmark. Example --tags role=web,role=app'
 )
 def three_tier(provider_spec: Optional[str], tag_spec: str):
-  db = readonly_session()
+  scoped_db = provider_scoped_db(provider_spec)
   tags = []
   for pair in tag_spec.split(','):
     k, v = pair.split('=')
     tags.append((k, v))
   # TODO: make quick helper class for TierTag
-  provider = provider_for_spec(db, provider_spec)
   for benchmark in ALL_BENCHMARKS:
     b = benchmark()
     print('\n', b)
     for tag in tags:
-      results = b.exec_explain(db, provider.id, tag)
+      results = b.exec_explain(scoped_db.db, scoped_db.provider_account_id,
+                               tag)
       print(results)
 
 
@@ -60,6 +60,5 @@ def three_tier(provider_spec: Optional[str], tag_spec: str):
     'An optional identifier for which account to benchmark. Required if more than one account has been imported'
 )
 def foundation(provider_spec: Optional[str]):
-  db = readonly_session()
-  provider = provider_for_spec(db, provider_spec)
-  aws_foundation.run(db, provider)
+  scoped_db = provider_scoped_db(provider_spec)
+  aws_foundation.run(scoped_db.db, scoped_db.provider_account_id)

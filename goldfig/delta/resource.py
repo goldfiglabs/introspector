@@ -9,7 +9,7 @@ from goldfig.delta import json_diff
 from goldfig.delta.attrs import diff_attrs
 from goldfig.delta.types import Raw
 from goldfig.error import GFInternal
-from goldfig.mapper import Mapper
+from goldfig.mapper import MappedAttribute, MappedResource, Mapper
 from goldfig.models import (ImportJob, MappedURI, RawImport, Resource,
                             ResourceAttribute, ResourceDelta,
                             ResourceAttributeDelta, ResourceRelation,
@@ -63,19 +63,24 @@ def map_resource_relations(db: Session,
         )
         continue
       target_uri = target.uri
-      relation = ResourceRelation(resource_id=parent.id,
-                                  target_id=target.id,
-                                  relation=relation_type,
-                                  raw={
-                                      'resource': parent_uri,
-                                      'target': target_uri,
-                                      'relation': relation_type,
-                                      'attributes': attrs
-                                  })
+      relation = ResourceRelation(
+          resource_id=parent.id,
+          target_id=target.id,
+          relation=relation_type,
+          raw={
+              'resource': parent_uri,
+              'target': target_uri,
+              'relation': relation_type,
+              'attributes': attrs
+          },
+          provider_account_id=import_job.provider_account_id)
       relation_attrs = [
-          ResourceRelationAttribute(relation=relation,
-                                    name=attr['name'],
-                                    value=attr['value']) for attr in attrs
+          ResourceRelationAttribute(
+              relation=relation,
+              name=attr['name'],
+              value=attr['value'],
+              provider_account_id=import_job.provider_account_id)
+          for attr in attrs
       ]
       found = _apply_relation(db, import_job, relation, parent_uri, target_uri,
                               relation_attrs)
@@ -107,18 +112,21 @@ def map_relation_deletes(db: Session,
 def _delete_relation(db: Session, import_job: ImportJob,
                      deleted: ResourceRelation, parent_uri: str,
                      target_uri: str):
-  delta = ResourceRelationDelta(import_job=import_job,
-                                resource_relation_id=deleted.id,
-                                change_type='delete',
-                                change_details={
-                                    'relation': deleted.relation,
-                                    'resource': parent_uri,
-                                    'target': target_uri,
-                                    'raw': deleted.raw
-                                })
+  delta = ResourceRelationDelta(
+      import_job=import_job,
+      provider_account_id=import_job.provider_account_id,
+      resource_relation_id=deleted.id,
+      change_type='delete',
+      change_details={
+          'relation': deleted.relation,
+          'resource': parent_uri,
+          'target': target_uri,
+          'raw': deleted.raw
+      })
   db.add(delta)
   for existing_attr in deleted.attributes:
     attr_delta = ResourceRelationAttributeDelta(
+        provider_account_id=import_job.provider_account_id,
         resource_relation_delta=delta,
         resource_relation_attribute_id=existing_attr.id,
         change_type='delete',
@@ -151,25 +159,28 @@ def _apply_relation(db: Session, import_job: ImportJob,
       db.add(attr)
     # need the id of relation we're adding
     db.flush()
-    delta = ResourceRelationDelta(import_job=import_job,
-                                  resource_relation_id=relation.id,
-                                  change_type='add',
-                                  change_details={
-                                      'relation':
-                                      relation.relation,
-                                      'resource':
-                                      parent_uri,
-                                      'target':
-                                      target_uri,
-                                      'attributes': [{
-                                          'name': attr.name,
-                                          'value': attr.value
-                                      } for attr in relation_attrs]
-                                  })
+    delta = ResourceRelationDelta(
+        import_job=import_job,
+        provider_account_id=import_job.provider_account_id,
+        resource_relation_id=relation.id,
+        change_type='add',
+        change_details={
+            'relation':
+            relation.relation,
+            'resource':
+            parent_uri,
+            'target':
+            target_uri,
+            'attributes': [{
+                'name': attr.name,
+                'value': attr.value
+            } for attr in relation_attrs]
+        })
 
     db.add(delta)
     for attr in relation_attrs:
       attr_delta = ResourceRelationAttributeDelta(
+          provider_account_id=import_job.provider_account_id,
           resource_relation_delta=delta,
           resource_relation_attribute_id=attr.id,
           change_type='add',
@@ -187,6 +198,7 @@ def _apply_relation(db: Session, import_job: ImportJob,
       _log.info('relation delta')
       delta = ResourceRelationDelta(
           import_job=import_job,
+          provider_account_id=import_job.provider_account_id,
           resource_relation_id=previous.id,
           change_type='update',
           change_details={
@@ -210,6 +222,7 @@ def _apply_relation(db: Session, import_job: ImportJob,
         if existing_attr is None:
           _log.info(f'new attr? {attr}')
           attr_delta = ResourceRelationAttributeDelta(
+              provider_account_id=import_job.provider_account_id,
               resource_relation_delta=delta,
               resource_relation_attribute=attr,
               change_type='add',
@@ -227,6 +240,7 @@ def _apply_relation(db: Session, import_job: ImportJob,
             db.add(existing_attr)
             db.flush()
             attr_delta = ResourceRelationAttributeDelta(
+                provider_account_id=import_job.provider_account_id,
                 resource_relation_delta=delta,
                 resource_relation_attribute_id=existing_attr.id,
                 change_type='update',
@@ -245,6 +259,7 @@ def _apply_relation(db: Session, import_job: ImportJob,
       for existing_attr in existing_attributes:
         db.delete(existing_attr)
         attr_delta = ResourceRelationAttributeDelta(
+            provider_account_id=import_job.provider_account_id,
             resource_relation_delta=delta,
             resource_relation_attribute_id=existing_attr.id,
             change_type='delete',
@@ -299,17 +314,15 @@ def map_resource_prefix(db: Session,
 
 
 def apply_mapped_attrs(db: Session, import_job: ImportJob, path: str,
-                       mapped: Dict, attrs: List[Dict], source: str,
-                       raw_import_id: Optional[int]):
-  resource = Resource(
-      provider_account_id=import_job.provider_account_id,
-      name=mapped['name'],
-      path=path,
-      category=mapped.get('category'),
-      provider_type=mapped.get('provider_type'),
-      # raw=mapped['raw'],
-      uri=mapped['uri'],
-      service=mapped.get('service'))
+                       mapped: MappedResource, attrs: List[MappedAttribute],
+                       source: str, raw_import_id: Optional[int]):
+  resource = Resource(provider_account_id=import_job.provider_account_id,
+                      name=mapped.name,
+                      path=path,
+                      category=mapped.category,
+                      provider_type=mapped.provider_type,
+                      uri=mapped.uri,
+                      service=mapped.service)
   # TODO: possibly a big perf hit?
   # Consider using a different API
   if resource.uri is None:
@@ -318,8 +331,9 @@ def apply_mapped_attrs(db: Session, import_job: ImportJob, path: str,
       MappedURI(uri=resource.uri,
                 source=source,
                 import_job_id=import_job.id,
+                provider_account_id=import_job.provider_account_id,
                 raw_import_id=raw_import_id))
-  apply_resource(db, import_job, source, resource, mapped['raw'], attrs)
+  apply_resource(db, import_job, source, resource, mapped.raw, attrs)
 
 
 def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
@@ -341,7 +355,8 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
     raws: List[ResourceRaw] = db.query(ResourceRaw).filter(
         ResourceRaw.resource_id == deleted.id).all()
     raw = {raw.source: raw.raw for raw in raws}
-    delta = ResourceDelta(import_job=import_job,
+    delta = ResourceDelta(provider_account_id=import_job.provider_account_id,
+                          import_job=import_job,
                           resource_id=deleted.id,
                           change_type='delete',
                           change_details={
@@ -353,6 +368,7 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
     db.add(delta)
     for existing_attr in deleted.attributes:
       attr_delta = ResourceAttributeDelta(
+          provider_account_id=import_job.provider_account_id,
           resource_delta=delta,
           # Should we include this?
           resource_attribute_id=existing_attr.id,
@@ -385,7 +401,7 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
 
 
 def apply_resource(db: Session, import_job: ImportJob, source: str,
-                   resource: Resource, raw: Raw, attrs: List[Dict]):
+                   resource: Resource, raw: Raw, attrs: List[MappedAttribute]):
   previous: Optional[ResourceRaw] = db.query(ResourceRaw).filter(
       ResourceRaw.source == source).join(
           Resource, Resource.id == ResourceRaw.resource_id,
@@ -396,36 +412,47 @@ def apply_resource(db: Session, import_job: ImportJob, source: str,
     _log.info(f'path %s, uri %s', resource.path, resource.uri)
     db.add(resource)
     db.flush()
-    db.add(ResourceRaw(resource_id=resource.id, source=source, raw=raw))
+    db.add(
+        ResourceRaw(resource_id=resource.id,
+                    source=source,
+                    raw=raw,
+                    provider_account_id=import_job.provider_account_id))
     delta = ResourceDelta(import_job=import_job,
                           resource_id=resource.id,
                           change_type='add',
-                          change_details=raw)
+                          change_details=raw,
+                          provider_account_id=import_job.provider_account_id)
     db.add(delta)
     for attr in attrs:
 
-      resource_attr = ResourceAttribute(resource=resource,
-                                        source=source,
-                                        attr_type=attr['type'],
-                                        name=attr['name'],
-                                        value=attr['value'])
+      resource_attr = ResourceAttribute(
+          resource=resource,
+          source=source,
+          attr_type=attr.type,
+          name=attr.name,
+          value=attr.value,
+          provider_account_id=import_job.provider_account_id)
       db.add(resource_attr)
       db.flush()
       attr_delta = ResourceAttributeDelta(
           resource_delta=delta,
           resource_attribute_id=resource_attr.id,
           change_type='add',
-          change_details=attr)
+          change_details=attr.as_dict(),
+          provider_account_id=import_job.provider_account_id)
       db.add(attr_delta)
   else:
     resource_attrs = [
         ResourceAttribute(resource_id=previous.resource_id,
                           source=source,
-                          attr_type=attr['type'],
-                          name=attr['name'],
-                          value=attr['value']) for attr in attrs
+                          attr_type=attr.type,
+                          name=attr.name,
+                          value=attr.value,
+                          provider_account_id=import_job.provider_account_id)
+        for attr in attrs
     ]
     if diff_attrs(db, previous.resource_id, source, import_job.id,
-                  resource.uri, previous.raw, raw, resource_attrs):
+                  import_job.provider_account_id, resource.uri, previous.raw,
+                  raw, resource_attrs):
       previous.raw = raw
       db.add(previous)

@@ -6,8 +6,6 @@ from typing import Any, Dict, List, Optional
 from colr import color
 from sqlalchemy.orm import Session
 
-from goldfig.models.provider_account import ProviderAccount
-
 
 class Status(Enum):
   INFO = auto()
@@ -552,32 +550,32 @@ class NoPoliciesAttachedToUsers(Check):
     return '''
       WITH attached_policies AS (
         SELECT
-          U.resource_id,
+          U._id,
           ARRAY_AGG(Policy.uri) AS policies
         FROM
           aws_iam_user AS U
           LEFT JOIN resource_relation AS Targeted
-            ON Targeted.target_id = U.resource_id
+            ON Targeted.target_id = U._id
             AND Targeted.relation = 'manages'
           INNER JOIN aws_iam_policy AS Policy
-            ON Targeted.resource_id = Policy.resource_id
+            ON Targeted.resource_id = Policy._id
         WHERE
           U.provider_account_id = :provider_account_id
-        GROUP BY U.resource_id
+        GROUP BY U._id
       ), inline_policies AS (
         SELECT
-          U.resource_id,
+          U._id,
           ARRAY_AGG(Policy.uri) AS policies
         FROM
           aws_iam_user AS U
           LEFT JOIN resource_relation AS Targeted
-            ON Targeted.target_id = U.resource_id
+            ON Targeted.target_id = U._id
             AND Targeted.relation = 'manages'
           INNER JOIN aws_iam_userpolicy AS Policy
-            ON Targeted.resource_id = Policy.resource_id
+            ON Targeted.resource_id = Policy._id
         WHERE
           U.provider_account_id = :provider_account_id
-        GROUP BY U.resource_id
+        GROUP BY U._id
       )
       SELECT
         U.uri,
@@ -586,9 +584,9 @@ class NoPoliciesAttachedToUsers(Check):
       FROM
         aws_iam_user AS U
         LEFT JOIN attached_policies AS attached
-          ON U.resource_id = attached.resource_id
+          ON U._id = attached._id
         LEFT JOIN inline_policies AS inline
-          ON U.resource_id = inline.resource_id
+          ON U._id = inline._id
       WHERE
         ARRAY_LENGTH(attached.policies, 1) > 0
         OR ARRAY_LENGTH(inline.policies, 1) > 0
@@ -660,10 +658,10 @@ class SupportPolicyExists(Check):
         FROM
           aws_iam_policy AS Policy
           LEFT JOIN resource_relation AS Manages
-            ON Policy.resource_id = Manages.resource_id
+            ON Policy._id = Manages.resource_id
             AND Manages.relation = 'manages'
           INNER JOIN aws_iam_user AS U
-            ON U.resource_id = Manages.target_id
+            ON U._id = Manages.target_id
         WHERE
           Policy.uri = 'arn:aws:iam::aws:policy/AWSSupportAccess'
           AND U.provider_account_id = :provider_account_id
@@ -673,10 +671,10 @@ class SupportPolicyExists(Check):
         FROM
           aws_iam_policy AS Policy
           LEFT JOIN resource_relation AS Manages
-            ON Policy.resource_id = Manages.resource_id
+            ON Policy._id = Manages.resource_id
             AND Manages.relation = 'manages'
           INNER JOIN aws_iam_group AS G
-            ON G.resource_id = Manages.target_id
+            ON G._id = Manages.target_id
         WHERE
           Policy.uri = 'arn:aws:iam::aws:policy/AWSSupportAccess'
           AND G.provider_account_id = :provider_account_id
@@ -686,10 +684,10 @@ class SupportPolicyExists(Check):
         FROM
           aws_iam_policy AS Policy
           LEFT JOIN resource_relation AS Manages
-            ON Policy.resource_id = Manages.resource_id
+            ON Policy._id = Manages.resource_id
             AND Manages.relation = 'manages'
           INNER JOIN aws_iam_role AS Role
-            ON Role.resource_id = Manages.target_id
+            ON Role._id = Manages.target_id
         WHERE
           Policy.uri = 'arn:aws:iam::aws:policy/AWSSupportAccess'
           AND Role.provider_account_id = :provider_account_id
@@ -774,7 +772,7 @@ class NoAdminAccess(Check):
     return '''
     WITH policies AS (
       SELECT
-        resource_id,
+        _id,
         uri || ':' || defaultversionid AS version_uri
       FROM
         aws_iam_policy
@@ -782,7 +780,7 @@ class NoAdminAccess(Check):
         provider_account_id = :provider_account_id
     ), policy_documents AS (
       SELECT
-        P.resource_id,
+        P._id,
         P.version_uri,
         PV.document::jsonb AS document
       FROM
@@ -801,14 +799,14 @@ class NoAdminAccess(Check):
       policy_documents AS PD
       CROSS JOIN LATERAL unpack_maybe_array(PD.document->'Statement') AS s
       LEFT JOIN resource_relation AS Manages
-        ON Manages.resource_id = PD.resource_id
+        ON Manages.resource_id = PD._id
         AND Manages.relation = 'manages'
       LEFT JOIN aws_iam_role AS R
-        ON R.resource_id = Manages.target_id
+        ON R._id = Manages.target_id
       LEFT JOIN aws_iam_user AS U
-        ON U.resource_id = Manages.target_id
+        ON U._id = Manages.target_id
       LEFT JOIN aws_iam_group AS G
-        ON G.resource_id = Manages.target_id
+        ON G._id = Manages.target_id
     WHERE
       s.value ->> 'Effect' = 'Allow'
       AND s.value -> 'Resource' ? '*'
@@ -909,7 +907,7 @@ class CloudtrailBucketIsPrivate(Check):
       FROM
         aws_cloudtrail_trail AS T
         INNER JOIN aws_s3_bucket AS B
-          ON T._s3_bucket_id = B.resource_id
+          ON T._s3_bucket_id = B._id
       WHERE
         T.provider_account_id = :provider_account_id
         AND (
@@ -1003,7 +1001,7 @@ class CloudtrailBucketLoggingIsEnable(Check):
       FROM
         aws_cloudtrail_trail AS T
         INNER JOIN aws_s3_bucket AS B
-          ON T._s3_bucket_id = B.resource_id
+          ON T._s3_bucket_id = B._id
       WHERE
         B.logging -> 'LoggingEnabled' IS NULL
         AND T.provider_account_id = :provider_account_id
@@ -1074,7 +1072,7 @@ class VPCsHaveFlowLogs(Check):
         aws_ec2_vpc AS VPC
       WHERE
         VPC.provider_account_id = :provider_account_id
-        AND VPC.resource_id NOT IN (
+        AND VPC._id NOT IN (
           SELECT
             _vpc_id
           FROM
@@ -1111,19 +1109,19 @@ class AlertOnUnauthorizedAPICalls(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1166,19 +1164,19 @@ class AlertOnNoMFAConsoleSignin(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1221,19 +1219,19 @@ class AlertOnRootAccountUsage(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1287,19 +1285,19 @@ class AlertOnIAMPolicyChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1347,19 +1345,19 @@ class AlertOnCloudTrailConfigurationChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1402,19 +1400,19 @@ class AlertOnFailedConsoleAuthentication(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1457,19 +1455,19 @@ class AlertOnCMKDisablingOrScheduledDeletion(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1523,19 +1521,19 @@ class AlertOnS3BucketPolicyChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1586,19 +1584,19 @@ class AlertOnConfigConfigurationChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1651,19 +1649,19 @@ class AlertOnSecurityGroupChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1716,19 +1714,19 @@ class AlertOnNetworkACLChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1781,19 +1779,19 @@ class AlertOnNetworkGatewayChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1845,19 +1843,19 @@ class AlertOnRouteTableChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -1914,19 +1912,19 @@ class AlertOnVPCChanges(Check):
           FROM
             aws_cloudtrail_trail AS Trail
             LEFT JOIN aws_logs_loggroup AS LogGroup
-              ON LogGroup.resource_id = Trail._logs_loggroup_id
+              ON LogGroup._id = Trail._logs_loggroup_id
             LEFT JOIN aws_logs_metricfilter AS MetricFilter
-              ON MetricFilter._loggroup_id = LogGroup.resource_id
+              ON MetricFilter._loggroup_id = LogGroup._id
             LEFT JOIN aws_logs_metricfilter_cloudwatch_metric AS filter2metric
-              ON filter2metric.metricfilter_id = MetricFilter.resource_id
+              ON filter2metric.metricfilter_id = MetricFilter._id
             LEFT JOIN aws_cloudwatch_metric AS Metric
-              ON filter2metric.metric_id = Metric.resource_id
+              ON filter2metric.metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm AS Alarm
-              ON Alarm._metric_id = Metric.resource_id
+              ON Alarm._metric_id = Metric._id
             LEFT JOIN aws_cloudwatch_metricalarm_sns_topic AS Alarm2Topic
-              ON Alarm2Topic.metricalarm_id = Alarm.resource_id
+              ON Alarm2Topic.metricalarm_id = Alarm._id
             LEFT JOIN aws_sns_topic AS Topic
-              ON Alarm2Topic.topic_id = Topic.resource_id,
+              ON Alarm2Topic.topic_id = Topic._id,
             LATERAL jsonb_array_elements(Trail.eventselectors) AS Selector
           WHERE
             Trail.provider_account_id = :provider_account_id
@@ -2014,7 +2012,7 @@ class DefaultSecurityGroupAllowsNothing(Check):
       FROM
         aws_ec2_vpc AS VPC
         LEFT JOIN aws_ec2_securitygroup AS SG
-          ON SG._vpc_id = VPC.resource_id
+          ON SG._vpc_id = VPC._id
         CROSS JOIN LATERAL jsonb_array_elements(SG.ippermissions) AS Perms
       WHERE
         VPC.provider_account_id = :provider_account_id
@@ -2064,57 +2062,57 @@ class ReviewPeeringConnections(Info):
     return f'Verify that route table {uri} is scoped as narrowly as possible. It currently routes via {gateway} to {destination}'
 
 
-def run(db: Session, provider_account: ProviderAccount):
+def run(db: Session, provider_account_id: int):
   # 1
-  RootAccountUsage().run(db, provider_account.id)
-  MFAForConsoleUser().run(db, provider_account.id)
-  RotatePasswordsAfter90Days().run(db, provider_account.id)
-  RotateAccessKeysAfter90Days().run(db, provider_account.id)
-  RequireUpperCaseInPassword().run(db, provider_account.id)
-  RequireLowerCaseInPassword().run(db, provider_account.id)
-  RequireSymbolInPassword().run(db, provider_account.id)
-  RequireNumberInPassword().run(db, provider_account.id)
-  RequireMinimumLengthPasssword().run(db, provider_account.id)
-  RequireNewPassswords().run(db, provider_account.id)
-  RequireMaximumAgePassswords().run(db, provider_account.id)
-  NoRootAccessKeys().run(db, provider_account.id)
-  RootAccountHasMFA().run(db, provider_account.id)
-  RootAccountHasHardwareMFA().run(db, provider_account.id)
-  SecurityQuestionsRegistered().run(db, provider_account.id)
-  NoPoliciesAttachedToUsers().run(db, provider_account.id)
-  ContactInfoUpToDate().run(db, provider_account.id)
-  SecurityContactInfoUpToDate().run(db, provider_account.id)
-  InstancesUseInstanceProfiles().run(db, provider_account.id)
-  SupportPolicyExists().run(db, provider_account.id)
-  NoAutoCreatedAccessKeys().run(db, provider_account.id)
-  NoAdminAccess().run(db, provider_account.id)
+  RootAccountUsage().run(db, provider_account_id)
+  MFAForConsoleUser().run(db, provider_account_id)
+  RotatePasswordsAfter90Days().run(db, provider_account_id)
+  RotateAccessKeysAfter90Days().run(db, provider_account_id)
+  RequireUpperCaseInPassword().run(db, provider_account_id)
+  RequireLowerCaseInPassword().run(db, provider_account_id)
+  RequireSymbolInPassword().run(db, provider_account_id)
+  RequireNumberInPassword().run(db, provider_account_id)
+  RequireMinimumLengthPasssword().run(db, provider_account_id)
+  RequireNewPassswords().run(db, provider_account_id)
+  RequireMaximumAgePassswords().run(db, provider_account_id)
+  NoRootAccessKeys().run(db, provider_account_id)
+  RootAccountHasMFA().run(db, provider_account_id)
+  RootAccountHasHardwareMFA().run(db, provider_account_id)
+  SecurityQuestionsRegistered().run(db, provider_account_id)
+  NoPoliciesAttachedToUsers().run(db, provider_account_id)
+  ContactInfoUpToDate().run(db, provider_account_id)
+  SecurityContactInfoUpToDate().run(db, provider_account_id)
+  InstancesUseInstanceProfiles().run(db, provider_account_id)
+  SupportPolicyExists().run(db, provider_account_id)
+  NoAutoCreatedAccessKeys().run(db, provider_account_id)
+  NoAdminAccess().run(db, provider_account_id)
   # 2
-  CloudtrailEnabledEverywhere().run(db, provider_account.id)
-  CloudtrailLogFileValidationEnabled().run(db, provider_account.id)
-  CloudtrailBucketIsPrivate().run(db, provider_account.id)
-  CloudwatchLogsUpToDate().run(db, provider_account.id)
-  ConfigEnabledInAllRegions().run(db, provider_account.id)
-  CloudtrailBucketLoggingIsEnable().run(db, provider_account.id)
-  CloudtrailEncryptedAtRestWithCMK().run(db, provider_account.id)
-  CustomerKeysHaveRotationEnabled().run(db, provider_account.id)
-  VPCsHaveFlowLogs().run(db, provider_account.id)
+  CloudtrailEnabledEverywhere().run(db, provider_account_id)
+  CloudtrailLogFileValidationEnabled().run(db, provider_account_id)
+  CloudtrailBucketIsPrivate().run(db, provider_account_id)
+  CloudwatchLogsUpToDate().run(db, provider_account_id)
+  ConfigEnabledInAllRegions().run(db, provider_account_id)
+  CloudtrailBucketLoggingIsEnable().run(db, provider_account_id)
+  CloudtrailEncryptedAtRestWithCMK().run(db, provider_account_id)
+  CustomerKeysHaveRotationEnabled().run(db, provider_account_id)
+  VPCsHaveFlowLogs().run(db, provider_account_id)
   # 3 - Complete
-  AlertOnUnauthorizedAPICalls().run(db, provider_account.id)
-  AlertOnNoMFAConsoleSignin().run(db, provider_account.id)
-  AlertOnRootAccountUsage().run(db, provider_account.id)
-  AlertOnIAMPolicyChanges().run(db, provider_account.id)
-  AlertOnCloudTrailConfigurationChanges().run(db, provider_account.id)
-  AlertOnFailedConsoleAuthentication().run(db, provider_account.id)
-  AlertOnCMKDisablingOrScheduledDeletion().run(db, provider_account.id)
-  AlertOnS3BucketPolicyChanges().run(db, provider_account.id)
-  AlertOnConfigConfigurationChanges().run(db, provider_account.id)
-  AlertOnSecurityGroupChanges().run(db, provider_account.id)
-  AlertOnNetworkACLChanges().run(db, provider_account.id)
-  AlertOnNetworkGatewayChanges().run(db, provider_account.id)
-  AlertOnRouteTableChanges().run(db, provider_account.id)
-  AlertOnVPCChanges().run(db, provider_account.id)
+  AlertOnUnauthorizedAPICalls().run(db, provider_account_id)
+  AlertOnNoMFAConsoleSignin().run(db, provider_account_id)
+  AlertOnRootAccountUsage().run(db, provider_account_id)
+  AlertOnIAMPolicyChanges().run(db, provider_account_id)
+  AlertOnCloudTrailConfigurationChanges().run(db, provider_account_id)
+  AlertOnFailedConsoleAuthentication().run(db, provider_account_id)
+  AlertOnCMKDisablingOrScheduledDeletion().run(db, provider_account_id)
+  AlertOnS3BucketPolicyChanges().run(db, provider_account_id)
+  AlertOnConfigConfigurationChanges().run(db, provider_account_id)
+  AlertOnSecurityGroupChanges().run(db, provider_account_id)
+  AlertOnNetworkACLChanges().run(db, provider_account_id)
+  AlertOnNetworkGatewayChanges().run(db, provider_account_id)
+  AlertOnRouteTableChanges().run(db, provider_account_id)
+  AlertOnVPCChanges().run(db, provider_account_id)
   # 4
-  NoSSHFromEverywhere().run(db, provider_account.id)
-  NoRDPFromEverywhere().run(db, provider_account.id)
-  DefaultSecurityGroupAllowsNothing().run(db, provider_account.id)
-  ReviewPeeringConnections().run(db, provider_account.id)
+  NoSSHFromEverywhere().run(db, provider_account_id)
+  NoRDPFromEverywhere().run(db, provider_account_id)
+  DefaultSecurityGroupAllowsNothing().run(db, provider_account_id)
+  ReviewPeeringConnections().run(db, provider_account_id)

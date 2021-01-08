@@ -6,4 +6,3 @@ from goldfig.models.resource import Resource, ResourceAttribute, \
     ResourceRelation, ResourceRelationAttribute, ResourceDelta, \
         ResourceAttributeDelta, ResourceRelationDelta, \
             ResourceRelationAttributeDelta, ResourceRaw
-from goldfig.models.schema_version import SchemaVersion

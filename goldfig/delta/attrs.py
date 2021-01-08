@@ -20,7 +20,7 @@ def _find_existing_attr(attrs: Set[ResourceAttribute],
 
 
 def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
-               uri: str, previous: Raw, current: Raw,
+               provider_account_id: int, uri: str, previous: Raw, current: Raw,
                attrs: List[ResourceAttribute]) -> bool:
   stanzas = json_diff(previous, current)
   if len(stanzas) == 0:
@@ -28,7 +28,8 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
     return False
 
   _log.info(f'delta found for {uri}')
-  delta = ResourceDelta(import_job_id=import_job_id,
+  delta = ResourceDelta(provider_account_id=provider_account_id,
+                        import_job_id=import_job_id,
                         resource_id=resource_id,
                         change_type='update',
                         change_details=stanzas)
@@ -47,14 +48,16 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
       attr.resource_id = resource_id
       db.add(attr)
       db.flush()
-      attr_delta = ResourceAttributeDelta(resource_delta=delta,
-                                          resource_attribute_id=attr.id,
-                                          change_type='add',
-                                          change_details={
-                                              'type': attr.attr_type,
-                                              'name': attr.name,
-                                              'value': attr.value
-                                          })
+      attr_delta = ResourceAttributeDelta(
+          provider_account_id=provider_account_id,
+          resource_delta=delta,
+          resource_attribute_id=attr.id,
+          change_type='add',
+          change_details={
+              'type': attr.attr_type,
+              'name': attr.name,
+              'value': attr.value
+          })
       db.add(attr_delta)
     else:
       value_delta = json_diff(existing_attr.value, attr.value)
@@ -63,6 +66,7 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
         existing_attr.value = attr.value
         db.add(existing_attr)
         attr_delta = ResourceAttributeDelta(
+            provider_account_id=provider_account_id,
             resource_delta=delta,
             resource_attribute_id=existing_attr.id,
             change_type='update',
@@ -84,6 +88,7 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
   for existing_attr in existing_attributes:
     db.delete(existing_attr)
     attr_delta = ResourceAttributeDelta(
+        provider_account_id=provider_account_id,
         resource_delta=delta,
         # Should we include this?
         resource_attribute_id=existing_attr.id,

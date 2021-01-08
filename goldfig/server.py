@@ -7,12 +7,14 @@ app = Flask(__name__, static_url_path='', static_folder='../schema-docs/')
 
 @app.route('/')
 def root():
-  return app.send_static_file('index.html')
+  return redirect('https://www.goldfiglabs.com/goldfig/')
+  #return app.send_static_file('index.html')
 
 
 @app.route('/<path:path>')
 def static_file(path):
-  return app.send_static_file(path)
+  return redirect('https://www.goldfiglabs.com/goldfig/')
+  #return app.send_static_file(path)
 
 
 def run_webserver():

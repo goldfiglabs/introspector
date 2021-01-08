@@ -1,6 +1,7 @@
 import os
 from pprint import pprint
 import sys
+from typing import Optional
 
 import click
 import jsonschema
@@ -10,7 +11,8 @@ from goldfig.aws import __file__ as aws_file, account_paths_for_import
 from goldfig.aws.map import _get_mapper
 from goldfig.aws.uri import get_arn_fn
 from goldfig.account import reset_account
-from goldfig.bootstrap_db import import_session, install_views, readonly_session
+from goldfig.bootstrap_db import import_session, install_views, readonly_session, refresh_views
+from goldfig.cli.provider import provider_for_spec
 from goldfig.gcp import get_gcloud_credentials, __file__ as gcp_file
 from goldfig.mapper import load_transforms, load_transform_schema
 from goldfig.models import ImportJob, RawImport
@@ -77,9 +79,19 @@ def validate_transforms():
 
 
 @cmd.command('reinstall-views', help='Rerun all of the view files')
-def reinstall_views():
+@click.option(
+    '-p',
+    '--provider',
+    'provider_spec',
+    required=False,
+    default=None,
+    help=
+    'An optional identifier for which account to benchmark. Required if more than one account has been imported'
+)
+def reinstall_views(provider_spec: Optional[str]):
   db = import_session()
-  install_views(db)
+  provider_account_id = provider_for_spec(db, provider_spec)
+  refresh_views(db, provider_account_id)
 
 
 @cmd.command('map-resource', help='Try mapping a specific raw import')

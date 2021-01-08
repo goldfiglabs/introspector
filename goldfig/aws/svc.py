@@ -19,7 +19,8 @@ RegionalDbImportFn = Callable[[Session, int, str], None]
 
 Accounts = List[Tuple[str, ProviderCredential]]
 RegionalPoolImportFn = Callable[
-    [f.ProcessPoolExecutor, int, str, PathStack, Accounts], List[f.Future]]
+    [f.ProcessPoolExecutor, int, int, str, PathStack, Accounts],
+    List[f.Future]]
 
 GlobalImportFn = Callable[[ServiceProxy], Iterator[Tuple[str, Any]]]
 
@@ -40,7 +41,7 @@ class GlobalResourceSpec:
 GlobalResourceFn = Union[GlobalResourceSpec, GlobalImportFn]
 
 GlobalPoolImportFn = Callable[
-    [f.ProcessPoolExecutor, int, PathStack, Accounts], List[f.Future]]
+    [f.ProcessPoolExecutor, int, int, PathStack, Accounts], List[f.Future]]
 
 GlobalDbImportFn = Callable[[Session, int], None]
 
@@ -85,7 +86,12 @@ class GlobalService:
       self, resource_fns: List[GlobalResourceSpec]) -> GlobalDbImportFn:
     def import_to_db(db: Session, import_job_id: int):
       job: ImportJob = db.query(ImportJob).get(import_job_id)
-      writer = db_import_writer(db, job.id, self.name, phase=0, source='base')
+      writer = db_import_writer(db,
+                                job.id,
+                                job.provider_account_id,
+                                self.name,
+                                phase=0,
+                                source='base')
       for path, account in account_paths_for_import(db, job):
         boto = load_boto_session(account)
         proxy = Proxy.build(boto)
@@ -99,7 +105,8 @@ class GlobalService:
   def _make_global_import_with_pool(
       self, resource_fns: List[GlobalResourceSpec]) -> GlobalPoolImportFn:
     def import_with_pool(
-        pool: f.ProcessPoolExecutor, import_job_id: int, ps: PathStack,
+        pool: f.ProcessPoolExecutor, import_job_id: int,
+        provider_account_id: int, ps: PathStack,
         accounts: List[Tuple[str, ProviderCredential]]) -> List[f.Future]:
       results: List[f.Future] = []
       for path, account in accounts:
@@ -107,12 +114,12 @@ class GlobalService:
           future = pool.submit(_global_async_proxy,
                                ps=ps.scope(path),
                                import_job_id=import_job_id,
+                               provider_account_id=provider_account_id,
                                config=account.config,
                                svc_name=self.name,
                                account_id=account.scope,
                                import_fn=fn)
           results.append(future)
-
       return results
 
     return import_with_pool
@@ -122,7 +129,12 @@ def make_import_to_db(svc_name: str,
                       fn: RegionalImportFn) -> RegionalDbImportFn:
   def import_region_to_db(db: Session, import_job_id: int, region: str):
     job: ImportJob = db.query(ImportJob).get(import_job_id)
-    writer = db_import_writer(db, job.id, svc_name, phase=0, source='base')
+    writer = db_import_writer(db,
+                              job.id,
+                              job.provider_account_id,
+                              svc_name,
+                              phase=0,
+                              source='base')
     for path, account in account_paths_for_import(db, job):
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
@@ -135,8 +147,9 @@ def make_import_to_db(svc_name: str,
   return import_region_to_db
 
 
-def _async_proxy(ps: PathStack, import_job_id: int, region: str, config: Dict,
-                 svc_name: str, import_fn: RegionalImportFn):
+def _async_proxy(ps: PathStack, import_job_id: int, provider_account_id: int,
+                 region: str, config: Dict, svc_name: str,
+                 import_fn: RegionalImportFn):
   db = import_session()
   ps = ps.scope(region)
   boto = load_boto_session_from_config(config)
@@ -144,6 +157,7 @@ def _async_proxy(ps: PathStack, import_job_id: int, region: str, config: Dict,
   service_proxy = proxy.service(svc_name, region)
   writer = db_import_writer(db,
                             import_job_id,
+                            provider_account_id,
                             svc_name,
                             phase=0,
                             source='base')
@@ -155,14 +169,15 @@ def _async_proxy(ps: PathStack, import_job_id: int, region: str, config: Dict,
 def make_import_with_pool(svc_name: str,
                           fn: RegionalImportFn) -> RegionalPoolImportFn:
   def import_region_with_pool(
-      pool: f.ProcessPoolExecutor, import_job_id: int, region: str,
-      ps: PathStack,
+      pool: f.ProcessPoolExecutor, import_job_id: int, provider_account_id,
+      region: str, ps: PathStack,
       accounts: List[Tuple[str, ProviderCredential]]) -> List[f.Future]:
     results: List[f.Future] = []
 
     for path, account in accounts:
       future = pool.submit(_async_proxy,
                            import_job_id=import_job_id,
+                           provider_account_id=provider_account_id,
                            region=region,
                            ps=ps.scope(path),
                            config=account.config,
@@ -174,15 +189,16 @@ def make_import_with_pool(svc_name: str,
   return import_region_with_pool
 
 
-def _global_async_proxy(ps: PathStack, import_job_id: int, config: Dict,
-                        svc_name: str, account_id: str,
-                        import_fn: GlobalResourceSpec):
+def _global_async_proxy(ps: PathStack, import_job_id: int,
+                        provider_account_id: int, config: Dict, svc_name: str,
+                        account_id: str, import_fn: GlobalResourceSpec):
   db = import_session()
   boto = load_boto_session_from_config(config)
   proxy = Proxy.build(boto)
   service_proxy = proxy.service(svc_name)
   writer = db_import_writer(db,
                             import_job_id,
+                            provider_account_id,
                             svc_name,
                             phase=0,
                             source='base')

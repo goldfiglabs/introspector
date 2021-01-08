@@ -195,7 +195,7 @@ def reset_account(db: Session, provider_account_id: int):
   _delete_delta_log(db, provider_account_id, report)
   _delete_resources(db, provider_account_id, report)
   _reset_imports(db, provider_account_id, report)
-  refresh_views(db)
+  refresh_views(db, provider_account_id)
   return report
 
 
@@ -205,5 +205,5 @@ def delete_account(db: Session, account: ProviderAccount):
   _delete_resources(db, account.id, report)
   _delete_imports(db, account.id, report)
   _delete_provider_account(db, account.id, report)
-  refresh_views(db)
+  refresh_views(db, account.id)
   return report

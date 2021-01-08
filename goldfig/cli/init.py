@@ -1,12 +1,11 @@
 import os
 import shutil
-from shutil import copy
 from typing import Optional
 
 import click
 
 from goldfig import GOLDFIG_ROOT
-from goldfig.bootstrap_db import init_db, SCHEMA_VERSION
+from goldfig.bootstrap_db import init_db
 
 
 def _copy_sample_queries(copy_sample: Optional[bool]):
@@ -31,7 +30,7 @@ def _copy_sample_queries(copy_sample: Optional[bool]):
 
 def _init_db():
   init_db()
-  print(f'Goldfig successfully inited with schema version {SCHEMA_VERSION}')
+  print(f'Goldfig successfully inited')
 
 
 @click.command('init', help='Run this first to set up Gold Fig')

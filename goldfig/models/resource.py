@@ -37,6 +37,9 @@ class ResourceRelation(Base):
   relation = Column(String(50), nullable=False)
   target_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
   raw = Column(JSONB)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
 
   resource = relationship(
       'Resource', primaryjoin='ResourceRelation.resource_id==Resource.id')
@@ -60,6 +63,9 @@ class ResourceRelationAttribute(Base):
                        nullable=False)
   name = Column(String(50))
   value = Column(JSONB)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
 
   relation = relationship('ResourceRelation')
 
@@ -78,7 +84,9 @@ class Resource(Base):
   path = Column(String(1024), nullable=False)
   uri = Column(String(1024))
   name = Column(String(256))
-  provider_account_id = Column(Integer, ForeignKey('provider_account.id'))
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   provider_type = Column(String(1024), nullable=True)
   service = Column(String(256), nullable=True)
   '''
@@ -175,6 +183,9 @@ class ResourceRaw(Base):
   id = Column(Integer, primary_key=True)
   source = Column(String(256), nullable=False)
   resource_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   raw = Column(JSONB)
 
 
@@ -183,6 +194,9 @@ class ResourceAttribute(Base):
   __table_args__ = ({'comment': 'Attributes of resources.'})
   id = Column(Integer, primary_key=True)
   resource_id = Column(Integer, ForeignKey('resource.id'), nullable=False)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   source = Column(String(256), nullable=False)
   attr_type = Column('type', String(256))
   name = Column('attr_name', String(256))
@@ -200,6 +214,9 @@ class ResourceDelta(Base):
       'comment': 'Resource deltas between subseqnet import jobs.'
   }
   id = Column(Integer, primary_key=True)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   import_job_id = Column(Integer, ForeignKey('import_job.id'), nullable=False)
   # Foreign Key, but underlying resource might be deleted
   resource_id = Column(Integer, nullable=False)
@@ -213,6 +230,9 @@ class ResourceAttributeDelta(Base):
   __tablename__ = 'resource_attribute_delta'
   __table_args__ = {'comment': 'Deltas on attributes of resources'}
   id = Column(Integer, primary_key=True)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   resource_delta_id = Column(Integer, ForeignKey('resource_delta.id'))
   resource_attribute_id = Column(Integer, nullable=False)
   change_type = Column(Enum('add', 'update', 'delete',
@@ -227,6 +247,9 @@ class ResourceRelationDelta(Base):
   __table_args__ = {'comment': 'Deltas on relationships of resources.'}
   id = Column(Integer, primary_key=True)
   import_job_id = Column(Integer, ForeignKey('import_job.id'), nullable=False)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   # Foreign key, but underlying relation might be deleted
   resource_relation_id = Column(Integer, nullable=False)
   change_type = Column(Enum('add',
@@ -245,6 +268,9 @@ class ResourceRelationAttributeDelta(Base):
       'comment': 'Delta on attributes on relationships of resources.'
   }
   id = Column(Integer, primary_key=True)
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False)
   resource_relation_delta_id = Column(Integer,
                                       ForeignKey('resource_relation_delta.id'),
                                       nullable=False)

@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 import click
 from sqlalchemy.orm import Session
 
-from goldfig.bootstrap_db import readonly_session, view_names
+from goldfig.bootstrap_db import readonly_session, provider_tables, scoped_readonly_session
 from goldfig.cli.util import print_report
 from goldfig.delta.report import report_for_import
 from goldfig.models import ImportJob, ProviderAccount
@@ -39,15 +39,16 @@ def _provider_for_spec(db: Session,
 
 
 def _status(db: Session, provider: ProviderAccount) -> Status:
-  views = view_names()
-  provider_views = filter(lambda view: view.startswith(provider.provider),
-                          views)
+  # views = view_names()
+  # provider_views = filter(lambda view: view.startswith(provider.provider),
+  #                         views)
+  tables = provider_tables(db, provider.provider)
   provider_results = {}
-  for provider_view in provider_views:
-    result = db.execute('SELECT COUNT(*) FROM ' + provider_view)
-    provider_results[provider_view] = result.scalar()
+  for table in tables:
+    result = db.execute('SELECT COUNT(*) FROM ' + table)
+    provider_results[table] = result.scalar()
 
-  common_views = filter(lambda view: view.startswith('common'), views)
+  common_views = provider_tables(db, 'common')
   common_results = {}
   for common_view in common_views:
     result = db.execute('SELECT COUNT(*) FROM ' + common_view)
@@ -118,7 +119,9 @@ def cmd(provider_spec: Optional[str]):
   providers = _provider_for_spec(db, provider_spec)
   if len(providers) > 0:
     for provider in providers:
-      print_status(db, provider)
+      scoped_db = scoped_readonly_session(provider.id)
+      print_status(scoped_db, provider)
+      scoped_db.close()
   elif provider_spec is None:
     print('No accounts are currently imported')
   else:

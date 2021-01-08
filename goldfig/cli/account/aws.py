@@ -1,69 +1,22 @@
 import logging
-import textwrap
-from typing import Optional
+from typing import Dict, Optional
 
 import click
-from sqlalchemy.orm import Session
 from tabulate import tabulate
 
 from goldfig.account import delete_account
-from goldfig.aws import (build_aws_import_job, load_boto_for_provider,
-                         create_provider_and_credential,
+from goldfig.aws import (build_aws_import_job, get_boto_session,
                          account_paths_for_import, get_boto_session)
-from goldfig.aws.fetch import Proxy
 from goldfig.aws.importer import run_single_session, run_parallel_session
 from goldfig.aws.map import map_import
 from goldfig.aws.region import RegionCache
 from goldfig.bootstrap_db import import_session, refresh_views
 from goldfig.cli.util import print_report, query_yes_no
 from goldfig.delta.report import report_for_import
-from goldfig.error import GFError, GFInternal
+from goldfig.error import GFInternal
 from goldfig.models import ProviderAccount, ImportJob
 
 _log = logging.getLogger(__name__)
-
-
-def _add_account_interactive(db: Session, force: bool) -> ProviderAccount:
-  boto_session = get_boto_session()
-  creds = boto_session.get_credentials()
-  if creds is not None:
-    sts = boto_session.create_client('sts')
-    identity = sts.get_caller_identity()
-    add = force or query_yes_no(
-        f'Add AWS account {identity["Account"]} using identity {identity["Arn"]}?',
-        default='yes')
-    if not add:
-      raise GFError('User cancelled')
-    proxy = Proxy.build(boto_session)
-    return create_provider_and_credential(db, proxy, identity)
-  else:
-    # TODO: point to docs on specifying credentials
-    msg = textwrap.dedent('''
-      No AWS credentials found. Please set up AWS credentials
-      as described here:
-
-      https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html#cli-configure-quickstart-config
-    ''')
-    raise GFError(msg)
-
-
-def _find_provider(db: Session,
-                   account_spec: Optional[str],
-                   force: bool = False) -> ProviderAccount:
-  if account_spec is None:
-    accounts = db.query(ProviderAccount).filter(
-        ProviderAccount.provider == 'aws').all()
-    if len(accounts) > 1:
-      # TODO: better error / print out available accounts
-      accounts_str = '\n'.join([account.name for account in accounts])
-      msg = 'No account specified, but more than one AWS account exists. Existing accounts:\n' + accounts_str
-      raise GFError(msg)
-    elif len(accounts) == 1:
-      return accounts[0]
-    else:
-      return _add_account_interactive(db, force)
-  else:
-    raise NotImplementedError('cannot specify account yet')
 
 
 @click.group('aws', help='Tools for AWS accounts')
@@ -73,15 +26,6 @@ def cmd():
 
 @cmd.command('import',
              help='Imports the assets from an AWS account into Gold Fig')
-@click.option(
-    '-a',
-    '--account',
-    required=False,
-    type=str,
-    default=None,
-    help=
-    'Specify which AWS account to add. Required if more than one AWS account has been added to Gold Fig'
-)
 @click.option('-d',
               '--debug',
               'debug',
@@ -102,13 +46,21 @@ def cmd():
               required=False,
               help='Only import the specified service')
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
-def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
-                   dry_run: bool, service: Optional[str]):
+def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
+                   service: Optional[str]):
   db = import_session()
-  provider = _find_provider(db, account, force=force)
-  boto = load_boto_for_provider(db, provider)
-  import_desc = build_aws_import_job(boto)
-  import_job = ImportJob.create(provider, import_desc)
+  boto = get_boto_session()
+  if force:
+    confirm = lambda _: True
+  else:
+
+    def _confirm(identity: Dict) -> bool:
+      return query_yes_no(
+          f'Add AWS account {identity["Account"]} using identity {identity["Arn"]}?',
+          default='yes')
+
+    confirm = _confirm
+  import_job = build_aws_import_job(db, boto, confirm)
   db.add(import_job)
   db.flush()
   region_cache = RegionCache(boto)
@@ -116,7 +68,7 @@ def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
     run_single_session(db, import_job.id, region_cache, service)
     db.flush()
     map_import(db, import_job.id)
-    refresh_views(db)
+    refresh_views(db, import_job.provider_account_id)
     if not dry_run:
       db.commit()
     print('done', import_job.id)
@@ -132,7 +84,7 @@ def import_aws_cmd(account: Optional[str], debug: bool, force: bool,
       db.commit()
       map_import(db, import_job.id, service)
       db.commit()
-      refresh_views(db)
+      refresh_views(db, import_job.provider_account_id)
       import_job.mark_complete(exceptions=[])
     else:
       import_job.mark_complete(exceptions)
@@ -159,10 +111,10 @@ def remap_cmd(import_job_id: Optional[int], dry_run: bool):
     raise NotImplementedError('Need to query last import job')
   db = import_session()
   map_import(db, import_job_id)
-  refresh_views(db)
+  import_job = db.query(ImportJob).get(import_job_id)
+  refresh_views(db, import_job.provider_account_id)
   if not dry_run:
     db.commit()
-  import_job = db.query(ImportJob).get(import_job_id)
   report = report_for_import(db, import_job)
   print(f'Results - Remap of import #{import_job.id}')
   print_report(report)

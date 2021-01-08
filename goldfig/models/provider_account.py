@@ -44,7 +44,8 @@ class ProviderCredential(Base):
   __tablename__ = 'provider_credential'
   __table_args__ = {'comment': '(Internal) Provider account credentials.'}
   id = Column(Integer, primary_key=True, comment='Row id.')
-  provider_id = Column(Integer,
+  provider_id = Column('provider_account_id',
+                       Integer,
                        ForeignKey('provider_account.id'),
                        nullable=False,
                        comment='Provider id.')

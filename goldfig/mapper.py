@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from functools import partial
 import json
 import logging
@@ -18,12 +18,31 @@ ValueTransforms = Dict[str, ValueTransform]
 
 Context = Dict[str, str]
 
+@dataclass
+class MappedResource:
+  name: str
+  provider_type: Optional[str]
+  raw: Any
+  uri: str
+  category: Optional[str]
+  service: str
+
+@dataclass
+class MappedAttribute:
+  type: str
+  name: str
+  value: Any
+
+  def as_dict(self):
+    return asdict(self)
+
+MapResult = Tuple[MappedResource, List[MappedAttribute]]
 
 @dataclass
 class Partial:
   target_uri: str
   raw: Any
-  attrs: List[Dict[str, Any]]
+  attrs: List[MappedAttribute]
 
 
 @dataclass
@@ -229,26 +248,26 @@ class Mapper:
     else:
       return transform
 
-  def _map_provider_attrs(self, attr_names: List[Union[str, Dict]], raw):
-    attrs = []
+  def _map_provider_attrs(self, attr_names: List[Union[str, Dict]], raw) -> List[MappedAttribute]:
+    attrs: List[MappedAttribute] = []
     for attr_name in attr_names:
       if isinstance(attr_name, str):
         value = self.value_from_spec({'path': attr_name}, raw)
         if value is not None:
-          attrs.append({'type': 'provider', 'name': attr_name, 'value': value})
+          attrs.append(MappedAttribute(type='provider', name=attr_name, value=value))
       elif isinstance(attr_name, dict):
         for path_segment, keys in attr_name.items():
           for key in keys:
             path = '.'.join([path_segment, key])
             value = self.value_from_spec({'path': path}, raw)
             # Note that this flattens the namespace
-            attrs.append({'type': 'provider', 'name': key, 'value': value})
+            attrs.append(MappedAttribute(type='provider', name=key, value=value))
       else:
         raise GFInternal(f'unknown attr_name {attr_name}')
     return attrs
 
-  def _map_custom_attrs(self, attrs_spec, category, raw, ctx):
-    attrs = []
+  def _map_custom_attrs(self, attrs_spec, category, raw, ctx) -> List[MappedAttribute]:
+    attrs: List[MappedAttribute] = []
     for typ, attr_specs in attrs_spec.items():
       if typ == '_':
         resource_type = category
@@ -257,11 +276,11 @@ class Mapper:
       for name, attr_spec in attr_specs.items():
         value = self.value_from_spec(attr_spec, raw, ctx=ctx)
         if value is not None:
-          attrs.append({'type': resource_type, 'name': name, 'value': value})
+          attrs.append(MappedAttribute(type=resource_type, name=name, value=value))
     return attrs
 
   def _map_resource_v1(self, spec: ResourceSpec, service: str,
-                       uri_fn: Callable, raw, ctx):
+                       uri_fn: Callable, raw, ctx) -> MappedResource:
     if isinstance(spec.name, str):
       name = _find_path(spec.name, raw, require_string_on_empty=True)
     else:
@@ -272,18 +291,18 @@ class Mapper:
     except:
       _log.error(f'URI fn failed with args {uri_args}')
       raise
-    return {
-        'name': name,
-        'provider_type': spec.provider_type,
-        'raw': raw,
-        'uri': uri,
-        'category': spec.category,
-        'service': service
-    }
+    return MappedResource(
+        name=name,
+        provider_type=spec.provider_type,
+        raw=raw,
+        uri=uri,
+        category=spec.category,
+        service=service
+    )
 
   def _map_spec_v1(self, service: str, spec: ResourceSpec, raw_list: List[Any],
                    ctx: Context, resource_name: str, raw_uri_fn: Callable,
-                   parent_kwargs: Dict):
+                   parent_kwargs: Dict) -> Iterator[MapResult]:
     if spec.resource_name is not None:
       resource_name = spec.resource_name
     uri_fn = partial(raw_uri_fn, resource_name=resource_name, **parent_kwargs)
@@ -302,7 +321,7 @@ class Mapper:
                         service: str,
                         resource_name: str,
                         raw_uri_fn: Callable,
-                        parent_args: Optional[Dict] = None):
+                        parent_args: Optional[Dict] = None) -> Iterator[MapResult]:
     # TODO: validate?
     transform = self._find_transform(service, resource_name)
     if transform.version != 1:
@@ -367,7 +386,7 @@ class Mapper:
                     service: str,
                     resource_name: str,
                     raw_uri_fn: Callable,
-                    parent_args: Optional[Dict] = None):
+                    parent_args: Optional[Dict] = None) -> Iterator[MapResult]:
     transform = self._find_transform(service, resource_name)
     if transform.version >= 1:
       yield from self._map_resources_v1(raw_list, ctx or {}, service,

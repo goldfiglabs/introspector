@@ -1,24 +1,20 @@
 from dataclasses import dataclass
-from goldfig.error import GFError
 import logging
 import os
-from typing import Iterator, List, Tuple
+import re
+import subprocess
+from typing import Callable, List, Tuple
 
-# import psycopg2.errors
-import psycopg2
-from psycopg2 import sql
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, Session
-
-from goldfig import models
 
 _log = logging.getLogger(__name__)
 
 DBNAME = 'goldfig'
 HOST = os.environ.get('GOLDFIG_DB_HOST', 'localhost')
 PORT = int(os.environ.get('GOLDFIG_DB_PORT', 5432))
+SSLMODE = os.environ.get('GOLDFIG_PG_SSLMODE', 'disable')
 
 
 @dataclass
@@ -27,64 +23,35 @@ class DbCredential:
   user: str
   password: str
   host: str
+  port: int
 
   def connection_string(self) -> str:
-    return f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}/{self.db_name}'
+    return f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}'
+
+  def db_url(self) -> str:
+    return f'postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}?sslmode={SSLMODE}'
 
 
 _ImportCredential = DbCredential(db_name=DBNAME,
                                  user='goldfig',
                                  password='goldfig',
-                                 host=f'{HOST}:5432')
+                                 host=HOST,
+                                 port=5432)
 
 _ReadonlyCredential = DbCredential(db_name=DBNAME,
                                    user='goldfig_ro',
                                    password='goldfig_ro',
-                                   host=f'{HOST}:5432')
+                                   host=HOST,
+                                   port=5432)
+
+_ReadonlyScopedCredential = DbCredential(db_name=DBNAME,
+                                         user='goldfig_ro_scoped',
+                                         password='goldfig_ro_scoped',
+                                         host=HOST,
+                                         port=5432)
 
 _import_engine = None
 _readonly_engine = None
-
-SCHEMA_VERSION = 1
-
-
-def _require_plv8(cursor):
-  cursor.execute('''
-    SELECT
-      installed_version IS NOT NULL AS installed
-    FROM
-      pg_available_extensions WHERE
-      name ='plv8'
-    ''')
-  is_installed = cursor.fetchone()[0]
-  if is_installed is None:
-    raise GFError('plv8 postgresql extension required but not available')
-  elif not is_installed:
-    # It's available, but not installed
-    cursor.execute('CREATE EXTENSION plv8')
-
-
-def _fn_files() -> Tuple[str, List[str]]:
-  path = os.path.realpath(os.path.join(os.path.dirname(__file__), 'fns'))
-  files = [
-      f for f in os.listdir(path)
-      if os.path.isfile(os.path.join(path, f)) and f[-4:] == '.sql'
-  ]
-  files.sort()
-  return path, files
-
-
-def _install_functions(db: Session):
-  path, files = _fn_files()
-  for fname in files:
-    with open(os.path.join(path, fname), 'r') as f:
-      sql = f.read()
-      try:
-        stmt = text(sql)
-        db.execute(stmt)
-      except:
-        _log.error(f'failed adding function from {fname}')
-        raise
 
 
 def _view_files() -> Tuple[str, List[str]]:
@@ -97,23 +64,51 @@ def _view_files() -> Tuple[str, List[str]]:
   return path, files
 
 
-def view_names() -> List[str]:
-  _, files = _view_files()
-  return [fname[:-4] for fname in files]
+_find_resource_alias = re.compile('resource AS ([_a-zA-Z0-9]+)', re.M | re.S)
+_find_where = re.compile('^.*(WHERE).*$', re.M | re.S)
 
 
-def refresh_views(db: Session):
-  result = db.execute('''
-    SELECT
-      matviewname AS view_name
-    FROM
-      pg_matviews
-    WHERE
-      schemaname = 'public'
-  ''')
-  for row in result:
-    view = row['view_name']
-    db.execute('REFRESH MATERIALIZED VIEW ' + view)
+def _process_query(query_text: str, provider_account_id: int) -> str:
+  # HACK: should really parse the query and edit it instead
+  m = _find_resource_alias.search(query_text)
+  alias = m[1]
+  m = _find_where.match(query_text)
+  _, where_end = m.span(1)
+  to_insert = f'\n  {alias}.provider_account_id = {provider_account_id} AND '
+  return query_text[:where_end] + to_insert + query_text[where_end:]
+
+
+def _process_queries(query_text: str, provider_account_id: int):
+  queries = [q.strip() for q in query_text.split(';') if q.strip() != '']
+  processed = [_process_query(q, provider_account_id) for q in queries]
+  return processed
+
+
+def provider_tables(db: Session, provider_type: str) -> List[str]:
+  provider_prefix = f'{provider_type}_%'
+  result = db.execute(
+      '''
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public'
+    AND table_name LIKE :provider_prefix
+  ''', {'provider_prefix': provider_prefix})
+  return [row[0] for row in result.fetchall()]
+
+
+def refresh_views(db: Session, provider_account_id: int):
+  path = os.path.realpath(os.path.join(os.path.dirname(__file__), 'queries'))
+  files = [
+      f for f in os.listdir(path)
+      if os.path.isfile(os.path.join(path, f)) and f[-4:] == '.sql'
+  ]
+  files.sort()
+  for filename in files:
+    with open(os.path.join(path, filename), 'r') as f:
+      query_txt = f.read()
+    to_run = _process_queries(query_txt, provider_account_id)
+    for query in to_run:
+      result = db.execute(query)
 
 
 def install_views(db: Session):
@@ -129,98 +124,31 @@ def install_views(db: Session):
         raise
 
 
-def _install_schema(db: Session) -> None:
-  version = None
-  try:
-    version = db.query(models.SchemaVersion).one_or_none()
-  except:
-    # TODO: catch a better error here
-    # if the schema doesn't exist, the transaction will fail.
-    # rollback so that subsequent operations open a new transaction.
-    db.rollback()
-  if version is None:
-    # this is kinda bad, and should maybe be wrapped
-    # in an admin credential, rather than the import one
-    models.Base.metadata.create_all(_import_engine)
-    db.execute(
-        'CREATE INDEX case_insensitive_name_idx ON resource_attribute (type, lower(attr_name))'
-    )
-    version = models.SchemaVersion(version=SCHEMA_VERSION)
-    db.add(version)
-    db.commit()
-  elif version.version != SCHEMA_VERSION:
-    raise NotImplementedError('Need schema migration')
-  install_views(db)
-  _install_functions(db)
-  db.commit()
+def _run_migration(cred: DbCredential, folder: str):
+  cwd = os.getcwd()
+  migrations_root = os.path.join(cwd, 'migrations')
+  db_mate = os.path.join(cwd, 'dbmate')
+  subprocess.run([
+      db_mate, '--no-dump-schema', '--url',
+      cred.db_url(), '--migrations-dir',
+      os.path.join(migrations_root, folder), 'up'
+  ]).check_returncode()
 
 
 def _install_db_and_roles():
-  print('creating goldfig database and installing roles')
-  cred = DbCredential(db_name='postgres',
-                      host=HOST,
-                      user=os.environ.get('GOLDFIG_DB_SU_USER', 'postgres'),
-                      password=os.environ.get('GOLDFIG_DB_SU_PASSWORD',
-                                              'postgres'))
-  su_conn = psycopg2.connect(dbname=cred.db_name,
-                             user=cred.user,
-                             password=cred.password,
-                             host=cred.host)
-  su_conn.autocommit = True
-  cursor = su_conn.cursor()
-  cursor.execute('CREATE DATABASE goldfig')
-  cursor.close()
-  su_conn.autocommit = False
-  cursor = su_conn.cursor()
-  for user in (_ImportCredential, _ReadonlyCredential):
-    cursor.execute(
-        sql.SQL('CREATE USER {} WITH ENCRYPTED PASSWORD %s').format(
-            sql.Identifier(user.user)), (user.password, ))
-
-  su_conn.commit()
-  su_conn.close()
-
-  cred = DbCredential(db_name='goldfig',
-                      host=cred.host,
-                      user=cred.user,
-                      password=cred.password)
-  su_conn = psycopg2.connect(dbname=cred.db_name,
-                             user=cred.user,
-                             password=cred.password,
-                             host=cred.host)
-  su_conn.autocommit = False
-  cursor = su_conn.cursor()
-  _require_plv8(cursor)
-  import_user = sql.Identifier(_ImportCredential.user)
-  ro_user = sql.Identifier(_ReadonlyCredential.user)
-  cursor.execute('revoke create on schema public from public')
-  cursor.execute(
-      sql.SQL('grant all privileges on schema public to {}').format(
-          import_user))
-  cursor.execute(
-      sql.SQL('grant select on all tables in schema public to {}').format(
-          ro_user))
-  cursor.execute(
-      sql.SQL(
-          'alter default privileges for role {} in schema public grant select on tables to {}'
-      ).format(import_user, ro_user))
-  cursor.close()
-  su_conn.commit()
+  su_cred = DbCredential(db_name='goldfig',
+                         host=HOST,
+                         user=os.environ.get('GOLDFIG_DB_SU_USER', 'postgres'),
+                         password=os.environ.get('GOLDFIG_DB_SU_PASSWORD',
+                                                 'postgres'),
+                         port=5432)
+  _run_migration(su_cred, 'superuser')
+  _run_migration(_ImportCredential, 'goldfig')
+  _run_migration(_ImportCredential, 'provider/aws')
 
 
-# TODO: switch to something like alembic?
 def init_db():
-  try:
-    db = import_session()
-  except OperationalError as e:
-    if 'password authentication failed' in str(
-        e) or 'database "goldfig" does not exist' in str(e):
-      # need to set up db
-      _install_db_and_roles()
-      db = import_session()
-    else:
-      raise
-  _install_schema(db)
+  _install_db_and_roles()
 
 
 def import_session() -> Session:
@@ -243,6 +171,27 @@ def readonly_session() -> Session:
 
 def db_from_connection(conn) -> Session:
   engine = create_engine('postgresql+psycopg2://', creator=lambda: conn)
-  from goldfig import models
-  models.Base.metadata.create_all(engine)
   return sessionmaker(bind=engine)()
+
+
+def scoped_readonly_session(provider_account_id: int) -> Session:
+  engine = create_engine(_ReadonlyScopedCredential.connection_string())
+  db = sessionmaker(bind=engine)()
+  db.execute('SET gf.provider_account_id = :provider_account_id',
+             {'provider_account_id': provider_account_id})
+  return db
+
+
+@dataclass
+class ReadOnlyProviderDB:
+  db: Session
+  provider_account_id: int
+
+
+def scope_readonly_session(fn: Callable[[Session], int]) -> ReadOnlyProviderDB:
+  engine = create_engine(_ReadonlyScopedCredential.connection_string())
+  db = sessionmaker(bind=engine)()
+  provider_account_id = fn(db)
+  db.execute('SET gf.provider_account_id = :provider_account_id',
+             {'provider_account_id': provider_account_id})
+  return ReadOnlyProviderDB(db=db, provider_account_id=provider_account_id)

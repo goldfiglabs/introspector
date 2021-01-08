@@ -169,6 +169,7 @@ def service_gate(service: Optional[str]):
     return lambda target: target == service
 
 
+# TODO: consider how to rework with tables
 def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   assert import_job.path_prefix == ''
@@ -176,6 +177,7 @@ def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
   mapper = _get_mapper(import_job)
   adjunct_writer = db_import_writer(db,
                                     import_job.id,
+                                    import_job.provider_account_id,
                                     'ec2',
                                     phase=1,
                                     source='base')

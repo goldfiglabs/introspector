@@ -38,17 +38,19 @@ GLOBAL = '$'
 
 
 class ImportWriter:
-  def __init__(self, db: Session, import_job_id: int, service: str, phase: int,
-               source: str):
+  def __init__(self, db: Session, import_job_id: int, provider_account_id: int,
+               service: str, phase: int, source: str):
     self._db = db
     self._import_job_id = import_job_id
+    self._provider_account_id = provider_account_id
     self._phase = phase
     self._service = service
     self.source = source
 
   def for_source(self, source: str) -> 'ImportWriter':
-    return ImportWriter(self._db, self._import_job_id, self._service,
-                        self._phase, source)
+    return ImportWriter(self._db, self._import_job_id,
+                        self._provider_account_id, self._service, self._phase,
+                        source)
 
   def __call__(self,
                path: Union[PathStack, str],
@@ -59,6 +61,7 @@ class ImportWriter:
       path = path.path()
     _log.info(f'writing {self.source} - {path} - {resource_name}')
     model = RawImport(import_job_id=self._import_job_id,
+                      provider_account_id=self._provider_account_id,
                       path=path,
                       service=self._service,
                       resource_name=resource_name,
@@ -69,9 +72,10 @@ class ImportWriter:
     self._db.add(model)
 
 
-def db_import_writer(db: Session, import_job_id: int, service: str, phase: int,
-                     source: str) -> ImportWriter:
-  return ImportWriter(db, import_job_id, service, phase, source)
+def db_import_writer(db: Session, import_job_id: int, provider_account_id: int,
+                     service: str, phase: int, source: str) -> ImportWriter:
+  return ImportWriter(db, import_job_id, provider_account_id, service, phase,
+                      source)
 
 
 def collect_exceptions(results: List[f.Future]) -> List[str]:

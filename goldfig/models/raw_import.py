@@ -17,6 +17,10 @@ class RawImport(Base):
   import_job_id = Column(Integer,
                          ForeignKey('import_job.id'),
                          comment='Import job id.')
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False,
+                               comment='Import job provider account id.')
   source = Column(String(256),
                   nullable=False,
                   comment='Source of the data that produced this payload')
@@ -69,9 +73,12 @@ class MappedURI(Base):
                          ForeignKey('import_job.id'),
                          primary_key=True,
                          comment='Import job id.')
+  provider_account_id = Column(Integer,
+                               ForeignKey('provider_account.id'),
+                               nullable=False,
+                               comment='Import job provider account id.')
   raw_import_id = Column(Integer,
                          ForeignKey('raw_import.id'),
                          nullable=True,
                          comment='Raw import id.')
-
   raw_import = relationship('RawImport')
