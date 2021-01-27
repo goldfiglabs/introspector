@@ -18,7 +18,8 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
   imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
       RawImport.path.like(f'{path_prefix}%'), RawImport.mapped == False,
-      RawImport.source == source)
+      RawImport.source == source,
+      RawImport.provider_account_id == import_job.provider_account_id)
   for raw_import in imports:
     ctx: Dict[str, Any] = raw_import.context or {}
     ctx['source'] = source
@@ -173,8 +174,11 @@ def map_partial_deletes(db: Session,
     db.add(delta)
     db.query(ResourceRaw).filter(ResourceRaw.id == raw_id).delete()
     existing_attrs: Iterator[ResourceAttribute] = db.query(
-        ResourceAttribute).filter(ResourceAttribute.resource_id == resource_id,
-                                  ResourceAttribute.source == source)
+        ResourceAttribute).filter(
+            ResourceAttribute.resource_id == resource_id,
+            ResourceAttribute.source == source,
+            ResourceAttribute.provider_account_id ==
+            import_job.provider_account_id)
     for attr in existing_attrs:
       attr_delta = ResourceAttributeDelta(
           provider_account_id=import_job.provider_account_id,

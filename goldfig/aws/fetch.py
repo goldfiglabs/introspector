@@ -20,6 +20,10 @@ class ClientProxy(object):
     self._client = client
     self._patch_client()
 
+  @property
+  def _is_gov(self) -> bool:
+    return '-gov-' in self._client.meta.region_name
+
   def _patch_client(self):
     pass
 
@@ -149,6 +153,9 @@ class EC2ClientProxy(ClientProxy):
 
   SKIPLIST = [
       'describe_reserved_instances_offerings',
+      # unsupported
+      'describe_transit_gateway_connect_peers',
+      'describe_transit_gateway_connects',
       'describe_spot_price_history',
       # Describes services that *can* have VPC endpoints, not ones that do
       'describe_vpc_endpoint_services',
@@ -162,6 +169,11 @@ class EC2ClientProxy(ClientProxy):
       'describe_tags',
       # Not top level
       'describe_instance_attribute'
+  ]
+
+  GOV_SKIPLIST = [
+      'describe_client_vpn_endpoints', 'describe_managed_prefix_lists',
+      'describe_network_insights_analyses', 'describe_network_insights_paths'
   ]
 
   EXTRA_ARGS = {
@@ -211,7 +223,8 @@ class EC2ClientProxy(ClientProxy):
       }
 
   def _should_import(self, key: str) -> bool:
-    return key.startswith('describe_') and key not in self.SKIPLIST
+    return key.startswith('describe_') and key not in self.SKIPLIST and not (
+        self._is_gov and key in self.GOV_SKIPLIST)
 
   def _list_args(self, key: str) -> Dict:
     return self.EXTRA_ARGS.get(key, {})
@@ -243,6 +256,7 @@ class S3ClientProxy(ClientProxy):
       'get_bucket_lifecycle',
       'list_bucket_intelligent_tiering_configurations'
   ]
+  GOV_SKIPLIST = ['get_bucket_accelerate_configuration']
 
   def _patch_client(self):
     # Force loading of the pagination config
@@ -257,6 +271,8 @@ class S3ClientProxy(ClientProxy):
 
   def _should_import(self, key: str) -> bool:
     if key in self.SKIPLIST:
+      return False
+    elif self._is_gov and key in self.GOV_SKIPLIST:
       return False
     elif key.startswith(self.LIST_PREFIX):
       return True

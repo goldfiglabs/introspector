@@ -33,6 +33,7 @@ resources:
     - NewInstancesProtectedFromScaleIn
     - ServiceLinkedRoleARN
     - MaxInstanceLifetime
+    - CapacityRebalance
     custom:
       Metadata:
         Tags:

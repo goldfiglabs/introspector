@@ -34,7 +34,8 @@ def map_resource_relations(db: Session,
   provider_account_id = import_job.provider_account_id
   imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
-      RawImport.path.like(f'{path_prefix}%'))
+      RawImport.path.like(f'{path_prefix}%'),
+      RawImport.provider_account_id == import_job.provider_account_id)
   found_relations = set()
   for raw_import in imports:
     import_resource_name = resource_name \
@@ -147,7 +148,9 @@ def _apply_relation(db: Session, import_job: ImportJob,
                     target_uri: str,
                     relation_attrs: List[ResourceRelationAttribute]) -> int:
   previous_query = db.query(ResourceRelation).filter(
-      ResourceRelation.relation == relation.relation).join(
+      ResourceRelation.relation == relation.relation,
+      ResourceRelation.provider_account_id ==
+      import_job.provider_account_id).join(
           ResourceRelation.resource,
           aliased=True).filter(Resource.uri == parent_uri).join(
               ResourceRelation.target,
@@ -293,7 +296,8 @@ def map_resource_prefix(db: Session,
   imports: Iterator[RawImport] = db.query(RawImport).filter(
       RawImport.import_job_id == import_job.id,
       RawImport.path.like(f'{path_prefix}%'), RawImport.mapped == False,
-      RawImport.source == source)
+      RawImport.source == source,
+      RawImport.provider_account_id == import_job.provider_account_id)
   for raw_import in imports:
     import_resource_name = resource_name \
       if resource_name is not None \
@@ -340,7 +344,8 @@ def map_resource_deletes(db: Session, path_prefix: str, import_job: ImportJob,
                          service: Optional[str]):
   # TODO: rewrite this into one query
   uris = db.query(MappedURI.uri).filter(
-      MappedURI.import_job_id == import_job.id, MappedURI.source == 'base')
+      MappedURI.import_job_id == import_job.id, MappedURI.source == 'base',
+      MappedURI.provider_account_id == import_job.provider_account_id)
   deletes = db.query(Resource).filter(
       Resource.provider_account_id == import_job.provider_account_id,
       ~Resource.uri.in_(uris),

@@ -1,0 +1,36 @@
+version: 1
+resources:
+- service: elasticbeanstalk
+  provider_type: ApplicationVersion
+  name: VersionLabel
+  uri:
+    uri: ApplicationVersionArn
+  attributes:
+    provider:
+    - ApplicationVersionArn
+    - ApplicationName
+    - Description
+    - VersionLabel
+    - SourceBuildInformation
+    - BuildArn
+    - SourceBundle
+    - DateCreated
+    - DateUpdated
+    - Status
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: applicationversion
+  relations:
+  - relation: belongs-to
+    path: ApplicationName
+    uri:
+      id:
+        path: ''
+      service:
+        value: elasticbeanstalk
+      resource_name:
+        value: application

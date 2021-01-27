@@ -1,0 +1,99 @@
+version: 1
+resources:
+- service: elasticbeanstalk
+  provider_type: Environment
+  name: EnvironmentName
+  uri:
+    uri: EnvironmentArn
+  attributes:
+    provider:
+    - EnvironmentId
+    - ApplicationName
+    - VersionLabel
+    - SolutionStackName
+    - PlatformArn
+    - TemplateName
+    - Description
+    - EndpointURL
+    - CNAME
+    - DateCreated
+    - DateUpdated
+    - Status
+    - AbortableOperationInProgress
+    - Health
+    - HealthStatus
+    - Resources
+    - Tier
+    - EnvironmentLinks
+    - EnvironmentArn
+    - OperationsRole
+    - Tags
+    - EnvironmentName
+    - AutoScalingGroups
+    - Instances
+    - LaunchConfigurations
+    - LaunchTemplates
+    - LoadBalancers
+    - Triggers
+    - Queues
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: environment
+  relations:
+  - relation: belongs-to
+    path: ApplicationName
+    uri:
+      id:
+        path: ''
+      service:
+        value: elasticbeanstalk
+      resource_name:
+        value: application
+  - relation: belongs-to
+    path:
+      VersionLabel: VersionLabel
+      ApplicationName: ApplicationName
+    uri:
+      id:
+        path: VersionLabel
+      application_name:
+        path: ApplicationName
+      service:
+        value: elasticbeanstalk
+      resource_name:
+        value: applicationversion
+  - relation: acts-as
+    path: OperationsRole
+    uri:
+      uri:
+        path: ''
+  - relation: launches-into
+    path: AutoScalingGroups
+    uri:
+      id:
+        path: Name
+      service:
+        value: autoscaling
+      resource_name:
+        value: autoScalingGroup
+  - relation: launches-with
+    path: LaunchConfigurations
+    uri:
+      id:
+        path: Name
+      service:
+        value: autoscaling
+      resource_name:
+        value: launchConfiguration
+  - relation: has-instances
+    path: Instances
+    uri:
+      id:
+        path: Id
+      service:
+        value: ec2
+      resource_name:
+        value: instance

@@ -170,7 +170,10 @@ def service_gate(service: Optional[str]):
 
 
 # TODO: consider how to rework with tables
-def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
+def map_import(db: Session,
+               import_job_id: int,
+               partition: str,
+               service: Optional[str] = None):
   import_job: ImportJob = db.query(ImportJob).get(import_job_id)
   assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
@@ -183,18 +186,24 @@ def map_import(db: Session, import_job_id: int, service: Optional[str] = None):
                                     source='base')
   gate = service_gate(service)
   for path, account in account_paths_for_import(db, import_job):
-    uri_fn = get_arn_fn(account.scope)
+    uri_fn = get_arn_fn(account.scope, partition)
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
-    boto = load_boto_session(account)
-    proxy = Proxy.build(boto)
+    boto = None
+    proxy = None
     if gate('iam'):
-      synthesize_account_root(proxy, db, import_job, path, account.scope)
+      boto = load_boto_session(account)
+      proxy = Proxy.build(boto)
+      synthesize_account_root(proxy, db, import_job, path, account.scope,
+                              partition)
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source,
                          import_job.path_prefix, uri_fn)
       map_partial_deletes(db, import_job, source, service)
     if gate('ec2'):
       # Additional ec2 work
+      if boto is None or proxy is None:
+        boto = load_boto_session(account)
+        proxy = Proxy.build(boto)
       find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
                         import_job)
     if gate('elb'):

@@ -37,7 +37,6 @@ class _AccountProxies:
 
   def credentials_for_arn(self, arn: str) -> ProviderCredential:
     account_id = arn.split(':')[-1].split('/')[-1]
-    print(account_id, arn, self._credentials)
     return next(cred for cred in self._credentials if cred.scope == account_id)
 
 
@@ -150,7 +149,8 @@ class OrgImport(GlobalService):
   def _make_global_import_with_pool(
       self, _: List[GlobalResourceSpec]) -> GlobalPoolImportFn:
     def import_with_pool(
-        pool: f.ProcessPoolExecutor, import_job_id: int, provider_account_id: int, _: PathStack,
+        pool: f.ProcessPoolExecutor, import_job_id: int,
+        provider_account_id: int, _: PathStack,
         __: List[Tuple[str, ProviderCredential]]) -> List[f.Future]:
       future = pool.submit(_async_proxy,
                            import_job_id=import_job_id,

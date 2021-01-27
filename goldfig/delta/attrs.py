@@ -37,7 +37,8 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
   existing_attributes = set(
       db.query(ResourceAttribute).filter(
           ResourceAttribute.resource_id == resource_id,
-          ResourceAttribute.source == source))
+          ResourceAttribute.source == source,
+          ResourceAttribute.provider_account_id == provider_account_id))
   # existing_attributes = set(previous.attributes)
   for attr in attrs:
     existing_attr = _find_existing_attr(existing_attributes, attr)

@@ -1,0 +1,24 @@
+version: 1
+resources:
+- service: elasticbeanstalk
+  provider_type: Application
+  name: ApplicationName
+  uri:
+    uri: ApplicationArn
+  attributes:
+    provider:
+    - ApplicationArn
+    - ApplicationName
+    - Description
+    - DateCreated
+    - DateUpdated
+    - Versions
+    - ConfigurationTemplates
+    - ResourceLifecycleConfig
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+  resource_name: application

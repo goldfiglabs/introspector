@@ -3,9 +3,12 @@ import logging
 import os
 import re
 import subprocess
-from typing import Callable, List, Tuple
+from typing import Callable, List, Optional
+import urllib.parse
 
-from sqlalchemy import create_engine, text
+import psycopg2
+from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
 from sqlalchemy.pool import NullPool
 from sqlalchemy.orm import sessionmaker, Session
 
@@ -15,6 +18,11 @@ DBNAME = 'goldfig'
 HOST = os.environ.get('GOLDFIG_DB_HOST', 'localhost')
 PORT = int(os.environ.get('GOLDFIG_DB_PORT', 5432))
 SSLMODE = os.environ.get('GOLDFIG_PG_SSLMODE', 'disable')
+IS_RDS = os.environ.get('GOLDFIG_USE_RDS', 'disable') == 'enable'
+if IS_RDS:
+  import boto3
+  import botocore.credentials
+  import botocore.session
 
 
 @dataclass
@@ -25,44 +33,75 @@ class DbCredential:
   host: str
   port: int
 
-  def connection_string(self) -> str:
-    return f'postgresql+psycopg2://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}'
+  def _connection_string(self) -> str:
+    password = urllib.parse.quote(self.password)
+    return f'postgresql+psycopg2://{self.user}:{password}@{self.host}:{self.port}/{self.db_name}?sslmode={SSLMODE}'
 
   def db_url(self) -> str:
     return f'postgresql://{self.user}:{self.password}@{self.host}:{self.port}/{self.db_name}?sslmode={SSLMODE}'
 
+  def _connection_factory(self, *args, **kwargs):
+    assert IS_RDS
+    # Prefer container provider over env, since env is likely
+    # overridden with the target account
+    boto_session = botocore.session.get_session()
+    resolver = boto_session.get_component('credential_provider')
+    container_provider = resolver.get_provider('container-role')
+    resolver.remove('container-role')
+    resolver.insert_before('env', container_provider)
+    boto3_session = boto3.Session(botocore_session=boto_session)
+    region = os.environ['AWS_REGION']
+    host = os.environ.get('GOLDFIG_RDS_HOST', self.host)
+    rds = boto3_session.client('rds', region_name=region)
+    token = rds.generate_db_auth_token(DBHostname=host,
+                                       Port=5432,
+                                       DBUsername=self.user,
+                                       Region=region)
+    return psycopg2.connect(database=self.db_name,
+                            user=self.user,
+                            password=token,
+                            host=self.host,
+                            port=self.port,
+                            sslmode='require')
+
+  def create_engine(self) -> Engine:
+    if IS_RDS:
+      return create_engine('postgres+psycopg2://user:pass@host:5432/db',
+                           connect_args={
+                               "connection_factory": self._connection_factory,
+                               'connect_timeout': 3
+                           },
+                           poolclass=NullPool)
+    else:
+      return create_engine(self._connection_string(),
+                           connect_args={'connect_timeout': 3},
+                           poolclass=NullPool)
+
 
 _ImportCredential = DbCredential(db_name=DBNAME,
                                  user='goldfig',
-                                 password='goldfig',
+                                 password=os.environ.get(
+                                     'GOLDFIG_IMPORT_PW', 'goldfig'),
                                  host=HOST,
-                                 port=5432)
+                                 port=PORT)
 
 _ReadonlyCredential = DbCredential(db_name=DBNAME,
                                    user='goldfig_ro',
-                                   password='goldfig_ro',
+                                   password=os.environ.get(
+                                       'GOLDFIG_RO_PW', 'goldfig_ro'),
                                    host=HOST,
-                                   port=5432)
+                                   port=PORT)
 
 _ReadonlyScopedCredential = DbCredential(db_name=DBNAME,
                                          user='goldfig_ro_scoped',
-                                         password='goldfig_ro_scoped',
+                                         password=os.environ.get(
+                                             'GOLDFIG_SCOPED_PW',
+                                             'goldfig_ro_scoped'),
                                          host=HOST,
-                                         port=5432)
+                                         port=PORT)
 
-_import_engine = None
-_readonly_engine = None
-
-
-def _view_files() -> Tuple[str, List[str]]:
-  path = os.path.realpath(os.path.join(os.path.dirname(__file__), 'views'))
-  files = [
-      f for f in os.listdir(path)
-      if os.path.isfile(os.path.join(path, f)) and f[-4:] == '.sql'
-  ]
-  files.sort()
-  return path, files
-
+_import_engine: Optional[Engine] = None
+_readonly_engine: Optional[Engine] = None
 
 _find_resource_alias = re.compile('resource AS ([_a-zA-Z0-9]+)', re.M | re.S)
 _find_where = re.compile('^.*(WHERE).*$', re.M | re.S)
@@ -111,27 +150,19 @@ def refresh_views(db: Session, provider_account_id: int):
       result = db.execute(query)
 
 
-def install_views(db: Session):
-  path, files = _view_files()
-  for fname in files:
-    with open(os.path.join(path, fname), 'r') as f:
-      sql = f.read()
-      try:
-        stmt = text(sql)
-        db.execute(stmt)
-      except:
-        _log.error(f'failed adding view from {fname}')
-        raise
-
-
 def _run_migration(cred: DbCredential, folder: str):
   cwd = os.getcwd()
   migrations_root = os.path.join(cwd, 'migrations')
   db_mate = os.path.join(cwd, 'dbmate')
   subprocess.run([
-      db_mate, '--no-dump-schema', '--url',
-      cred.db_url(), '--migrations-dir',
-      os.path.join(migrations_root, folder), 'up'
+      db_mate,
+      '--no-dump-schema',
+      '--url',
+      # TODO: support rds here
+      cred.db_url(),
+      '--migrations-dir',
+      os.path.join(migrations_root, folder),
+      'up'
   ]).check_returncode()
 
 
@@ -154,9 +185,7 @@ def init_db():
 def import_session() -> Session:
   global _import_engine
   if _import_engine is None:
-    _import_engine = create_engine(_ImportCredential.connection_string(),
-                                   connect_args={'connect_timeout': 3},
-                                   poolclass=NullPool)
+    _import_engine = _ImportCredential.create_engine()
     # Force connection errors early
     _import_engine.connect()
   return sessionmaker(bind=_import_engine)()
@@ -165,7 +194,9 @@ def import_session() -> Session:
 def readonly_session() -> Session:
   global _readonly_engine
   if _readonly_engine is None:
-    _readonly_engine = create_engine(_ReadonlyCredential.connection_string())
+    _readonly_engine = _ReadonlyCredential.create_engine()
+    # Force connection errors early
+    _readonly_engine.connect()
   return sessionmaker(bind=_readonly_engine)()
 
 
@@ -175,7 +206,7 @@ def db_from_connection(conn) -> Session:
 
 
 def scoped_readonly_session(provider_account_id: int) -> Session:
-  engine = create_engine(_ReadonlyScopedCredential.connection_string())
+  engine = _ReadonlyScopedCredential.create_engine()
   db = sessionmaker(bind=engine)()
   db.execute('SET gf.provider_account_id = :provider_account_id',
              {'provider_account_id': provider_account_id})
@@ -189,7 +220,7 @@ class ReadOnlyProviderDB:
 
 
 def scope_readonly_session(fn: Callable[[Session], int]) -> ReadOnlyProviderDB:
-  engine = create_engine(_ReadonlyScopedCredential.connection_string())
+  engine = _ReadonlyScopedCredential.create_engine()
   db = sessionmaker(bind=engine)()
   provider_account_id = fn(db)
   db.execute('SET gf.provider_account_id = :provider_account_id',

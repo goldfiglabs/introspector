@@ -11,9 +11,10 @@ def find_permissions(db: Session, policies: Tuple[str]):
     FROM
       aws_iam_policy AS P
       INNER JOIN aws_iam_policyversion AS PV
-        ON P._default_policyversion_id = PV.resource_id
-      CROSS JOIN LATERAL jsonb_array_elements(PV.document -> 'Statement') AS S
-      CROSS JOIN LATERAL jsonb_array_elements(S.value -> 'Action') AS A
+        ON PV._policy_id = P._id
+        AND PV.isdefaultversion = true
+      CROSS JOIN LATERAL unpack_maybe_array(PV.document -> 'Statement') AS S
+      CROSS JOIN LATERAL unpack_maybe_array(S.value -> 'Action') AS A
     WHERE
       P.policyname IN :policies
       AND S.value ->> 'Effect' = 'Allow'

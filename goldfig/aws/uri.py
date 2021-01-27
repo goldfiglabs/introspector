@@ -187,6 +187,16 @@ def _cloudwatch_metrics(**kwargs) -> str:
   return f'metrics/{region}/{namespace}/{name}/{flattened}'
 
 
+def _elastic_beanstalk(partition: str, account_id: str, resource_name: str,
+                       **kwargs) -> str:
+  if resource_name == 'applicationversion':
+    version_label = kwargs['id']
+    application_name = kwargs['application_name']
+    region = _get_with_parent('region', kwargs)
+    return f'arn:{partition}:elasticbeanstalk:{region}:{account_id}:applicationversion/{application_name}/{version_label}'
+  raise GFInternal(f'Failed elasticbeanstalk uri fn {resource_name} {kwargs}')
+
+
 def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
   if 'uri' in kwargs:
     return kwargs['uri']
@@ -213,6 +223,8 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
     return _redshift_uri_fn(partition, account_id, resource_name, **kwargs)
   elif service == 'cloudwatch' and resource_name == 'metric':
     return _cloudwatch_metrics(**kwargs)
+  elif service == 'elasticbeanstalk' and resource_name == 'applicationversion':
+    return _elastic_beanstalk(partition, account_id, resource_name, **kwargs)
   # elif service == 'cloudformation':
   #   return _cloudformation_uri_fn(partition, account_id, resource_name,
   #                                 **kwargs)
@@ -229,14 +241,15 @@ def arn_fn(service: str, partition: str, account_id: str, **kwargs) -> Uri:
     return (
         f'arn:{partition}:{service}:{region}:{account_id}:launchConfiguration:',
         f'launchConfigurationName/{id}')
-  if service in ('autoscaling', 'kms', 'route53', 'ssm', 'eks'):
+  if service in ('autoscaling', 'kms', 'route53', 'ssm', 'eks',
+                 'elasticbeanstalk'):
     return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name}/{id}'
   # TODO: remove .lower() call. make resource_name required, then verify it?
   return f'arn:{partition}:{service}:{region}:{account_id}:{resource_name.lower()}:{id}'
 
 
 def get_arn_fn(master_account: str,
-               partition='aws',
+               partition: str,
                subaccount: Optional[str] = None) -> UriFn:
   if subaccount is None:
     account_id = master_account

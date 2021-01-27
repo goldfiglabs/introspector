@@ -1,4 +1,6 @@
 import logging
+import traceback
+import os
 from typing import Dict, Optional
 
 import click
@@ -45,9 +47,18 @@ def cmd():
               type=str,
               required=False,
               help='Only import the specified service')
+@click.option('-g',
+              '--gov-cloud',
+              default=False,
+              is_flag=True,
+              required=False,
+              help='Set this flag to import a govcloud account')
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
 def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
-                   service: Optional[str]):
+                   service: Optional[str], gov_cloud: bool):
+  partition = 'aws-us-gov' if gov_cloud else 'aws'
+  os.environ[
+      'AWS_DEFAULT_REGION'] = 'us-gov-east-1' if gov_cloud else 'us-east-2'
   db = import_session()
   boto = get_boto_session()
   if force:
@@ -63,11 +74,11 @@ def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
   import_job = build_aws_import_job(db, boto, confirm)
   db.add(import_job)
   db.flush()
-  region_cache = RegionCache(boto)
+  region_cache = RegionCache(boto, partition)
   if debug:
-    run_single_session(db, import_job.id, region_cache, service)
+    run_single_session(db, import_job.id, region_cache, gov_cloud, service)
     db.flush()
-    map_import(db, import_job.id)
+    map_import(db, import_job.id, partition)
     refresh_views(db, import_job.provider_account_id)
     if not dry_run:
       db.commit()
@@ -77,21 +88,27 @@ def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
     db.commit()
     # No db required for parallel invocation
     exceptions = run_parallel_session(region_cache, accounts, import_job,
-                                      service)
+                                      gov_cloud, service)
     # Make certain we're using the current db session
-    import_job = db.query(ImportJob).get(import_job.id)
+    reloaded_import_job = db.query(ImportJob).get(import_job.id)
+    if reloaded_import_job is None:
+      raise RuntimeError('Lost import job')
     if len(exceptions) == 0:
       db.commit()
-      map_import(db, import_job.id, service)
-      db.commit()
-      refresh_views(db, import_job.provider_account_id)
-      import_job.mark_complete(exceptions=[])
+      try:
+        map_import(db, reloaded_import_job.id, partition, service)
+        db.commit()
+        refresh_views(db, reloaded_import_job.provider_account_id)
+        reloaded_import_job.mark_complete(exceptions=[])
+      except:
+        exception = traceback.format_exc()
+        reloaded_import_job.mark_complete(exceptions=[exception])
     else:
-      import_job.mark_complete(exceptions)
-    db.add(import_job)
+      reloaded_import_job.mark_complete(exceptions)
+    db.add(reloaded_import_job)
     db.commit()
-    report = report_for_import(db, import_job)
-    print(f'Results - Import #{import_job.id}')
+    report = report_for_import(db, reloaded_import_job)
+    print(f'Results - Import #{reloaded_import_job.id}')
     print_report(report)
 
 
@@ -105,13 +122,29 @@ def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
     type=int,
     default=None)
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
-def remap_cmd(import_job_id: Optional[int], dry_run: bool):
+@click.option('-s',
+              '--service',
+              default=None,
+              type=str,
+              required=False,
+              help='Only remap the specified service')
+@click.option('-g',
+              '--gov-cloud',
+              default=False,
+              is_flag=True,
+              required=False,
+              help='Set this flag to import a govcloud account')
+def remap_cmd(import_job_id: Optional[int], dry_run: bool,
+              service: Optional[str], gov_cloud: bool):
+  partition = 'aws-us-gov' if gov_cloud else 'aws'
   _log.info('Mapping an AWS import')
   if import_job_id is None:
     raise NotImplementedError('Need to query last import job')
   db = import_session()
-  map_import(db, import_job_id)
+  map_import(db, import_job_id, partition, service)
   import_job = db.query(ImportJob).get(import_job_id)
+  if import_job is None:
+    raise RuntimeError('Lost import job')
   refresh_views(db, import_job.provider_account_id)
   if not dry_run:
     db.commit()

@@ -26,6 +26,7 @@ resources:
     - EbsOptimized
     - AssociatePublicIpAddress
     - PlacementTenancy
+    - MetadataOptions
   resource_name: launchConfiguration
   relations:
   - relation: imaged
@@ -44,7 +45,7 @@ resources:
         value: ec2
       resource_name:
         value: security-group
-      id:
+      name:
         path: ''
   - relation: acts-as
     path: IamInstanceProfile

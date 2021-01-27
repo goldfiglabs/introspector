@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Dict, Generator, Iterator, List, Tuple
 
+import botocore.exceptions
+
 from goldfig import ImportWriter, PathStack
 from goldfig.aws.fetch import Proxy, ServiceProxy
 from goldfig.aws.svc import RegionalService
@@ -26,10 +28,13 @@ def _add_user_data(proxy: ServiceProxy, response: Dict):
     instances = reservation.get('Instances', [])
     for instance in instances:
       instance_id = instance['InstanceId']
-      user_data = proxy.get('describe_instance_attribute',
-                            InstanceId=instance_id,
-                            Attribute='userData')
-      instance['UserData'] = user_data['UserData'].get('Value')
+      try:
+        user_data = proxy.get('describe_instance_attribute',
+                              InstanceId=instance_id,
+                              Attribute='userData')
+        instance['UserData'] = user_data['UserData'].get('Value')
+      except botocore.exceptions.ClientError:
+        pass
 
 
 def _add_launch_permissions(proxy: ServiceProxy, response: Dict):

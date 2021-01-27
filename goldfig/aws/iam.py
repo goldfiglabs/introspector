@@ -69,7 +69,8 @@ def _import_credential_report(proxy: ServiceProxy):
       proxy.get('generate_credential_report')
       started = True
     except ClientError as e:
-      is_throttled = e.response.get('Error', {}).get('Code') == 'Throttling'
+      code = e.response.get('Error', {}).get('Code')
+      is_throttled = code == 'Throttling'
       # If we're throttled, we've at least kicked it off already
       _log.error('credential report error', exc_info=e)
       if not is_throttled:
@@ -90,7 +91,7 @@ def _import_credential_report(proxy: ServiceProxy):
     except Exception as e:
       _log.error('credenetial report fetch error', exc_info=e)
       attempts += 1
-      time.sleep(0.1)
+      time.sleep(1)
   if report is None:
     raise GFError('Failed to fetch credential report')
   decoded = report['Content'].decode('utf-8')
@@ -239,7 +240,7 @@ SVC = GlobalService('iam', [
 
 
 def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,
-                            path: str, account_id: str):
+                            path: str, account_id: str, partition: str):
   service_proxy = proxy.service('iam')
   mfa_resp = service_proxy.list('list_virtual_mfa_devices')
   has_virtual_mfa = False
@@ -251,28 +252,22 @@ def synthesize_account_root(proxy: Proxy, db: Session, import_job: ImportJob,
         has_virtual_mfa = True
         break
 
-  arn = f'arn:aws:iam::{account_id}:root'
-  mapped = MappedResource(
-      name='<root account>',
-      uri=arn,
-      provider_type='RootAccount',
-      raw={
-          'Arn': arn,
-          'has_virtual_mfa': has_virtual_mfa
-      },
-      service='iam',
-      category=None
-  )
+  arn = f'arn:{partition}:iam::{account_id}:root'
+  mapped = MappedResource(name='<root account>',
+                          uri=arn,
+                          provider_type='RootAccount',
+                          raw={
+                              'Arn': arn,
+                              'has_virtual_mfa': has_virtual_mfa
+                          },
+                          service='iam',
+                          category=None)
   attrs: List[MappedAttribute] = [
-    MappedAttribute(
-      type='provider',
-      name='Arn',
-      value=arn
-  ), MappedAttribute(
-      type='provider',
-      name='has_virtual_mfa',
-      value=has_virtual_mfa
-  )]
+      MappedAttribute(type='provider', name='Arn', value=arn),
+      MappedAttribute(type='provider',
+                      name='has_virtual_mfa',
+                      value=has_virtual_mfa)
+  ]
   apply_mapped_attrs(db,
                      import_job,
                      path,
