@@ -66,9 +66,9 @@ COMMENT ON TABLE aws_redshift_cluster IS 'redshift Cluster resources and their a
 ALTER TABLE aws_redshift_cluster ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_redshift_cluster ON aws_redshift_cluster
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -83,8 +83,8 @@ CREATE TABLE IF NOT EXISTS aws_redshift_cluster_ec2_securitygroup (
 ALTER TABLE aws_redshift_cluster_ec2_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_redshift_cluster_ec2_securitygroup ON aws_redshift_cluster_ec2_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

@@ -36,8 +36,8 @@ COMMENT ON TABLE aws_ec2_flowlog IS 'ec2 FlowLog resources and their associated 
 ALTER TABLE aws_ec2_flowlog ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_flowlog ON aws_ec2_flowlog
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

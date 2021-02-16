@@ -23,9 +23,9 @@ COMMENT ON TABLE aws_lambda_alias IS 'lambda Alias resources and their associate
 ALTER TABLE aws_lambda_alias ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_alias ON aws_lambda_alias
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS aws_lambda_alias_functionversion (
 ALTER TABLE aws_lambda_alias_functionversion ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_alias_functionversion ON aws_lambda_alias_functionversion
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

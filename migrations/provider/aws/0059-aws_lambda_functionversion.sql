@@ -48,8 +48,8 @@ COMMENT ON TABLE aws_lambda_functionversion IS 'lambda FunctionVersion resources
 ALTER TABLE aws_lambda_functionversion ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_functionversion ON aws_lambda_functionversion
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

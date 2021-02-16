@@ -41,8 +41,8 @@ COMMENT ON TABLE aws_acm_certificate IS 'acm Certificate resources and their ass
 ALTER TABLE aws_acm_certificate ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_acm_certificate ON aws_acm_certificate
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

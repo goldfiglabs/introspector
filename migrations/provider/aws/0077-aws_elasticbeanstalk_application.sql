@@ -23,8 +23,8 @@ COMMENT ON TABLE aws_elasticbeanstalk_application IS 'elasticbeanstalk Applicati
 ALTER TABLE aws_elasticbeanstalk_application ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elasticbeanstalk_application ON aws_elasticbeanstalk_application
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

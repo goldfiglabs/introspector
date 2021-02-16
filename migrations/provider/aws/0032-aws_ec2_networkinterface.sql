@@ -41,9 +41,9 @@ COMMENT ON TABLE aws_ec2_networkinterface IS 'ec2 NetworkInterface resources and
 ALTER TABLE aws_ec2_networkinterface ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_networkinterface ON aws_ec2_networkinterface
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS aws_ec2_networkinterface_securitygroup (
 ALTER TABLE aws_ec2_networkinterface_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_networkinterface_securitygroup ON aws_ec2_networkinterface_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

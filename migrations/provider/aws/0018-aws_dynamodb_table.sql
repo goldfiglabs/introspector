@@ -38,8 +38,8 @@ COMMENT ON TABLE aws_dynamodb_table IS 'dynamodb Table resources and their assoc
 ALTER TABLE aws_dynamodb_table ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_dynamodb_table ON aws_dynamodb_table
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

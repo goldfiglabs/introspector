@@ -32,8 +32,8 @@ COMMENT ON TABLE aws_elb_loadbalancer IS 'elb LoadBalancer resources and their a
 ALTER TABLE aws_elb_loadbalancer ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elb_loadbalancer ON aws_elb_loadbalancer
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

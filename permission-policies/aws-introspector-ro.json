@@ -1,0 +1,49 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "apigateway:GetRestApis",
+                "dax:ListTables",
+                "ds:ListAuthorizedApplications",
+                "ds:DescribeRoles",
+                "ec2:GetEbsEncryptionByDefault",
+                "ec2:GetEbsDefaultKmsKeyId",
+                "ecr:Describe*",
+                "support:Describe*",
+                "ses:GetIdentity*",
+                "sns:GetSubscriptionAttributes",
+                "ssm:ListTagsForResource",
+                "backup:ListBackupPlans",
+                "backup:ListBackupVaults",
+                "cloudhsm:DescribeClusters",
+                "dlm:GetLifecyclePolicies",
+                "ecr:ListTagsForResource",
+                "glue:GetClassifiers",
+                "glue:GetConnections",
+                "glue:GetCrawlers",
+                "glue:GetDataCatalogEncryptionSettings",
+                "glue:GetDatabases",
+                "glue:GetDevEndpoints",
+                "glue:GetJobs",
+                "glue:GetMLTransforms",
+                "glue:GetSecurityConfigurations",
+                "glue:GetTriggers",
+                "glue:ListWorkflows",
+                "health:DescribeEvents",
+                "kafka:ListClusters",
+                "lightsail:GetRelationalDatabases",
+                "mq:ListBrokers",
+                "qldb:ListLedgers",
+                "cloudtrail:ListTrails",
+                "cloudtrail:GetTrail",
+                "cloudtrail:GetEventSelectors",
+                "cloudtrail:GetInsightSelectors",
+                "tag:GetTagKeys"
+            ],
+            "Resource": "*",
+            "Effect": "Allow",
+            "Sid": "GoldfigMoreReadOnly"
+        }
+    ]
+}

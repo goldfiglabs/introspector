@@ -49,9 +49,9 @@ COMMENT ON TABLE aws_elasticbeanstalk_environment IS 'elasticbeanstalk Environme
 ALTER TABLE aws_elasticbeanstalk_environment ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elasticbeanstalk_environment ON aws_elasticbeanstalk_environment
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -65,9 +65,9 @@ CREATE TABLE IF NOT EXISTS aws_elasticbeanstalk_environment_autoscaling_autoscal
 ALTER TABLE aws_elasticbeanstalk_environment_autoscaling_autoscalinggroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elasticbeanstalk_environment_autoscaling_autoscalinggroup ON aws_elasticbeanstalk_environment_autoscaling_autoscalinggroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -81,9 +81,9 @@ CREATE TABLE IF NOT EXISTS aws_elasticbeanstalk_environment_autoscaling_launchco
 ALTER TABLE aws_elasticbeanstalk_environment_autoscaling_launchconfiguration ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elasticbeanstalk_environment_autoscaling_launchconfiguration ON aws_elasticbeanstalk_environment_autoscaling_launchconfiguration
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -97,8 +97,8 @@ CREATE TABLE IF NOT EXISTS aws_elasticbeanstalk_environment_ec2_instance (
 ALTER TABLE aws_elasticbeanstalk_environment_ec2_instance ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elasticbeanstalk_environment_ec2_instance ON aws_elasticbeanstalk_environment_ec2_instance
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

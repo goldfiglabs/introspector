@@ -38,9 +38,9 @@ COMMENT ON TABLE aws_cloudformation_stack IS 'cloudformation Stack resources and
 ALTER TABLE aws_cloudformation_stack ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_cloudformation_stack ON aws_cloudformation_stack
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS aws_cloudformation_stack_sns_topic (
 ALTER TABLE aws_cloudformation_stack_sns_topic ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_cloudformation_stack_sns_topic ON aws_cloudformation_stack_sns_topic
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

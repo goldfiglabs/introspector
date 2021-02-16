@@ -9,6 +9,6 @@ mkdir -p $DIR/dist
 
 cd $DIR
 
-GOOS=darwin GOARCH=amd64 go build -o dist/gf_osx
+GOOS=darwin GOARCH=amd64 go build -o dist/introspector_osx
 
-GOOS=linux GOARCH=amd64 go build -o dist/gf_linux
+GOOS=linux GOARCH=amd64 go build -o dist/introspector_linux

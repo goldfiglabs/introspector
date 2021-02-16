@@ -28,8 +28,8 @@ COMMENT ON TABLE aws_ssm_parameter IS 'ssm Parameter resources and their associa
 ALTER TABLE aws_ssm_parameter ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ssm_parameter ON aws_ssm_parameter
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

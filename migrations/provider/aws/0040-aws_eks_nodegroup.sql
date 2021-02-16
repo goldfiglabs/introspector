@@ -38,9 +38,9 @@ COMMENT ON TABLE aws_eks_nodegroup IS 'eks Nodegroup resources and their associa
 ALTER TABLE aws_eks_nodegroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_eks_nodegroup ON aws_eks_nodegroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS aws_eks_nodegroup_ec2_subnet (
 ALTER TABLE aws_eks_nodegroup_ec2_subnet ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_eks_nodegroup_ec2_subnet ON aws_eks_nodegroup_ec2_subnet
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

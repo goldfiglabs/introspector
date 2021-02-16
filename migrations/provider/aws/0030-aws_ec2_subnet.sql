@@ -33,8 +33,8 @@ COMMENT ON TABLE aws_ec2_subnet IS 'ec2 Subnet resources and their associated at
 ALTER TABLE aws_ec2_subnet ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_subnet ON aws_ec2_subnet
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

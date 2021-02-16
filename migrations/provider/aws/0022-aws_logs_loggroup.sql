@@ -23,8 +23,8 @@ COMMENT ON TABLE aws_logs_loggroup IS 'logs LogGroup resources and their associa
 ALTER TABLE aws_logs_loggroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_logs_loggroup ON aws_logs_loggroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

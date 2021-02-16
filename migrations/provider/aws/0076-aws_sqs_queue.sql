@@ -35,8 +35,8 @@ COMMENT ON TABLE aws_sqs_queue IS 'sqs Queue resources and their associated attr
 ALTER TABLE aws_sqs_queue ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_sqs_queue ON aws_sqs_queue
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

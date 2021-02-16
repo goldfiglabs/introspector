@@ -29,9 +29,9 @@ COMMENT ON TABLE aws_iam_policy IS 'iam Policy resources and their associated at
 ALTER TABLE aws_iam_policy ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_policy ON aws_iam_policy
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -45,9 +45,9 @@ CREATE TABLE IF NOT EXISTS aws_iam_policy_group (
 ALTER TABLE aws_iam_policy_group ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_policy_group ON aws_iam_policy_group
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS aws_iam_policy_role (
 ALTER TABLE aws_iam_policy_role ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_policy_role ON aws_iam_policy_role
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS aws_iam_policy_user (
 ALTER TABLE aws_iam_policy_user ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_policy_user ON aws_iam_policy_user
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

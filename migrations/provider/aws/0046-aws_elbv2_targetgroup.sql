@@ -42,9 +42,9 @@ COMMENT ON TABLE aws_elbv2_targetgroup IS 'elbv2 TargetGroup resources and their
 ALTER TABLE aws_elbv2_targetgroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_targetgroup ON aws_elbv2_targetgroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -58,8 +58,8 @@ CREATE TABLE IF NOT EXISTS aws_elbv2_targetgroup_loadbalancer (
 ALTER TABLE aws_elbv2_targetgroup_loadbalancer ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_targetgroup_loadbalancer ON aws_elbv2_targetgroup_loadbalancer
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

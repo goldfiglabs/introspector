@@ -49,9 +49,9 @@ COMMENT ON TABLE aws_lambda_function IS 'lambda Function resources and their ass
 ALTER TABLE aws_lambda_function ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_function ON aws_lambda_function
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -65,9 +65,9 @@ CREATE TABLE IF NOT EXISTS aws_lambda_function_ec2_securitygroup (
 ALTER TABLE aws_lambda_function_ec2_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_function_ec2_securitygroup ON aws_lambda_function_ec2_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -81,8 +81,8 @@ CREATE TABLE IF NOT EXISTS aws_lambda_function_ec2_subnet (
 ALTER TABLE aws_lambda_function_ec2_subnet ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_lambda_function_ec2_subnet ON aws_lambda_function_ec2_subnet
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

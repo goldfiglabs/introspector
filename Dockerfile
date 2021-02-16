@@ -7,8 +7,8 @@ COPY migrations /app/migrations
 WORKDIR /app/
 RUN pip install -r requirements.txt
 EXPOSE 5000/tcp
-COPY goldfig.py /app/
-COPY goldfig /app/goldfig
-LABEL goldfig-cli=0.0.1
+COPY introspector.py /app/
+COPY introspector /app/introspector
+LABEL introspector-cli=0.0.1
 
-ENTRYPOINT ["/app/goldfig.py", "serve"]
+ENTRYPOINT ["/app/introspector.py", "serve"]

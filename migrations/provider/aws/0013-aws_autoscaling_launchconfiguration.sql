@@ -38,9 +38,9 @@ COMMENT ON TABLE aws_autoscaling_launchconfiguration IS 'autoscaling LaunchConfi
 ALTER TABLE aws_autoscaling_launchconfiguration ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_autoscaling_launchconfiguration ON aws_autoscaling_launchconfiguration
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -54,8 +54,8 @@ CREATE TABLE IF NOT EXISTS aws_autoscaling_launchconfiguration_ec2_securitygroup
 ALTER TABLE aws_autoscaling_launchconfiguration_ec2_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_autoscaling_launchconfiguration_ec2_securitygroup ON aws_autoscaling_launchconfiguration_ec2_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

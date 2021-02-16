@@ -21,8 +21,8 @@ COMMENT ON TABLE aws_iam_signingcertificate IS 'iam SigningCertificate resources
 ALTER TABLE aws_iam_signingcertificate ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_signingcertificate ON aws_iam_signingcertificate
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

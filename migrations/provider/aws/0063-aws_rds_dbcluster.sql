@@ -69,9 +69,9 @@ COMMENT ON TABLE aws_rds_dbcluster IS 'rds DBCluster resources and their associa
 ALTER TABLE aws_rds_dbcluster ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_rds_dbcluster ON aws_rds_dbcluster
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS aws_rds_dbcluster_ec2_securitygroup (
 ALTER TABLE aws_rds_dbcluster_ec2_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_rds_dbcluster_ec2_securitygroup ON aws_rds_dbcluster_ec2_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

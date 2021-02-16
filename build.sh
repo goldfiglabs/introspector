@@ -10,8 +10,8 @@ echo "Building package ${PACKAGE}"
 
 pipenv lock -r > requirements.txt
 
-GOLDFIG_DOCKER_REPO=${DOCKER_REPO:-goldfig}
-IMAGE="${GOLDFIG_DOCKER_REPO}/${PACKAGE}"
+INTROSPECTOR_DOCKER_REPO=${DOCKER_REPO:-goldfig}
+IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}"
 DOCKER_BUILDKIT=1 docker build -t ${IMAGE} .
 
 echo "Building launcher"
@@ -25,14 +25,14 @@ cp launcher/dist/* dist/
 
 cd dist
 # Build linux package
-ln gf_linux gf
-zip goldfig_linux.zip gf docker-compose.yml
-unlink gf
+ln introspector_linux introspector
+zip introspector_linux.zip introspector docker-compose.yml
+unlink introspector
 
 # Build osx package
-ln gf_osx gf
-zip goldfig_osx.zip gf docker-compose.yml
-unlink gf
+ln introspector_osx introspector
+zip introspector_osx.zip introspector docker-compose.yml
+unlink introspector
 
 echo "To publish"
 echo "docker push ${IMAGE}:latest"

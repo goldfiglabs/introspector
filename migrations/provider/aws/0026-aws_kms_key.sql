@@ -35,8 +35,8 @@ COMMENT ON TABLE aws_kms_key IS 'kms Key resources and their associated attribut
 ALTER TABLE aws_kms_key ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_kms_key ON aws_kms_key
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

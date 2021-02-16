@@ -1,12 +1,12 @@
 version: "3.8"
 services:
-  goldfig:
+  introspector:
     build: .
     init: true
     environment:
-      - GOLDFIG_DB_HOST=db
-      - GOLDFIG_DB_SU_USER=postgres
-      - GOLDFIG_DB_SU_PASSWORD=postgres
+      - INTROSPECTOR_DB_HOST=db
+      - INTROSPECTOR_DB_SU_USER=postgres
+      - INTROSPECTOR_DB_SU_PASSWORD=postgres
     depends_on:
       - db
     ports:

@@ -25,9 +25,9 @@ COMMENT ON TABLE aws_route53_hostedzone IS 'route53 HostedZone resources and the
 ALTER TABLE aws_route53_hostedzone ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_route53_hostedzone ON aws_route53_hostedzone
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS aws_route53_hostedzone_ec2_vpc (
 ALTER TABLE aws_route53_hostedzone_ec2_vpc ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_route53_hostedzone_ec2_vpc ON aws_route53_hostedzone_ec2_vpc
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

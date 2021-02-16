@@ -49,8 +49,8 @@ COMMENT ON TABLE aws_ecs_task IS 'ecs Task resources and their associated attrib
 ALTER TABLE aws_ecs_task ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ecs_task ON aws_ecs_task
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

@@ -38,8 +38,8 @@ COMMENT ON TABLE aws_s3_bucket IS 's3 Bucket resources and their associated attr
 ALTER TABLE aws_s3_bucket ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_s3_bucket ON aws_s3_bucket
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

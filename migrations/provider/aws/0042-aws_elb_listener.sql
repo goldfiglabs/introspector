@@ -22,8 +22,8 @@ COMMENT ON TABLE aws_elb_listener IS 'elb Listener resources and their associate
 ALTER TABLE aws_elb_listener ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elb_listener ON aws_elb_listener
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

@@ -16,8 +16,8 @@ COMMENT ON TABLE aws_ec2_defaults IS 'ec2 Defaults resources and their associate
 ALTER TABLE aws_ec2_defaults ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_defaults ON aws_ec2_defaults
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

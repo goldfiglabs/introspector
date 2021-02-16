@@ -24,8 +24,8 @@ COMMENT ON TABLE aws_ecr_repository IS 'ecr Repository resources and their assoc
 ALTER TABLE aws_ecr_repository ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ecr_repository ON aws_ecr_repository
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

@@ -24,8 +24,8 @@ COMMENT ON TABLE aws_ec2_vpcpeeringconnection IS 'ec2 VpcPeeringConnection resou
 ALTER TABLE aws_ec2_vpcpeeringconnection ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_vpcpeeringconnection ON aws_ec2_vpcpeeringconnection
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

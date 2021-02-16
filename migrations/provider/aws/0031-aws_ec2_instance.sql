@@ -71,9 +71,9 @@ COMMENT ON TABLE aws_ec2_instance IS 'ec2 Instance resources and their associate
 ALTER TABLE aws_ec2_instance ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_instance ON aws_ec2_instance
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -92,9 +92,9 @@ CREATE TABLE IF NOT EXISTS aws_ec2_instance_volume (
 ALTER TABLE aws_ec2_instance_volume ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_instance_volume ON aws_ec2_instance_volume
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -108,8 +108,8 @@ CREATE TABLE IF NOT EXISTS aws_ec2_instance_securitygroup (
 ALTER TABLE aws_ec2_instance_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ec2_instance_securitygroup ON aws_ec2_instance_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

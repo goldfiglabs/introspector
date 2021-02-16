@@ -25,8 +25,8 @@ COMMENT ON TABLE aws_sns_topic IS 'sns Topic resources and their associated attr
 ALTER TABLE aws_sns_topic ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_sns_topic ON aws_sns_topic
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

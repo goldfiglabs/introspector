@@ -24,9 +24,9 @@ COMMENT ON TABLE aws_elbv2_listener IS 'elbv2 Listener resources and their assoc
 ALTER TABLE aws_elbv2_listener ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_listener ON aws_elbv2_listener
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS aws_elbv2_listener_acm_certificate (
 ALTER TABLE aws_elbv2_listener_acm_certificate ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_listener_acm_certificate ON aws_elbv2_listener_acm_certificate
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

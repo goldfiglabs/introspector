@@ -36,8 +36,8 @@ COMMENT ON TABLE aws_ses_identity IS 'ses Identity resources and their associate
 ALTER TABLE aws_ses_identity ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_ses_identity ON aws_ses_identity
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

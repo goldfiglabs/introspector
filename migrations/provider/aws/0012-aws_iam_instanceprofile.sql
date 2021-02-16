@@ -22,8 +22,8 @@ COMMENT ON TABLE aws_iam_instanceprofile IS 'iam InstanceProfile resources and t
 ALTER TABLE aws_iam_instanceprofile ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_instanceprofile ON aws_iam_instanceprofile
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

@@ -39,9 +39,9 @@ COMMENT ON TABLE aws_elbv2_loadbalancer IS 'elbv2 LoadBalancer resources and the
 ALTER TABLE aws_elbv2_loadbalancer ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_loadbalancer ON aws_elbv2_loadbalancer
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
 
@@ -55,8 +55,8 @@ CREATE TABLE IF NOT EXISTS aws_elbv2_loadbalancer_ec2_securitygroup (
 ALTER TABLE aws_elbv2_loadbalancer_ec2_securitygroup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_elbv2_loadbalancer_ec2_securitygroup ON aws_elbv2_loadbalancer_ec2_securitygroup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

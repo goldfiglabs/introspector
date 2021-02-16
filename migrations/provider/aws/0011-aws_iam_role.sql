@@ -27,8 +27,8 @@ COMMENT ON TABLE aws_iam_role IS 'iam Role resources and their associated attrib
 ALTER TABLE aws_iam_role ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_role ON aws_iam_role
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

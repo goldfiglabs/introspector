@@ -1,9 +1,10 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from goldfig.bootstrap_db import db_from_connection
-from goldfig.models import ProviderAccount, Resource, ResourceAttribute, ResourceRelation
-from goldfig.tools.cis import IamProfiles
+from introspector.bootstrap_db import db_from_connection
+from introspector import models
+from introspector.models import ProviderAccount, Resource, ResourceAttribute, ResourceRelation
+from introspector.tools.cis import IamProfiles
 
 import pytest
 from pytest_postgresql import factories
@@ -23,6 +24,7 @@ _AWS_ID = 2
 
 # @pytest.fixture(scope='module')
 def _iam_fixture(db: Session):
+  models.Base.metadata.create_all(db.get_bind())
   # Providers
   gcp = ProviderAccount(id=_GCP_ID, name='test-gcp-account', provider='gcp')
   db.add(gcp)
@@ -51,7 +53,8 @@ def _multiple_tiers_service_account(db: Session):
                           value={
                               'role': 'web',
                               'metadata:foo': 'bar'
-                          })
+                          },
+                          provider_account_id=_GCP_ID)
   db.add(ra1)
   r2 = Resource(path=vm_path,
                 uri='https://project/foo/instances/vm-2',
@@ -66,7 +69,8 @@ def _multiple_tiers_service_account(db: Session):
                           value={
                               'role': 'web',
                               'metadata:foo': 'baz'
-                          })
+                          },
+                          provider_account_id=_GCP_ID)
   db.add(ra2)
   # App tier machine
   r3 = Resource(path=vm_path,
@@ -82,7 +86,8 @@ def _multiple_tiers_service_account(db: Session):
                           value={
                               'role': 'app',
                               'metadata:xxx': 'yyy'
-                          })
+                          },
+                          provider_account_id=_GCP_ID)
   db.add(ra3)
 
   # Shared service account
@@ -100,15 +105,18 @@ def _multiple_tiers_service_account(db: Session):
   # Relations
   rr1 = ResourceRelation(resource_id=r1.id,
                          relation='acts-as',
-                         target_id=sa1.id)
+                         target_id=sa1.id,
+                         provider_account_id=_GCP_ID)
   db.add(rr1)
   rr2 = ResourceRelation(resource_id=r2.id,
                          relation='acts-as',
-                         target_id=sa1.id)
+                         target_id=sa1.id,
+                         provider_account_id=_GCP_ID)
   db.add(rr2)
   rr3 = ResourceRelation(resource_id=r3.id,
                          relation='acts-as',
-                         target_id=sa1.id)
+                         target_id=sa1.id,
+                         provider_account_id=_GCP_ID)
   db.add(rr3)
   db.flush()
 
@@ -137,7 +145,8 @@ def _multiple_service_accounts(db: Session):
                           value={
                               'role': 'web',
                               'metadata:foo': 'bar'
-                          })
+                          },
+                          provider_account_id=_GCP_ID)
   db.add(ra1)
   r2 = Resource(path=vm_path,
                 uri='https://project/foo/instances/vm-2',
@@ -152,7 +161,8 @@ def _multiple_service_accounts(db: Session):
                           value={
                               'role': 'web',
                               'metadata:foo': 'baz'
-                          })
+                          },
+                          provider_account_id=_GCP_ID)
   db.add(ra2)
   iam_path = prefix('iam'),
   sa1 = Resource(
@@ -175,19 +185,19 @@ def _multiple_service_accounts(db: Session):
 
   rr1 = ResourceRelation(resource_id=r1.id,
                          relation='acts-as',
-                         target_id=sa1.id)
+                         target_id=sa1.id,
+                         provider_account_id=_GCP_ID)
   db.add(rr1)
   rr2 = ResourceRelation(resource_id=r2.id,
                          relation='acts-as',
-                         target_id=sa2.id)
+                         target_id=sa2.id,
+                         provider_account_id=_GCP_ID)
   db.add(rr2)
   db.flush()
 
 
 def test_providers(db):
   stmt = text('select count(*) from provider_account')
-  result = db.execute(stmt).scalar()
-  assert result == 0
   _iam_fixture(db)
   result = db.execute(stmt).scalar()
   assert result == 2

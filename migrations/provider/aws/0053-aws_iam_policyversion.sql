@@ -20,8 +20,8 @@ COMMENT ON TABLE aws_iam_policyversion IS 'iam PolicyVersion resources and their
 ALTER TABLE aws_iam_policyversion ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_iam_policyversion ON aws_iam_policyversion
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 

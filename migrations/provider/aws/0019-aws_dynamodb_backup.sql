@@ -26,8 +26,8 @@ COMMENT ON TABLE aws_dynamodb_backup IS 'dynamodb Backup resources and their ass
 ALTER TABLE aws_dynamodb_backup ENABLE ROW LEVEL SECURITY;
 CREATE POLICY read_aws_dynamodb_backup ON aws_dynamodb_backup
 USING (
-  current_user = 'goldfig_ro'
+  current_user = 'introspector_ro'
   OR
-  provider_account_id = current_setting('gf.provider_account_id', true)::int
+  provider_account_id = current_setting('introspector.provider_account_id', true)::int
 );
 
