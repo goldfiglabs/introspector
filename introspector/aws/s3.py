@@ -27,7 +27,7 @@ def _import_bucket(proxy: ServiceProxy, bucket_metadata) -> Dict:
         result[key] = attr_result[key]
       else:
         result[key] = attr_result
-      if key in ('Policy', 'RequestPayment'):
+      if key in ('Policy', ):
         result[key] = json.loads(result[key])
     elif op_name == 'get_bucket_location':
       result['Location'] = {'LocationConstraint': 'us-east-1'}
