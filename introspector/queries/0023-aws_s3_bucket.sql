@@ -19,7 +19,7 @@ SELECT
   policy.attr_value::jsonb AS policy,
   policystatus.attr_value::jsonb AS policystatus,
   replication.attr_value::jsonb AS replication,
-  requestpayment.attr_value #>> '{}' AS requestpayment,
+  requestpayment.attr_value::jsonb AS requestpayment,
   tagging.attr_value::jsonb AS tagging,
   versioning.attr_value::jsonb AS versioning,
   website.attr_value::jsonb AS website,

@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/pkg/errors"
 )
 
 func requireIntrospectorComposition(ctx context.Context, cli *client.Client) types.Container {
@@ -65,8 +69,60 @@ func needsGcpCredential(userCmd []string) bool {
 	return false
 }
 
+func runFileCommand(filename string, rest []string) ([]string, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	cmd := []string{"run", string(bytes)}
+	cmd = append(cmd, rest...)
+	return cmd, nil
+}
+
+func unrollRunCommands(cmd []string) ([][]string, error) {
+	if len(cmd) < 2 || cmd[0] != "run" {
+		return [][]string{cmd}, nil
+	}
+	queryTarget := cmd[1]
+	info, err := os.Stat(queryTarget)
+	if os.IsNotExist(err) {
+		// Let introspector handle whatever
+		return [][]string{cmd}, nil
+	} else if err != nil {
+		return nil, errors.Wrapf(err, "Failed to stat %v", queryTarget)
+	}
+	if info.IsDir() {
+		infos, err := ioutil.ReadDir(queryTarget)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Failed to ReadDir(%v)", queryTarget)
+		}
+		cmds := [][]string{}
+		for _, info := range infos {
+			if strings.HasSuffix(info.Name(), ".sql") {
+				filename := filepath.Join(queryTarget, info.Name())
+				subCommand, err := runFileCommand(filename, cmd[2:])
+				if err != nil {
+					return nil, err
+				}
+				cmds = append(cmds, subCommand)
+			}
+		}
+		return cmds, nil
+	}
+	runCommand, err := runFileCommand(queryTarget, cmd[2:])
+	if err != nil {
+		return nil, err
+	}
+	return [][]string{runCommand}, nil
+}
+
 func cmdPassthrough(ctx context.Context, cli *client.Client, introspector types.Container, userCmd []string) error {
 	var env map[string]string
+
 	cmd := append([]string{"python", "introspector.py"}, userCmd...)
 	if needsAwsCredential((userCmd)) {
 		awsEnv, err := loadAwsCredentials(ctx)
@@ -142,8 +198,14 @@ func main() {
 		panic(err)
 	}
 	introspector := requireIntrospectorComposition(ctx, cli)
-	err = cmdPassthrough(ctx, cli, introspector, cmd)
+	cmds, err := unrollRunCommands(cmd)
 	if err != nil {
 		panic(err)
+	}
+	for _, cmd := range cmds {
+		err = cmdPassthrough(ctx, cli, introspector, cmd)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS aws_s3_bucket (
   policy JSONB,
   policystatus JSONB,
   replication JSONB,
-  requestpayment TEXT,
+  requestpayment JSONB,
   tagging JSONB,
   versioning JSONB,
   website JSONB,
