@@ -34,9 +34,15 @@ We were inspired by `osquery` to bring the same level of structure and consisten
 
 1. Download the latest Introspector [release](https://github.com/goldfiglabs/introspector/releases):
 
+  Linux:
+   ```
+    curl -LO https://github.com/goldfiglabs/introspector/releases/latest/download/introspector_linux.zip
+    unzip introspector_linux.zip
+   ```
+
+  OSX:
    ```
     curl -LO https://github.com/goldfiglabs/introspector/releases/latest/download/introspector_osx.zip
-
     unzip introspector_osx.zip
    ```
 
@@ -161,7 +167,7 @@ See more in the `sample_queries/` folder.
 
 1. What's currently supported?
 
-   Introspector is being released with support for most common AWS services, including IAM, ec2, and s3, as well as higher level services such as lambda, ECS, and plumbing such as SNS and SQS.
+   Introspector is being released with support for most common AWS services, including IAM, EC2, and S3, as well as higher level services such as Lambda, ECS, and plumbing such as SNS and SQS.
 
 1. What's the set of permissions needed to run an import?
 
@@ -192,13 +198,13 @@ See more in the `sample_queries/` folder.
 
 1. What's next on the Roadmap?
 
-   Increasing the breadth of services supported and normalization of data that appears in different forms throughout a provider's data. See something missing? File an issue!
+   Increasing the breadth of services supported and normalization of data that appears in different forms throughout a provider's data. See something missing? File an issue—we'd love your contributions!
 
 ## Schema Documentation
 
 Schema documentation can be found online:
 
-- [https://www.goldfiglabs.com/goldfig/](https://www.goldfiglabs.com/goldfig/)
+- [https://www.goldfiglabs.com/introspector/](https://www.goldfiglabs.com/introspector/)
 
 Alternatively, your running Docker instance will have the docs for your build:
 
