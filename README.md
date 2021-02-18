@@ -5,7 +5,7 @@ The goal is to unlock the expressive power of SQL and relational databases to as
 
 ## Why?
 
-We were inspired by `osquery` to bring the same level of structure and consistency to the data backing our cloud deployments. All of this information is available from the underlying platform but is in disparate places and relationships can be difficult to find. Additionally, the expressivity of SQL far outstrips the querying functionality built into the existing CLI tools (`aws`, `gcloud`, etc.). At the cost of needing to import the data, Introspector allows you to issue more specific or complex queries, or even join against internal data sources (like an org chart) to produce customized reports. Introspector is not intended to replace provider tools, but instead standardize the process of analyzing your infrastructure.
+We (@ [Gold Fig Labs](https://goldfiglabs.com)) were inspired by `osquery` to bring the same level of structure and consistency to the data backing our cloud deployments. All of this information is available from the underlying platform but is in disparate places and relationships can be difficult to find. Additionally, the expressivity of SQL far outstrips the querying functionality built into the existing CLI tools (`aws`, `gcloud`, etc.). At the cost of needing to import the data, Introspector allows you to issue more specific or complex queries, or even join against internal data sources (like an org chart) to produce customized reports. Introspector is not intended to replace provider tools, but instead standardize the process of analyzing your infrastructure.
 
 ## Introspector Components
 
