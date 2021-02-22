@@ -204,7 +204,7 @@ See more in the `sample_queries/` folder.
 
 Schema documentation can be found online:
 
-- [https://www.goldfiglabs.com/introspector/](https://www.goldfiglabs.com/introspector/)
+- [https://www.goldfiglabs.com/introspector-schema-docs/](https://www.goldfiglabs.com/introspector-schema-docs/)
 
 Alternatively, your running Docker instance will have the docs for your build:
 
