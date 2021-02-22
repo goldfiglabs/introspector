@@ -1,4 +1,18 @@
-INSERT INTO aws_ec2_securitygroup
+INSERT INTO aws_ec2_securitygroup (
+  _id,
+  uri,
+  provider_account_id,
+  description,
+  groupname,
+  ippermissions,
+  ownerid,
+  groupid,
+  ippermissionsegress,
+  tags,
+  vpcid,
+  _tags,
+  _vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -11,6 +25,7 @@ SELECT
   ippermissionsegress.attr_value::jsonb AS ippermissionsegress,
   tags.attr_value::jsonb AS tags,
   vpcid.attr_value #>> '{}' AS vpcid,
+  _tags.attr_value::jsonb AS _tags,
   
     _vpc_id.target_id AS _vpc_id,
     _account_id.target_id AS _account_id
@@ -50,6 +65,10 @@ FROM
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -90,6 +109,7 @@ SET
     ippermissionsegress = EXCLUDED.ippermissionsegress,
     tags = EXCLUDED.tags,
     vpcid = EXCLUDED.vpcid,
+    _tags = EXCLUDED._tags,
     _vpc_id = EXCLUDED._vpc_id,
     _account_id = EXCLUDED._account_id
   ;

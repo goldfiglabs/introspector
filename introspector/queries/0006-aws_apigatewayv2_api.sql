@@ -1,4 +1,27 @@
-INSERT INTO aws_apigatewayv2_api
+INSERT INTO aws_apigatewayv2_api (
+  _id,
+  uri,
+  provider_account_id,
+  apiendpoint,
+  apigatewaymanaged,
+  apiid,
+  apikeyselectionexpression,
+  corsconfiguration,
+  createddate,
+  description,
+  disableschemavalidation,
+  disableexecuteapiendpoint,
+  importinfo,
+  name,
+  protocoltype,
+  routeselectionexpression,
+  tags,
+  version,
+  warnings,
+  stages,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -20,6 +43,7 @@ SELECT
   version.attr_value #>> '{}' AS version,
   warnings.attr_value::jsonb AS warnings,
   stages.attr_value::jsonb AS stages,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -94,6 +118,10 @@ FROM
     ON stages.resource_id = R.id
     AND stages.type = 'provider'
     AND lower(stages.attr_name) = 'stages'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -130,6 +158,7 @@ SET
     version = EXCLUDED.version,
     warnings = EXCLUDED.warnings,
     stages = EXCLUDED.stages,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

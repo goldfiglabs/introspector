@@ -1,4 +1,45 @@
-INSERT INTO aws_cloudtrail_trail
+INSERT INTO aws_cloudtrail_trail (
+  _id,
+  uri,
+  provider_account_id,
+  name,
+  s3bucketname,
+  s3keyprefix,
+  snstopicname,
+  snstopicarn,
+  includeglobalserviceevents,
+  ismultiregiontrail,
+  homeregion,
+  trailarn,
+  logfilevalidationenabled,
+  cloudwatchlogsloggrouparn,
+  cloudwatchlogsrolearn,
+  kmskeyid,
+  hascustomeventselectors,
+  hasinsightselectors,
+  isorganizationtrail,
+  islogging,
+  latestdeliveryerror,
+  latestnotificationerror,
+  latestdeliverytime,
+  latestnotificationtime,
+  startloggingtime,
+  stoploggingtime,
+  latestcloudwatchlogsdeliveryerror,
+  latestcloudwatchlogsdeliverytime,
+  latestdigestdeliverytime,
+  latestdigestdeliveryerror,
+  latestdeliveryattempttime,
+  latestnotificationattempttime,
+  latestnotificationattemptsucceeded,
+  latestdeliveryattemptsucceeded,
+  timeloggingstarted,
+  timeloggingstopped,
+  tags,
+  eventselectors,
+  _tags,
+  _s3_bucket_id,_logs_loggroup_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -38,6 +79,7 @@ SELECT
   timeloggingstopped.attr_value #>> '{}' AS timeloggingstopped,
   tags.attr_value::jsonb AS tags,
   eventselectors.attr_value::jsonb AS eventselectors,
+  _tags.attr_value::jsonb AS _tags,
   
     _s3_bucket_id.target_id AS _s3_bucket_id,
     _logs_loggroup_id.target_id AS _logs_loggroup_id,
@@ -186,6 +228,10 @@ FROM
     ON eventselectors.resource_id = R.id
     AND eventselectors.type = 'provider'
     AND lower(eventselectors.attr_name) = 'eventselectors'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_s3_bucket_relation.resource_id AS resource_id,
@@ -266,6 +312,7 @@ SET
     timeloggingstopped = EXCLUDED.timeloggingstopped,
     tags = EXCLUDED.tags,
     eventselectors = EXCLUDED.eventselectors,
+    _tags = EXCLUDED._tags,
     _s3_bucket_id = EXCLUDED._s3_bucket_id,
     _logs_loggroup_id = EXCLUDED._logs_loggroup_id,
     _account_id = EXCLUDED._account_id

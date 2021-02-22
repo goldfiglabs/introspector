@@ -1,4 +1,58 @@
-INSERT INTO aws_redshift_cluster
+INSERT INTO aws_redshift_cluster (
+  _id,
+  uri,
+  provider_account_id,
+  clusteridentifier,
+  nodetype,
+  clusterstatus,
+  clusteravailabilitystatus,
+  modifystatus,
+  masterusername,
+  dbname,
+  endpoint,
+  clustercreatetime,
+  automatedsnapshotretentionperiod,
+  manualsnapshotretentionperiod,
+  clustersecuritygroups,
+  vpcsecuritygroups,
+  clusterparametergroups,
+  clustersubnetgroupname,
+  vpcid,
+  availabilityzone,
+  preferredmaintenancewindow,
+  pendingmodifiedvalues,
+  clusterversion,
+  allowversionupgrade,
+  numberofnodes,
+  publiclyaccessible,
+  encrypted,
+  restorestatus,
+  datatransferprogress,
+  hsmstatus,
+  clustersnapshotcopystatus,
+  clusterpublickey,
+  clusternodes,
+  elasticipstatus,
+  clusterrevisionnumber,
+  tags,
+  kmskeyid,
+  enhancedvpcrouting,
+  iamroles,
+  pendingactions,
+  maintenancetrackname,
+  elasticresizenumberofnodeoptions,
+  deferredmaintenancewindows,
+  snapshotscheduleidentifier,
+  snapshotschedulestate,
+  expectednextsnapshotscheduletime,
+  expectednextsnapshotscheduletimestatus,
+  nextmaintenancewindowstarttime,
+  resizeinfo,
+  clusternamespacearn,
+  loggingstatus,
+  _tags,
+  _kms_key_id,_ec2_vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -51,6 +105,7 @@ SELECT
   resizeinfo.attr_value::jsonb AS resizeinfo,
   clusternamespacearn.attr_value #>> '{}' AS clusternamespacearn,
   loggingstatus.attr_value::jsonb AS loggingstatus,
+  _tags.attr_value::jsonb AS _tags,
   
     _kms_key_id.target_id AS _kms_key_id,
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
@@ -251,6 +306,10 @@ FROM
     ON loggingstatus.resource_id = R.id
     AND loggingstatus.type = 'provider'
     AND lower(loggingstatus.attr_name) = 'loggingstatus'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -344,6 +403,7 @@ SET
     resizeinfo = EXCLUDED.resizeinfo,
     clusternamespacearn = EXCLUDED.clusternamespacearn,
     loggingstatus = EXCLUDED.loggingstatus,
+    _tags = EXCLUDED._tags,
     _kms_key_id = EXCLUDED._kms_key_id,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id

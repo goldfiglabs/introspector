@@ -1,4 +1,29 @@
-INSERT INTO aws_sqs_queue
+INSERT INTO aws_sqs_queue (
+  _id,
+  uri,
+  provider_account_id,
+  receivemessagewaittimeseconds,
+  visibilitytimeout,
+  approximatenumberofmessages,
+  approximatenumberofmessagesnotvisible,
+  approximatenumberofmessagesdelayed,
+  delayseconds,
+  createdtimestamp,
+  lastmodifiedtimestamp,
+  queuearn,
+  maximummessagesize,
+  messageretentionperiod,
+  url,
+  tags,
+  policy,
+  redrivepolicy,
+  fifoqueue,
+  contentbaseddeduplication,
+  kmsmasterkeyid,
+  kmsdatakeyreuseperiodsecond,
+  _tags,
+  _kms_key_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -22,6 +47,7 @@ SELECT
   (ContentBasedDeduplication.attr_value #>> '{}')::boolean AS contentbaseddeduplication,
   KmsMasterKeyId.attr_value #>> '{}' AS kmsmasterkeyid,
   KmsDataKeyReusePeriodSecond.attr_value #>> '{}' AS kmsdatakeyreuseperiodsecond,
+  _tags.attr_value::jsonb AS _tags,
   
     _kms_key_id.target_id AS _kms_key_id,
     _account_id.target_id AS _account_id
@@ -105,6 +131,10 @@ FROM
     ON KmsDataKeyReusePeriodSecond.resource_id = R.id
     AND KmsDataKeyReusePeriodSecond.type = 'provider'
     AND lower(KmsDataKeyReusePeriodSecond.attr_name) = 'kmsdatakeyreuseperiodsecond'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -156,6 +186,7 @@ SET
     ContentBasedDeduplication = EXCLUDED.ContentBasedDeduplication,
     KmsMasterKeyId = EXCLUDED.KmsMasterKeyId,
     KmsDataKeyReusePeriodSecond = EXCLUDED.KmsDataKeyReusePeriodSecond,
+    _tags = EXCLUDED._tags,
     _kms_key_id = EXCLUDED._kms_key_id,
     _account_id = EXCLUDED._account_id
   ;

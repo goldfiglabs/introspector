@@ -1,4 +1,36 @@
-INSERT INTO aws_ec2_image
+INSERT INTO aws_ec2_image (
+  _id,
+  uri,
+  provider_account_id,
+  architecture,
+  creationdate,
+  imageid,
+  imagelocation,
+  imagetype,
+  public,
+  kernelid,
+  ownerid,
+  platform,
+  platformdetails,
+  usageoperation,
+  productcodes,
+  ramdiskid,
+  state,
+  blockdevicemappings,
+  description,
+  enasupport,
+  hypervisor,
+  imageowneralias,
+  name,
+  rootdevicename,
+  rootdevicetype,
+  sriovnetsupport,
+  statereason,
+  tags,
+  virtualizationtype,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -29,6 +61,7 @@ SELECT
   statereason.attr_value::jsonb AS statereason,
   tags.attr_value::jsonb AS tags,
   virtualizationtype.attr_value #>> '{}' AS virtualizationtype,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -139,6 +172,10 @@ FROM
     ON virtualizationtype.resource_id = R.id
     AND virtualizationtype.type = 'provider'
     AND lower(virtualizationtype.attr_name) = 'virtualizationtype'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -184,6 +221,7 @@ SET
     statereason = EXCLUDED.statereason,
     tags = EXCLUDED.tags,
     virtualizationtype = EXCLUDED.virtualizationtype,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

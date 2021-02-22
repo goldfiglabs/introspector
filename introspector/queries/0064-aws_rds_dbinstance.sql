@@ -1,4 +1,71 @@
-INSERT INTO aws_rds_dbinstance
+INSERT INTO aws_rds_dbinstance (
+  _id,
+  uri,
+  provider_account_id,
+  dbinstanceidentifier,
+  dbinstanceclass,
+  engine,
+  dbinstancestatus,
+  masterusername,
+  dbname,
+  endpoint,
+  allocatedstorage,
+  instancecreatetime,
+  preferredbackupwindow,
+  backupretentionperiod,
+  dbsecuritygroups,
+  vpcsecuritygroups,
+  dbparametergroups,
+  availabilityzone,
+  dbsubnetgroup,
+  preferredmaintenancewindow,
+  pendingmodifiedvalues,
+  latestrestorabletime,
+  multiaz,
+  engineversion,
+  autominorversionupgrade,
+  readreplicasourcedbinstanceidentifier,
+  readreplicadbinstanceidentifiers,
+  readreplicadbclusteridentifiers,
+  replicamode,
+  licensemodel,
+  iops,
+  optiongroupmemberships,
+  charactersetname,
+  ncharcharactersetname,
+  secondaryavailabilityzone,
+  publiclyaccessible,
+  statusinfos,
+  storagetype,
+  tdecredentialarn,
+  dbinstanceport,
+  dbclusteridentifier,
+  storageencrypted,
+  kmskeyid,
+  dbiresourceid,
+  cacertificateidentifier,
+  domainmemberships,
+  copytagstosnapshot,
+  monitoringinterval,
+  enhancedmonitoringresourcearn,
+  monitoringrolearn,
+  promotiontier,
+  dbinstancearn,
+  timezone,
+  iamdatabaseauthenticationenabled,
+  performanceinsightsenabled,
+  performanceinsightskmskeyid,
+  performanceinsightsretentionperiod,
+  enabledcloudwatchlogsexports,
+  processorfeatures,
+  deletionprotection,
+  associatedroles,
+  listenerendpoint,
+  maxallocatedstorage,
+  taglist,
+  _tags,
+  _dbcluster_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -64,6 +131,7 @@ SELECT
   listenerendpoint.attr_value::jsonb AS listenerendpoint,
   (maxallocatedstorage.attr_value #>> '{}')::integer AS maxallocatedstorage,
   taglist.attr_value::jsonb AS taglist,
+  _tags.attr_value::jsonb AS _tags,
   
     _dbcluster_id.target_id AS _dbcluster_id,
     _account_id.target_id AS _account_id
@@ -315,6 +383,10 @@ FROM
     ON taglist.resource_id = R.id
     AND taglist.type = 'provider'
     AND lower(taglist.attr_name) = 'taglist'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_rds_dbcluster_relation.resource_id AS resource_id,
@@ -408,6 +480,7 @@ SET
     listenerendpoint = EXCLUDED.listenerendpoint,
     maxallocatedstorage = EXCLUDED.maxallocatedstorage,
     taglist = EXCLUDED.taglist,
+    _tags = EXCLUDED._tags,
     _dbcluster_id = EXCLUDED._dbcluster_id,
     _account_id = EXCLUDED._account_id
   ;

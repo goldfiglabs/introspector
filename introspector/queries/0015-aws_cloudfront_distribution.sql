@@ -1,4 +1,37 @@
-INSERT INTO aws_cloudfront_distribution
+INSERT INTO aws_cloudfront_distribution (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  arn,
+  status,
+  lastmodifiedtime,
+  inprogressinvalidationbatches,
+  domainname,
+  activetrustedsigners,
+  activetrustedkeygroups,
+  aliasicprecordals,
+  tags,
+  callerreference,
+  aliases,
+  defaultrootobject,
+  origins,
+  origingroups,
+  defaultcachebehavior,
+  cachebehaviors,
+  customerrorresponses,
+  comment,
+  logging,
+  priceclass,
+  enabled,
+  viewercertificate,
+  restrictions,
+  webaclid,
+  httpversion,
+  isipv6enabled,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -30,6 +63,7 @@ SELECT
   webaclid.attr_value #>> '{}' AS webaclid,
   httpversion.attr_value #>> '{}' AS httpversion,
   (isipv6enabled.attr_value #>> '{}')::boolean AS isipv6enabled,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -144,6 +178,10 @@ FROM
     ON isipv6enabled.resource_id = R.id
     AND isipv6enabled.type = 'provider'
     AND lower(isipv6enabled.attr_name) = 'isipv6enabled'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -190,6 +228,7 @@ SET
     webaclid = EXCLUDED.webaclid,
     httpversion = EXCLUDED.httpversion,
     isipv6enabled = EXCLUDED.isipv6enabled,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

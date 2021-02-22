@@ -1,4 +1,19 @@
-INSERT INTO aws_elasticbeanstalk_application
+INSERT INTO aws_elasticbeanstalk_application (
+  _id,
+  uri,
+  provider_account_id,
+  applicationarn,
+  applicationname,
+  description,
+  datecreated,
+  dateupdated,
+  versions,
+  configurationtemplates,
+  resourcelifecycleconfig,
+  tags,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -12,6 +27,7 @@ SELECT
   configurationtemplates.attr_value::jsonb AS configurationtemplates,
   resourcelifecycleconfig.attr_value::jsonb AS resourcelifecycleconfig,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -54,6 +70,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -82,6 +102,7 @@ SET
     configurationtemplates = EXCLUDED.configurationtemplates,
     resourcelifecycleconfig = EXCLUDED.resourcelifecycleconfig,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

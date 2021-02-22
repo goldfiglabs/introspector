@@ -1,4 +1,24 @@
-INSERT INTO aws_ec2_address
+INSERT INTO aws_ec2_address (
+  _id,
+  uri,
+  provider_account_id,
+  instanceid,
+  publicip,
+  allocationid,
+  associationid,
+  domain,
+  networkinterfaceid,
+  networkinterfaceownerid,
+  privateipaddress,
+  tags,
+  publicipv4pool,
+  networkbordergroup,
+  customerownedip,
+  customerownedipv4pool,
+  carrierip,
+  _tags,
+  _networkinterface_id,_instance_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -17,6 +37,7 @@ SELECT
   customerownedip.attr_value #>> '{}' AS customerownedip,
   customerownedipv4pool.attr_value #>> '{}' AS customerownedipv4pool,
   carrierip.attr_value #>> '{}' AS carrierip,
+  _tags.attr_value::jsonb AS _tags,
   
     _networkinterface_id.target_id AS _networkinterface_id,
     _instance_id.target_id AS _instance_id,
@@ -81,6 +102,10 @@ FROM
     ON carrierip.resource_id = R.id
     AND carrierip.type = 'provider'
     AND lower(carrierip.attr_name) = 'carrierip'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_networkinterface_relation.resource_id AS resource_id,
@@ -140,6 +165,7 @@ SET
     customerownedip = EXCLUDED.customerownedip,
     customerownedipv4pool = EXCLUDED.customerownedipv4pool,
     carrierip = EXCLUDED.carrierip,
+    _tags = EXCLUDED._tags,
     _networkinterface_id = EXCLUDED._networkinterface_id,
     _instance_id = EXCLUDED._instance_id,
     _account_id = EXCLUDED._account_id

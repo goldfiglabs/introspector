@@ -1,4 +1,39 @@
-INSERT INTO aws_ecs_service
+INSERT INTO aws_ecs_service (
+  _id,
+  uri,
+  provider_account_id,
+  servicearn,
+  servicename,
+  clusterarn,
+  loadbalancers,
+  serviceregistries,
+  status,
+  desiredcount,
+  runningcount,
+  pendingcount,
+  launchtype,
+  capacityproviderstrategy,
+  platformversion,
+  taskdefinition,
+  deploymentconfiguration,
+  tasksets,
+  deployments,
+  rolearn,
+  events,
+  createdat,
+  placementconstraints,
+  placementstrategy,
+  networkconfiguration,
+  healthcheckgraceperiodseconds,
+  schedulingstrategy,
+  deploymentcontroller,
+  tags,
+  createdby,
+  enableecsmanagedtags,
+  propagatetags,
+  _tags,
+  _cluster_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -32,6 +67,7 @@ SELECT
   createdby.attr_value #>> '{}' AS createdby,
   (enableecsmanagedtags.attr_value #>> '{}')::boolean AS enableecsmanagedtags,
   propagatetags.attr_value #>> '{}' AS propagatetags,
+  _tags.attr_value::jsonb AS _tags,
   
     _cluster_id.target_id AS _cluster_id,
     _account_id.target_id AS _account_id
@@ -155,6 +191,10 @@ FROM
     ON propagatetags.resource_id = R.id
     AND propagatetags.type = 'provider'
     AND lower(propagatetags.attr_name) = 'propagatetags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ecs_cluster_relation.resource_id AS resource_id,
@@ -216,6 +256,7 @@ SET
     createdby = EXCLUDED.createdby,
     enableecsmanagedtags = EXCLUDED.enableecsmanagedtags,
     propagatetags = EXCLUDED.propagatetags,
+    _tags = EXCLUDED._tags,
     _cluster_id = EXCLUDED._cluster_id,
     _account_id = EXCLUDED._account_id
   ;

@@ -1,4 +1,32 @@
-INSERT INTO aws_rds_dbclustersnapshot
+INSERT INTO aws_rds_dbclustersnapshot (
+  _id,
+  uri,
+  provider_account_id,
+  availabilityzones,
+  dbclustersnapshotidentifier,
+  dbclusteridentifier,
+  snapshotcreatetime,
+  engine,
+  allocatedstorage,
+  status,
+  port,
+  vpcid,
+  clustercreatetime,
+  masterusername,
+  engineversion,
+  licensemodel,
+  snapshottype,
+  percentprogress,
+  storageencrypted,
+  kmskeyid,
+  dbclustersnapshotarn,
+  sourcedbclustersnapshotarn,
+  iamdatabaseauthenticationenabled,
+  taglist,
+  restore,
+  _tags,
+  _kms_key_id,_ec2_vpc_id,_dbcluster_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -25,6 +53,7 @@ SELECT
   (iamdatabaseauthenticationenabled.attr_value #>> '{}')::boolean AS iamdatabaseauthenticationenabled,
   taglist.attr_value::jsonb AS taglist,
   restore.attr_value::jsonb AS restore,
+  _tags.attr_value::jsonb AS _tags,
   
     _kms_key_id.target_id AS _kms_key_id,
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
@@ -122,6 +151,10 @@ FROM
     ON restore.resource_id = R.id
     AND restore.type = 'provider'
     AND lower(restore.attr_name) = 'restore'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -202,6 +235,7 @@ SET
     iamdatabaseauthenticationenabled = EXCLUDED.iamdatabaseauthenticationenabled,
     taglist = EXCLUDED.taglist,
     restore = EXCLUDED.restore,
+    _tags = EXCLUDED._tags,
     _kms_key_id = EXCLUDED._kms_key_id,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _dbcluster_id = EXCLUDED._dbcluster_id,

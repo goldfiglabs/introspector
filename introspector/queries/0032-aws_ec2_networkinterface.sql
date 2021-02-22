@@ -1,4 +1,31 @@
-INSERT INTO aws_ec2_networkinterface
+INSERT INTO aws_ec2_networkinterface (
+  _id,
+  uri,
+  provider_account_id,
+  association,
+  attachment,
+  availabilityzone,
+  description,
+  groups,
+  interfacetype,
+  ipv6addresses,
+  macaddress,
+  networkinterfaceid,
+  outpostarn,
+  ownerid,
+  privatednsname,
+  privateipaddress,
+  privateipaddresses,
+  requesterid,
+  requestermanaged,
+  sourcedestcheck,
+  status,
+  subnetid,
+  tagset,
+  vpcid,
+  _tags,
+  _instance_id,_vpc_id,_subnet_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -24,6 +51,7 @@ SELECT
   subnetid.attr_value #>> '{}' AS subnetid,
   tagset.attr_value::jsonb AS tagset,
   vpcid.attr_value #>> '{}' AS vpcid,
+  _tags.attr_value::jsonb AS _tags,
   
     _instance_id.target_id AS _instance_id,
     _vpc_id.target_id AS _vpc_id,
@@ -117,6 +145,10 @@ FROM
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_instance_relation.resource_id AS resource_id,
@@ -196,6 +228,7 @@ SET
     subnetid = EXCLUDED.subnetid,
     tagset = EXCLUDED.tagset,
     vpcid = EXCLUDED.vpcid,
+    _tags = EXCLUDED._tags,
     _instance_id = EXCLUDED._instance_id,
     _vpc_id = EXCLUDED._vpc_id,
     _subnet_id = EXCLUDED._subnet_id,

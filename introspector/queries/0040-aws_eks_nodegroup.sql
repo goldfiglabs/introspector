@@ -1,4 +1,30 @@
-INSERT INTO aws_eks_nodegroup
+INSERT INTO aws_eks_nodegroup (
+  _id,
+  uri,
+  provider_account_id,
+  nodegroupname,
+  nodegrouparn,
+  clustername,
+  version,
+  releaseversion,
+  createdat,
+  modifiedat,
+  status,
+  scalingconfig,
+  instancetypes,
+  subnets,
+  remoteaccess,
+  amitype,
+  noderole,
+  labels,
+  resources,
+  disksize,
+  health,
+  launchtemplate,
+  tags,
+  _tags,
+  _cluster_id,_iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -23,6 +49,7 @@ SELECT
   health.attr_value::jsonb AS health,
   launchtemplate.attr_value::jsonb AS launchtemplate,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _cluster_id.target_id AS _cluster_id,
     _iam_role_id.target_id AS _iam_role_id,
@@ -111,6 +138,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_eks_cluster_relation.resource_id AS resource_id,
@@ -176,6 +207,7 @@ SET
     health = EXCLUDED.health,
     launchtemplate = EXCLUDED.launchtemplate,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _cluster_id = EXCLUDED._cluster_id,
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id

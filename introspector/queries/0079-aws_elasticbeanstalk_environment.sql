@@ -1,4 +1,39 @@
-INSERT INTO aws_elasticbeanstalk_environment
+INSERT INTO aws_elasticbeanstalk_environment (
+  _id,
+  uri,
+  provider_account_id,
+  environmentid,
+  applicationname,
+  versionlabel,
+  solutionstackname,
+  platformarn,
+  templatename,
+  description,
+  endpointurl,
+  cname,
+  datecreated,
+  dateupdated,
+  status,
+  abortableoperationinprogress,
+  health,
+  healthstatus,
+  resources,
+  tier,
+  environmentlinks,
+  environmentarn,
+  operationsrole,
+  tags,
+  environmentname,
+  autoscalinggroups,
+  instances,
+  launchconfigurations,
+  launchtemplates,
+  loadbalancers,
+  triggers,
+  queues,
+  _tags,
+  _application_id,_applicationversion_id,_iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -32,6 +67,7 @@ SELECT
   loadbalancers.attr_value::jsonb AS loadbalancers,
   triggers.attr_value::jsonb AS triggers,
   queues.attr_value::jsonb AS queues,
+  _tags.attr_value::jsonb AS _tags,
   
     _application_id.target_id AS _application_id,
     _applicationversion_id.target_id AS _applicationversion_id,
@@ -157,6 +193,10 @@ FROM
     ON queues.resource_id = R.id
     AND queues.type = 'provider'
     AND lower(queues.attr_name) = 'queues'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_elasticbeanstalk_application_relation.resource_id AS resource_id,
@@ -244,6 +284,7 @@ SET
     loadbalancers = EXCLUDED.loadbalancers,
     triggers = EXCLUDED.triggers,
     queues = EXCLUDED.queues,
+    _tags = EXCLUDED._tags,
     _application_id = EXCLUDED._application_id,
     _applicationversion_id = EXCLUDED._applicationversion_id,
     _iam_role_id = EXCLUDED._iam_role_id,

@@ -1,4 +1,21 @@
-INSERT INTO aws_route53_hostedzone
+INSERT INTO aws_route53_hostedzone (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  name,
+  callerreference,
+  config,
+  resourcerecordsetcount,
+  linkedservice,
+  tags,
+  resourcerecordsets,
+  trafficpolicyinstances,
+  vpcs,
+  queryloggingconfigs,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -14,6 +31,7 @@ SELECT
   trafficpolicyinstances.attr_value::jsonb AS trafficpolicyinstances,
   vpcs.attr_value::jsonb AS vpcs,
   queryloggingconfigs.attr_value::jsonb AS queryloggingconfigs,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -64,6 +82,10 @@ FROM
     ON queryloggingconfigs.resource_id = R.id
     AND queryloggingconfigs.type = 'provider'
     AND lower(queryloggingconfigs.attr_name) = 'queryloggingconfigs'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -94,6 +116,7 @@ SET
     trafficpolicyinstances = EXCLUDED.trafficpolicyinstances,
     vpcs = EXCLUDED.vpcs,
     queryloggingconfigs = EXCLUDED.queryloggingconfigs,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

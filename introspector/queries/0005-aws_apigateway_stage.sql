@@ -1,4 +1,27 @@
-INSERT INTO aws_apigateway_stage
+INSERT INTO aws_apigateway_stage (
+  _id,
+  uri,
+  provider_account_id,
+  deploymentid,
+  clientcertificateid,
+  stagename,
+  description,
+  cacheclusterenabled,
+  cacheclustersize,
+  cacheclusterstatus,
+  methodsettings,
+  variables,
+  documentationversion,
+  accesslogsettings,
+  canarysettings,
+  tracingenabled,
+  webaclarn,
+  tags,
+  createddate,
+  lastupdateddate,
+  _tags,
+  _restapi_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -20,6 +43,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   (TO_TIMESTAMP(createddate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createddate,
   (TO_TIMESTAMP(lastupdateddate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS lastupdateddate,
+  _tags.attr_value::jsonb AS _tags,
   
     _restapi_id.target_id AS _restapi_id,
     _account_id.target_id AS _account_id
@@ -95,6 +119,10 @@ FROM
     ON lastupdateddate.resource_id = R.id
     AND lastupdateddate.type = 'provider'
     AND lower(lastupdateddate.attr_name) = 'lastupdateddate'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_apigateway_restapi_relation.resource_id AS resource_id,
@@ -144,6 +172,7 @@ SET
     tags = EXCLUDED.tags,
     createddate = EXCLUDED.createddate,
     lastupdateddate = EXCLUDED.lastupdateddate,
+    _tags = EXCLUDED._tags,
     _restapi_id = EXCLUDED._restapi_id,
     _account_id = EXCLUDED._account_id
   ;

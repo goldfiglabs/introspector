@@ -1,4 +1,16 @@
-INSERT INTO aws_ec2_vpcpeeringconnection
+INSERT INTO aws_ec2_vpcpeeringconnection (
+  _id,
+  uri,
+  provider_account_id,
+  acceptervpcinfo,
+  expirationtime,
+  requestervpcinfo,
+  status,
+  tags,
+  vpcpeeringconnectionid,
+  _tags,
+  _acceptervpc_id,_requestervpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -9,6 +21,7 @@ SELECT
   status.attr_value::jsonb AS status,
   tags.attr_value::jsonb AS tags,
   vpcpeeringconnectionid.attr_value #>> '{}' AS vpcpeeringconnectionid,
+  _tags.attr_value::jsonb AS _tags,
   
     _acceptervpc_id.target_id AS _acceptervpc_id,
     _requestervpc_id.target_id AS _requestervpc_id,
@@ -41,6 +54,10 @@ FROM
     ON vpcpeeringconnectionid.resource_id = R.id
     AND vpcpeeringconnectionid.type = 'provider'
     AND lower(vpcpeeringconnectionid.attr_name) = 'vpcpeeringconnectionid'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -92,6 +109,7 @@ SET
     status = EXCLUDED.status,
     tags = EXCLUDED.tags,
     vpcpeeringconnectionid = EXCLUDED.vpcpeeringconnectionid,
+    _tags = EXCLUDED._tags,
     _acceptervpc_id = EXCLUDED._acceptervpc_id,
     _requestervpc_id = EXCLUDED._requestervpc_id,
     _account_id = EXCLUDED._account_id

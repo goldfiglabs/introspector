@@ -1,4 +1,26 @@
-INSERT INTO aws_eks_cluster
+INSERT INTO aws_eks_cluster (
+  _id,
+  uri,
+  provider_account_id,
+  name,
+  arn,
+  createdat,
+  version,
+  endpoint,
+  rolearn,
+  resourcesvpcconfig,
+  kubernetesnetworkconfig,
+  logging,
+  identity,
+  status,
+  certificateauthority,
+  clientrequesttoken,
+  platformversion,
+  tags,
+  encryptionconfig,
+  _tags,
+  _iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -19,6 +41,7 @@ SELECT
   platformversion.attr_value #>> '{}' AS platformversion,
   tags.attr_value::jsonb AS tags,
   encryptionconfig.attr_value::jsonb AS encryptionconfig,
+  _tags.attr_value::jsonb AS _tags,
   
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -90,6 +113,10 @@ FROM
     ON encryptionconfig.resource_id = R.id
     AND encryptionconfig.type = 'provider'
     AND lower(encryptionconfig.attr_name) = 'encryptionconfig'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -138,6 +165,7 @@ SET
     platformversion = EXCLUDED.platformversion,
     tags = EXCLUDED.tags,
     encryptionconfig = EXCLUDED.encryptionconfig,
+    _tags = EXCLUDED._tags,
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id
   ;

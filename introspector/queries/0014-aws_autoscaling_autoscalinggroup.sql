@@ -1,4 +1,37 @@
-INSERT INTO aws_autoscaling_autoscalinggroup
+INSERT INTO aws_autoscaling_autoscalinggroup (
+  _id,
+  uri,
+  provider_account_id,
+  autoscalinggroupname,
+  autoscalinggrouparn,
+  launchconfigurationname,
+  launchtemplate,
+  mixedinstancespolicy,
+  minsize,
+  maxsize,
+  desiredcapacity,
+  defaultcooldown,
+  availabilityzones,
+  loadbalancernames,
+  targetgrouparns,
+  healthchecktype,
+  healthcheckgraceperiod,
+  instances,
+  createdtime,
+  suspendedprocesses,
+  placementgroup,
+  vpczoneidentifier,
+  enabledmetrics,
+  status,
+  tags,
+  terminationpolicies,
+  newinstancesprotectedfromscalein,
+  servicelinkedrolearn,
+  maxinstancelifetime,
+  capacityrebalance,
+  _tags,
+  _launchconfiguration_id,_iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -30,6 +63,7 @@ SELECT
   servicelinkedrolearn.attr_value #>> '{}' AS servicelinkedrolearn,
   (maxinstancelifetime.attr_value #>> '{}')::integer AS maxinstancelifetime,
   (capacityrebalance.attr_value #>> '{}')::boolean AS capacityrebalance,
+  _tags.attr_value::jsonb AS _tags,
   
     _launchconfiguration_id.target_id AS _launchconfiguration_id,
     _iam_role_id.target_id AS _iam_role_id,
@@ -146,6 +180,10 @@ FROM
     ON capacityrebalance.resource_id = R.id
     AND capacityrebalance.type = 'provider'
     AND lower(capacityrebalance.attr_name) = 'capacityrebalance'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_autoscaling_launchconfiguration_relation.resource_id AS resource_id,
@@ -218,6 +256,7 @@ SET
     servicelinkedrolearn = EXCLUDED.servicelinkedrolearn,
     maxinstancelifetime = EXCLUDED.maxinstancelifetime,
     capacityrebalance = EXCLUDED.capacityrebalance,
+    _tags = EXCLUDED._tags,
     _launchconfiguration_id = EXCLUDED._launchconfiguration_id,
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id

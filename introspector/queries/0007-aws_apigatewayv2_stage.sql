@@ -1,4 +1,24 @@
-INSERT INTO aws_apigatewayv2_stage
+INSERT INTO aws_apigatewayv2_stage (
+  _id,
+  uri,
+  provider_account_id,
+  accesslogsettings,
+  apigatewaymanaged,
+  autodeploy,
+  clientcertificateid,
+  createddate,
+  defaultroutesettings,
+  deploymentid,
+  description,
+  lastdeploymentstatusmessage,
+  lastupdateddate,
+  routesettings,
+  stagename,
+  stagevariables,
+  tags,
+  _tags,
+  _api_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -17,6 +37,7 @@ SELECT
   stagename.attr_value #>> '{}' AS stagename,
   stagevariables.attr_value::jsonb AS stagevariables,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _api_id.target_id AS _api_id,
     _account_id.target_id AS _account_id
@@ -80,6 +101,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_apigatewayv2_api_relation.resource_id AS resource_id,
@@ -126,6 +151,7 @@ SET
     stagename = EXCLUDED.stagename,
     stagevariables = EXCLUDED.stagevariables,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _api_id = EXCLUDED._api_id,
     _account_id = EXCLUDED._account_id
   ;

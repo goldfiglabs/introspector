@@ -1,4 +1,27 @@
-INSERT INTO aws_ec2_subnet
+INSERT INTO aws_ec2_subnet (
+  _id,
+  uri,
+  provider_account_id,
+  availabilityzone,
+  availabilityzoneid,
+  availableipaddresscount,
+  cidrblock,
+  defaultforaz,
+  mappubliciponlaunch,
+  mapcustomerownediponlaunch,
+  customerownedipv4pool,
+  state,
+  subnetid,
+  vpcid,
+  ownerid,
+  assignipv6addressoncreation,
+  ipv6cidrblockassociationset,
+  tags,
+  subnetarn,
+  outpostarn,
+  _tags,
+  _vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -20,6 +43,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   subnetarn.attr_value #>> '{}' AS subnetarn,
   outpostarn.attr_value #>> '{}' AS outpostarn,
+  _tags.attr_value::jsonb AS _tags,
   
     _vpc_id.target_id AS _vpc_id,
     _account_id.target_id AS _account_id
@@ -95,6 +119,10 @@ FROM
     ON outpostarn.resource_id = R.id
     AND outpostarn.type = 'provider'
     AND lower(outpostarn.attr_name) = 'outpostarn'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -144,6 +172,7 @@ SET
     tags = EXCLUDED.tags,
     subnetarn = EXCLUDED.subnetarn,
     outpostarn = EXCLUDED.outpostarn,
+    _tags = EXCLUDED._tags,
     _vpc_id = EXCLUDED._vpc_id,
     _account_id = EXCLUDED._account_id
   ;

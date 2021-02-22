@@ -1,4 +1,24 @@
-INSERT INTO aws_ec2_flowlog
+INSERT INTO aws_ec2_flowlog (
+  _id,
+  uri,
+  provider_account_id,
+  creationtime,
+  deliverlogserrormessage,
+  deliverlogspermissionarn,
+  deliverlogsstatus,
+  flowlogid,
+  flowlogstatus,
+  loggroupname,
+  resourceid,
+  traffictype,
+  logdestinationtype,
+  logdestination,
+  logformat,
+  tags,
+  maxaggregationinterval,
+  _tags,
+  _iam_role_id,_logs_loggroup_id,_s3_bucket_id,_vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -17,6 +37,7 @@ SELECT
   logformat.attr_value #>> '{}' AS logformat,
   tags.attr_value::jsonb AS tags,
   (maxaggregationinterval.attr_value #>> '{}')::integer AS maxaggregationinterval,
+  _tags.attr_value::jsonb AS _tags,
   
     _iam_role_id.target_id AS _iam_role_id,
     _logs_loggroup_id.target_id AS _logs_loggroup_id,
@@ -83,6 +104,10 @@ FROM
     ON maxaggregationinterval.resource_id = R.id
     AND maxaggregationinterval.type = 'provider'
     AND lower(maxaggregationinterval.attr_name) = 'maxaggregationinterval'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -168,6 +193,7 @@ SET
     logformat = EXCLUDED.logformat,
     tags = EXCLUDED.tags,
     maxaggregationinterval = EXCLUDED.maxaggregationinterval,
+    _tags = EXCLUDED._tags,
     _iam_role_id = EXCLUDED._iam_role_id,
     _logs_loggroup_id = EXCLUDED._logs_loggroup_id,
     _s3_bucket_id = EXCLUDED._s3_bucket_id,

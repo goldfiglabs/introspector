@@ -1,4 +1,59 @@
-INSERT INTO aws_ec2_instance
+INSERT INTO aws_ec2_instance (
+  _id,
+  uri,
+  provider_account_id,
+  amilaunchindex,
+  imageid,
+  instanceid,
+  instancetype,
+  kernelid,
+  keyname,
+  launchtime,
+  monitoring,
+  placement,
+  platform,
+  privatednsname,
+  privateipaddress,
+  productcodes,
+  publicdnsname,
+  publicipaddress,
+  ramdiskid,
+  state,
+  statetransitionreason,
+  subnetid,
+  vpcid,
+  architecture,
+  blockdevicemappings,
+  clienttoken,
+  ebsoptimized,
+  enasupport,
+  hypervisor,
+  iaminstanceprofile,
+  instancelifecycle,
+  elasticgpuassociations,
+  elasticinferenceacceleratorassociations,
+  networkinterfaces,
+  outpostarn,
+  rootdevicename,
+  rootdevicetype,
+  securitygroups,
+  sourcedestcheck,
+  spotinstancerequestid,
+  sriovnetsupport,
+  statereason,
+  tags,
+  virtualizationtype,
+  cpuoptions,
+  capacityreservationid,
+  capacityreservationspecification,
+  hibernationoptions,
+  licenses,
+  metadataoptions,
+  enclaveoptions,
+  userdata,
+  _tags,
+  _image_id,_iam_instanceprofile_id,_vpc_id,_subnet_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -52,6 +107,7 @@ SELECT
   metadataoptions.attr_value::jsonb AS metadataoptions,
   enclaveoptions.attr_value::jsonb AS enclaveoptions,
   userdata.attr_value #>> '{}' AS userdata,
+  _tags.attr_value::jsonb AS _tags,
   
     _image_id.target_id AS _image_id,
     _iam_instanceprofile_id.target_id AS _iam_instanceprofile_id,
@@ -258,6 +314,10 @@ FROM
     ON userdata.resource_id = R.id
     AND userdata.type = 'provider'
     AND lower(userdata.attr_name) = 'userdata'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_image_relation.resource_id AS resource_id,
@@ -378,6 +438,7 @@ SET
     metadataoptions = EXCLUDED.metadataoptions,
     enclaveoptions = EXCLUDED.enclaveoptions,
     userdata = EXCLUDED.userdata,
+    _tags = EXCLUDED._tags,
     _image_id = EXCLUDED._image_id,
     _iam_instanceprofile_id = EXCLUDED._iam_instanceprofile_id,
     _vpc_id = EXCLUDED._vpc_id,

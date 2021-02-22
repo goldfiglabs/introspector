@@ -1,4 +1,33 @@
-INSERT INTO aws_elbv2_loadbalancer
+INSERT INTO aws_elbv2_loadbalancer (
+  _id,
+  uri,
+  provider_account_id,
+  loadbalancerarn,
+  dnsname,
+  canonicalhostedzoneid,
+  createdtime,
+  loadbalancername,
+  scheme,
+  vpcid,
+  state,
+  type,
+  availabilityzones,
+  securitygroups,
+  ipaddresstype,
+  customerownedipv4pool,
+  tags,
+  access_logs_s3_enabled,
+  access_logs_s3_bucket,
+  access_logs_s3_prefix,
+  deletion_protection_enabled,
+  idle_timeout_timeout_seconds,
+  routing_http_desync_mitigation_mode,
+  routing_http_drop_invalid_header_fields_enabled,
+  routing_http2_enabled,
+  load_balancing_cross_zone_enabled,
+  _tags,
+  _ec2_vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -26,6 +55,7 @@ SELECT
   (routing_http_drop_invalid_header_fields_enabled.attr_value #>> '{}')::boolean AS routing_http_drop_invalid_header_fields_enabled,
   (routing_http2_enabled.attr_value #>> '{}')::boolean AS routing_http2_enabled,
   (load_balancing_cross_zone_enabled.attr_value #>> '{}')::boolean AS load_balancing_cross_zone_enabled,
+  _tags.attr_value::jsonb AS _tags,
   
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
@@ -125,6 +155,10 @@ FROM
     ON load_balancing_cross_zone_enabled.resource_id = R.id
     AND load_balancing_cross_zone_enabled.type = 'provider'
     AND lower(load_balancing_cross_zone_enabled.attr_name) = 'load_balancing_cross_zone_enabled'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -180,6 +214,7 @@ SET
     routing_http_drop_invalid_header_fields_enabled = EXCLUDED.routing_http_drop_invalid_header_fields_enabled,
     routing_http2_enabled = EXCLUDED.routing_http2_enabled,
     load_balancing_cross_zone_enabled = EXCLUDED.load_balancing_cross_zone_enabled,
+    _tags = EXCLUDED._tags,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id
   ;

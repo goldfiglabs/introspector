@@ -1,4 +1,22 @@
-INSERT INTO aws_ssm_parameter
+INSERT INTO aws_ssm_parameter (
+  _id,
+  uri,
+  provider_account_id,
+  name,
+  type,
+  keyid,
+  lastmodifieddate,
+  lastmodifieduser,
+  description,
+  allowedpattern,
+  version,
+  tier,
+  policies,
+  datatype,
+  tags,
+  _tags,
+  _kms_key_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -15,6 +33,7 @@ SELECT
   policies.attr_value::jsonb AS policies,
   datatype.attr_value #>> '{}' AS datatype,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _kms_key_id.target_id AS _kms_key_id,
     _account_id.target_id AS _account_id
@@ -70,6 +89,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -114,6 +137,7 @@ SET
     policies = EXCLUDED.policies,
     datatype = EXCLUDED.datatype,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _kms_key_id = EXCLUDED._kms_key_id,
     _account_id = EXCLUDED._account_id
   ;

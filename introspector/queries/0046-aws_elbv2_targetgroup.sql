@@ -1,4 +1,36 @@
-INSERT INTO aws_elbv2_targetgroup
+INSERT INTO aws_elbv2_targetgroup (
+  _id,
+  uri,
+  provider_account_id,
+  targetgrouparn,
+  targetgroupname,
+  protocol,
+  port,
+  vpcid,
+  healthcheckprotocol,
+  healthcheckport,
+  healthcheckenabled,
+  healthcheckintervalseconds,
+  healthchecktimeoutseconds,
+  healthythresholdcount,
+  unhealthythresholdcount,
+  healthcheckpath,
+  matcher,
+  loadbalancerarns,
+  targettype,
+  protocolversion,
+  tags,
+  deregistration_delay_timeout_seconds,
+  stickiness_enabled,
+  stickiness_type,
+  load_balancing_algorithm_type,
+  slow_start_duration_seconds,
+  stickiness_lb_cookie_duration_seconds,
+  lambda_multi_value_headers_enabled,
+  proxy_protocol_v2_enabled,
+  _tags,
+  _ec2_vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -29,6 +61,7 @@ SELECT
   (stickiness_lb_cookie_duration_seconds.attr_value #>> '{}')::integer AS stickiness_lb_cookie_duration_seconds,
   (lambda_multi_value_headers_enabled.attr_value #>> '{}')::boolean AS lambda_multi_value_headers_enabled,
   (proxy_protocol_v2_enabled.attr_value #>> '{}')::boolean AS proxy_protocol_v2_enabled,
+  _tags.attr_value::jsonb AS _tags,
   
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
@@ -140,6 +173,10 @@ FROM
     ON proxy_protocol_v2_enabled.resource_id = R.id
     AND proxy_protocol_v2_enabled.type = 'provider'
     AND lower(proxy_protocol_v2_enabled.attr_name) = 'proxy_protocol_v2_enabled'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -198,6 +235,7 @@ SET
     stickiness_lb_cookie_duration_seconds = EXCLUDED.stickiness_lb_cookie_duration_seconds,
     lambda_multi_value_headers_enabled = EXCLUDED.lambda_multi_value_headers_enabled,
     proxy_protocol_v2_enabled = EXCLUDED.proxy_protocol_v2_enabled,
+    _tags = EXCLUDED._tags,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id
   ;

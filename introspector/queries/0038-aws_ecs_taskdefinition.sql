@@ -1,4 +1,29 @@
-INSERT INTO aws_ecs_taskdefinition
+INSERT INTO aws_ecs_taskdefinition (
+  _id,
+  uri,
+  provider_account_id,
+  taskdefinitionarn,
+  containerdefinitions,
+  family,
+  taskrolearn,
+  executionrolearn,
+  networkmode,
+  revision,
+  volumes,
+  status,
+  requiresattributes,
+  placementconstraints,
+  compatibilities,
+  requirescompatibilities,
+  cpu,
+  memory,
+  inferenceaccelerators,
+  pidmode,
+  ipcmode,
+  proxyconfiguration,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -22,6 +47,7 @@ SELECT
   pidmode.attr_value #>> '{}' AS pidmode,
   ipcmode.attr_value #>> '{}' AS ipcmode,
   proxyconfiguration.attr_value::jsonb AS proxyconfiguration,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -104,6 +130,10 @@ FROM
     ON proxyconfiguration.resource_id = R.id
     AND proxyconfiguration.type = 'provider'
     AND lower(proxyconfiguration.attr_name) = 'proxyconfiguration'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -142,6 +172,7 @@ SET
     pidmode = EXCLUDED.pidmode,
     ipcmode = EXCLUDED.ipcmode,
     proxyconfiguration = EXCLUDED.proxyconfiguration,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

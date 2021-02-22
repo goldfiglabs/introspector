@@ -1,4 +1,25 @@
-INSERT INTO aws_ec2_snapshot
+INSERT INTO aws_ec2_snapshot (
+  _id,
+  uri,
+  provider_account_id,
+  dataencryptionkeyid,
+  description,
+  encrypted,
+  kmskeyid,
+  ownerid,
+  progress,
+  snapshotid,
+  starttime,
+  state,
+  statemessage,
+  volumeid,
+  volumesize,
+  owneralias,
+  tags,
+  createvolumepermissions,
+  _tags,
+  _kms_key_id,_volume_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -18,6 +39,7 @@ SELECT
   owneralias.attr_value #>> '{}' AS owneralias,
   tags.attr_value::jsonb AS tags,
   createvolumepermissions.attr_value::jsonb AS createvolumepermissions,
+  _tags.attr_value::jsonb AS _tags,
   
     _kms_key_id.target_id AS _kms_key_id,
     _volume_id.target_id AS _volume_id,
@@ -86,6 +108,10 @@ FROM
     ON createvolumepermissions.resource_id = R.id
     AND createvolumepermissions.type = 'provider'
     AND lower(createvolumepermissions.attr_name) = 'createvolumepermissions'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -146,6 +172,7 @@ SET
     owneralias = EXCLUDED.owneralias,
     tags = EXCLUDED.tags,
     createvolumepermissions = EXCLUDED.createvolumepermissions,
+    _tags = EXCLUDED._tags,
     _kms_key_id = EXCLUDED._kms_key_id,
     _volume_id = EXCLUDED._volume_id,
     _account_id = EXCLUDED._account_id

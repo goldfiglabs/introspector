@@ -1,4 +1,32 @@
-INSERT INTO aws_cloudformation_stack
+INSERT INTO aws_cloudformation_stack (
+  _id,
+  uri,
+  provider_account_id,
+  stackid,
+  stackname,
+  changesetid,
+  description,
+  parameters,
+  creationtime,
+  deletiontime,
+  lastupdatedtime,
+  rollbackconfiguration,
+  stackstatus,
+  stackstatusreason,
+  disablerollback,
+  notificationarns,
+  timeoutinminutes,
+  capabilities,
+  outputs,
+  rolearn,
+  tags,
+  enableterminationprotection,
+  parentid,
+  rootid,
+  driftinformation,
+  _tags,
+  _iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -25,6 +53,7 @@ SELECT
   parentid.attr_value #>> '{}' AS parentid,
   rootid.attr_value #>> '{}' AS rootid,
   driftinformation.attr_value::jsonb AS driftinformation,
+  _tags.attr_value::jsonb AS _tags,
   
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -120,6 +149,10 @@ FROM
     ON driftinformation.resource_id = R.id
     AND driftinformation.type = 'provider'
     AND lower(driftinformation.attr_name) = 'driftinformation'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -174,6 +207,7 @@ SET
     parentid = EXCLUDED.parentid,
     rootid = EXCLUDED.rootid,
     driftinformation = EXCLUDED.driftinformation,
+    _tags = EXCLUDED._tags,
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id
   ;

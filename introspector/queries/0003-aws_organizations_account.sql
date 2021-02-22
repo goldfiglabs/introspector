@@ -1,4 +1,20 @@
-INSERT INTO aws_organizations_account
+INSERT INTO aws_organizations_account (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  arn,
+  email,
+  name,
+  status,
+  joinedmethod,
+  joinedtimestamp,
+  servicecontrolpolicies,
+  tagpolicies,
+  tags,
+  _tags,
+  _root_id,_organizational_unit_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -13,6 +29,7 @@ SELECT
   servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
   tagpolicies.attr_value::jsonb AS tagpolicies,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _root_id.target_id AS _root_id,
     _organizational_unit_id.target_id AS _organizational_unit_id
@@ -60,6 +77,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_root_relation.resource_id AS resource_id,
@@ -102,6 +123,7 @@ SET
     servicecontrolpolicies = EXCLUDED.servicecontrolpolicies,
     tagpolicies = EXCLUDED.tagpolicies,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _root_id = EXCLUDED._root_id,
     _organizational_unit_id = EXCLUDED._organizational_unit_id
   ;

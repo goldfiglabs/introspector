@@ -1,4 +1,34 @@
-INSERT INTO aws_s3_bucket
+INSERT INTO aws_s3_bucket (
+  _id,
+  uri,
+  provider_account_id,
+  name,
+  creationdate,
+  analyticsconfigurations,
+  inventoryconfigurations,
+  metricsconfigurations,
+  accelerateconfiguration,
+  acl,
+  cors,
+  encryption,
+  lifecycleconfiguration,
+  location,
+  logging,
+  notificationconfiguration,
+  policy,
+  policystatus,
+  replication,
+  requestpayment,
+  tagging,
+  versioning,
+  website,
+  blockpublicacls,
+  ignorepublicacls,
+  blockpublicpolicy,
+  restrictpublicbuckets,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -27,6 +57,7 @@ SELECT
   (ignorepublicacls.attr_value #>> '{}')::boolean AS ignorepublicacls,
   (blockpublicpolicy.attr_value #>> '{}')::boolean AS blockpublicpolicy,
   (restrictpublicbuckets.attr_value #>> '{}')::boolean AS restrictpublicbuckets,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -129,6 +160,10 @@ FROM
     ON restrictpublicbuckets.resource_id = R.id
     AND restrictpublicbuckets.type = 'provider'
     AND lower(restrictpublicbuckets.attr_name) = 'restrictpublicbuckets'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -172,6 +207,7 @@ SET
     ignorepublicacls = EXCLUDED.ignorepublicacls,
     blockpublicpolicy = EXCLUDED.blockpublicpolicy,
     restrictpublicbuckets = EXCLUDED.restrictpublicbuckets,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

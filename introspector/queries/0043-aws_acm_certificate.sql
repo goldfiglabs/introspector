@@ -1,4 +1,37 @@
-INSERT INTO aws_acm_certificate
+INSERT INTO aws_acm_certificate (
+  _id,
+  uri,
+  provider_account_id,
+  certificatearn,
+  domainname,
+  subjectalternativenames,
+  domainvalidationoptions,
+  serial,
+  subject,
+  issuer,
+  createdat,
+  issuedat,
+  importedat,
+  status,
+  revokedat,
+  revocationreason,
+  notbefore,
+  notafter,
+  keyalgorithm,
+  signaturealgorithm,
+  inuseby,
+  failurereason,
+  type,
+  renewalsummary,
+  keyusages,
+  extendedkeyusages,
+  certificateauthorityarn,
+  renewaleligibility,
+  certificatetransparencyloggingpreference,
+  tags,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -30,6 +63,7 @@ SELECT
   renewaleligibility.attr_value #>> '{}' AS renewaleligibility,
   certificatetransparencyloggingpreference.attr_value #>> '{}' AS certificatetransparencyloggingpreference,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -144,6 +178,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -190,6 +228,7 @@ SET
     renewaleligibility = EXCLUDED.renewaleligibility,
     certificatetransparencyloggingpreference = EXCLUDED.certificatetransparencyloggingpreference,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

@@ -14,6 +14,11 @@ resources:
     - Tags
     - VpcId
     - OwnerId
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
   resource_name: route-table
   relations:
   - relation: routes

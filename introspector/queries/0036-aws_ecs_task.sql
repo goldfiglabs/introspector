@@ -1,4 +1,43 @@
-INSERT INTO aws_ecs_task
+INSERT INTO aws_ecs_task (
+  _id,
+  uri,
+  provider_account_id,
+  attachments,
+  attributes,
+  availabilityzone,
+  capacityprovidername,
+  clusterarn,
+  connectivity,
+  connectivityat,
+  containerinstancearn,
+  containers,
+  cpu,
+  createdat,
+  desiredstatus,
+  executionstoppedat,
+  "group",
+  healthstatus,
+  inferenceaccelerators,
+  laststatus,
+  launchtype,
+  memory,
+  overrides,
+  platformversion,
+  pullstartedat,
+  pullstoppedat,
+  startedat,
+  startedby,
+  stopcode,
+  stoppedat,
+  stoppedreason,
+  stoppingat,
+  tags,
+  taskarn,
+  taskdefinitionarn,
+  version,
+  _tags,
+  _cluster_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -36,6 +75,7 @@ SELECT
   taskarn.attr_value #>> '{}' AS taskarn,
   taskdefinitionarn.attr_value #>> '{}' AS taskdefinitionarn,
   (version.attr_value #>> '{}')::bigint AS version,
+  _tags.attr_value::jsonb AS _tags,
   
     _cluster_id.target_id AS _cluster_id,
     _account_id.target_id AS _account_id
@@ -175,6 +215,10 @@ FROM
     ON version.resource_id = R.id
     AND version.type = 'provider'
     AND lower(version.attr_name) = 'version'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ecs_cluster_relation.resource_id AS resource_id,
@@ -240,6 +284,7 @@ SET
     taskarn = EXCLUDED.taskarn,
     taskdefinitionarn = EXCLUDED.taskdefinitionarn,
     version = EXCLUDED.version,
+    _tags = EXCLUDED._tags,
     _cluster_id = EXCLUDED._cluster_id,
     _account_id = EXCLUDED._account_id
   ;

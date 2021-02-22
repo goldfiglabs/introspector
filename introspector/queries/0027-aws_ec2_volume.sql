@@ -1,4 +1,25 @@
-INSERT INTO aws_ec2_volume
+INSERT INTO aws_ec2_volume (
+  _id,
+  uri,
+  provider_account_id,
+  attachments,
+  availabilityzone,
+  createtime,
+  encrypted,
+  kmskeyid,
+  outpostarn,
+  size,
+  snapshotid,
+  state,
+  volumeid,
+  iops,
+  tags,
+  volumetype,
+  fastrestored,
+  multiattachenabled,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -18,6 +39,7 @@ SELECT
   volumetype.attr_value #>> '{}' AS volumetype,
   (fastrestored.attr_value #>> '{}')::boolean AS fastrestored,
   (multiattachenabled.attr_value #>> '{}')::boolean AS multiattachenabled,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -84,6 +106,10 @@ FROM
     ON multiattachenabled.resource_id = R.id
     AND multiattachenabled.type = 'provider'
     AND lower(multiattachenabled.attr_name) = 'multiattachenabled'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -118,6 +144,7 @@ SET
     volumetype = EXCLUDED.volumetype,
     fastrestored = EXCLUDED.fastrestored,
     multiattachenabled = EXCLUDED.multiattachenabled,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

@@ -136,6 +136,7 @@ def provider_tables(db: Session, provider_type: str) -> List[str]:
 
 
 def refresh_views(db: Session, provider_account_id: int):
+  print('refreshing')
   path = os.path.realpath(os.path.join(os.path.dirname(__file__), 'queries'))
   files = [
       f for f in os.listdir(path)
@@ -145,10 +146,10 @@ def refresh_views(db: Session, provider_account_id: int):
   for filename in files:
     with open(os.path.join(path, filename), 'r') as f:
       query_txt = f.read()
+    print(filename)
     to_run = _process_queries(query_txt, provider_account_id)
     for query in to_run:
       result = db.execute(query)
-
 
 def _run_migration(cred: DbCredential, folder: str, label: str):
   cwd = os.getcwd()

@@ -1,4 +1,14 @@
-INSERT INTO aws_ec2_keypair
+INSERT INTO aws_ec2_keypair (
+  _id,
+  uri,
+  provider_account_id,
+  keypairid,
+  keyfingerprint,
+  keyname,
+  tags,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -7,6 +17,7 @@ SELECT
   keyfingerprint.attr_value #>> '{}' AS keyfingerprint,
   keyname.attr_value #>> '{}' AS keyname,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -29,6 +40,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -52,6 +67,7 @@ SET
     keyfingerprint = EXCLUDED.keyfingerprint,
     keyname = EXCLUDED.keyname,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

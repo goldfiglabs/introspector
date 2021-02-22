@@ -1,4 +1,45 @@
-INSERT INTO aws_iam_user
+INSERT INTO aws_iam_user (
+  _id,
+  uri,
+  provider_account_id,
+  path,
+  username,
+  userid,
+  arn,
+  createdate,
+  passwordlastused,
+  permissionsboundary,
+  tags,
+  policylist,
+  attachedpolicies,
+  accesskeys,
+  groups,
+  mfadevices,
+  sshpublickeys,
+  servicespecificcredentials,
+  certificates,
+  loginprofile,
+  _tags,
+  password_enabled,
+  password_last_changed,
+  password_next_rotation,
+  mfa_active,
+  access_key_1_active,
+  access_key_1_last_rotated,
+  access_key_1_last_used_date,
+  access_key_1_last_used_region,
+  access_key_1_last_used_service,
+  access_key_2_active,
+  access_key_2_last_rotated,
+  access_key_2_last_used_date,
+  access_key_2_last_used_region,
+  access_key_2_last_used_service,
+  cert_1_active,
+  cert_1_last_rotated,
+  cert_2_active,
+  cert_2_last_rotated,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -20,6 +61,7 @@ SELECT
   servicespecificcredentials.attr_value::jsonb AS servicespecificcredentials,
   certificates.attr_value::jsonb AS certificates,
   loginprofile.attr_value::jsonb AS loginprofile,
+  _tags.attr_value::jsonb AS _tags,
   (password_enabled.attr_value #>> '{}')::boolean AS password_enabled,
   (TO_TIMESTAMP(password_last_changed.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS password_last_changed,
   (TO_TIMESTAMP(password_next_rotation.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS password_next_rotation,
@@ -112,6 +154,10 @@ FROM
     ON loginprofile.resource_id = R.id
     AND loginprofile.type = 'provider'
     AND lower(loginprofile.attr_name) = 'loginprofile'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN resource_attribute AS password_enabled
     ON password_enabled.resource_id = R.id
     AND password_enabled.type = 'provider'
@@ -220,6 +266,7 @@ SET
     servicespecificcredentials = EXCLUDED.servicespecificcredentials,
     certificates = EXCLUDED.certificates,
     loginprofile = EXCLUDED.loginprofile,
+    _tags = EXCLUDED._tags,
     password_enabled = EXCLUDED.password_enabled,
     password_last_changed = EXCLUDED.password_last_changed,
     password_next_rotation = EXCLUDED.password_next_rotation,

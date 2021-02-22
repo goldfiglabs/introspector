@@ -1,4 +1,38 @@
-INSERT INTO aws_cloudwatch_metricalarm
+INSERT INTO aws_cloudwatch_metricalarm (
+  _id,
+  uri,
+  provider_account_id,
+  alarmname,
+  alarmarn,
+  alarmdescription,
+  alarmconfigurationupdatedtimestamp,
+  actionsenabled,
+  okactions,
+  alarmactions,
+  insufficientdataactions,
+  statevalue,
+  statereason,
+  statereasondata,
+  stateupdatedtimestamp,
+  metricname,
+  namespace,
+  statistic,
+  extendedstatistic,
+  dimensions,
+  period,
+  unit,
+  evaluationperiods,
+  datapointstoalarm,
+  threshold,
+  comparisonoperator,
+  treatmissingdata,
+  evaluatelowsamplecountpercentile,
+  metrics,
+  thresholdmetricid,
+  tags,
+  _tags,
+  _metric_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -31,6 +65,7 @@ SELECT
   metrics.attr_value::jsonb AS metrics,
   thresholdmetricid.attr_value #>> '{}' AS thresholdmetricid,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _metric_id.target_id AS _metric_id,
     _account_id.target_id AS _account_id
@@ -150,6 +185,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_cloudwatch_metric_relation.resource_id AS resource_id,
@@ -210,6 +249,7 @@ SET
     metrics = EXCLUDED.metrics,
     thresholdmetricid = EXCLUDED.thresholdmetricid,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _metric_id = EXCLUDED._metric_id,
     _account_id = EXCLUDED._account_id
   ;

@@ -1,4 +1,31 @@
-INSERT INTO aws_kms_key
+INSERT INTO aws_kms_key (
+  _id,
+  uri,
+  provider_account_id,
+  awsaccountid,
+  keyid,
+  arn,
+  creationdate,
+  enabled,
+  description,
+  keyusage,
+  keystate,
+  deletiondate,
+  validto,
+  origin,
+  customkeystoreid,
+  cloudhsmclusterid,
+  expirationmodel,
+  keymanager,
+  customermasterkeyspec,
+  encryptionalgorithms,
+  signingalgorithms,
+  tags,
+  keyrotationenabled,
+  policy,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -24,6 +51,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   (keyrotationenabled.attr_value #>> '{}')::boolean AS keyrotationenabled,
   policy.attr_value::jsonb AS policy,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -114,6 +142,10 @@ FROM
     ON policy.resource_id = R.id
     AND policy.type = 'provider'
     AND lower(policy.attr_name) = 'policy'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -154,6 +186,7 @@ SET
     tags = EXCLUDED.tags,
     keyrotationenabled = EXCLUDED.keyrotationenabled,
     policy = EXCLUDED.policy,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

@@ -1,4 +1,34 @@
-INSERT INTO aws_es_domain
+INSERT INTO aws_es_domain (
+  _id,
+  uri,
+  provider_account_id,
+  domainid,
+  domainname,
+  arn,
+  created,
+  deleted,
+  endpoint,
+  endpoints,
+  processing,
+  upgradeprocessing,
+  elasticsearchversion,
+  elasticsearchclusterconfig,
+  ebsoptions,
+  accesspolicies,
+  snapshotoptions,
+  vpcoptions,
+  cognitooptions,
+  encryptionatrestoptions,
+  nodetonodeencryptionoptions,
+  advancedoptions,
+  logpublishingoptions,
+  servicesoftwareoptions,
+  domainendpointoptions,
+  advancedsecurityoptions,
+  tags,
+  _tags,
+  _ec2_vpc_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -27,6 +57,7 @@ SELECT
   domainendpointoptions.attr_value::jsonb AS domainendpointoptions,
   advancedsecurityoptions.attr_value::jsonb AS advancedsecurityoptions,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
@@ -130,6 +161,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -186,6 +221,7 @@ SET
     domainendpointoptions = EXCLUDED.domainendpointoptions,
     advancedsecurityoptions = EXCLUDED.advancedsecurityoptions,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id
   ;

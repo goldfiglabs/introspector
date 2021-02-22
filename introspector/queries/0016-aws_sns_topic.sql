@@ -1,4 +1,21 @@
-INSERT INTO aws_sns_topic
+INSERT INTO aws_sns_topic (
+  _id,
+  uri,
+  provider_account_id,
+  topicarn,
+  tags,
+  deliverypolicy,
+  displayname,
+  owner,
+  policy,
+  subscriptionsconfirmed,
+  subscriptionsdeleted,
+  subscriptionspending,
+  effectivedeliverypolicy,
+  kmsmasterkeyid,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -14,6 +31,7 @@ SELECT
   (SubscriptionsPending.attr_value #>> '{}')::integer AS subscriptionspending,
   EffectiveDeliveryPolicy.attr_value::jsonb AS effectivedeliverypolicy,
   KmsMasterKeyId.attr_value #>> '{}' AS kmsmasterkeyid,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -64,6 +82,10 @@ FROM
     ON KmsMasterKeyId.resource_id = R.id
     AND KmsMasterKeyId.type = 'provider'
     AND lower(KmsMasterKeyId.attr_name) = 'kmsmasterkeyid'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -94,6 +116,7 @@ SET
     SubscriptionsPending = EXCLUDED.SubscriptionsPending,
     EffectiveDeliveryPolicy = EXCLUDED.EffectiveDeliveryPolicy,
     KmsMasterKeyId = EXCLUDED.KmsMasterKeyId,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

@@ -1,4 +1,24 @@
-INSERT INTO aws_ecs_cluster
+INSERT INTO aws_ecs_cluster (
+  _id,
+  uri,
+  provider_account_id,
+  clusterarn,
+  clustername,
+  status,
+  registeredcontainerinstancescount,
+  runningtaskscount,
+  pendingtaskscount,
+  activeservicescount,
+  statistics,
+  tags,
+  settings,
+  capacityproviders,
+  defaultcapacityproviderstrategy,
+  attachments,
+  attachmentsstatus,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -17,6 +37,7 @@ SELECT
   defaultcapacityproviderstrategy.attr_value::jsonb AS defaultcapacityproviderstrategy,
   attachments.attr_value::jsonb AS attachments,
   attachmentsstatus.attr_value #>> '{}' AS attachmentsstatus,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -79,6 +100,10 @@ FROM
     ON attachmentsstatus.resource_id = R.id
     AND attachmentsstatus.type = 'provider'
     AND lower(attachmentsstatus.attr_name) = 'attachmentsstatus'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -112,6 +137,7 @@ SET
     defaultcapacityproviderstrategy = EXCLUDED.defaultcapacityproviderstrategy,
     attachments = EXCLUDED.attachments,
     attachmentsstatus = EXCLUDED.attachmentsstatus,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

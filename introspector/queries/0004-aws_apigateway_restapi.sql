@@ -1,4 +1,24 @@
-INSERT INTO aws_apigateway_restapi
+INSERT INTO aws_apigateway_restapi (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  name,
+  description,
+  createddate,
+  version,
+  warnings,
+  binarymediatypes,
+  minimumcompressionsize,
+  apikeysource,
+  endpointconfiguration,
+  policy,
+  tags,
+  disableexecuteapiendpoint,
+  stages,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -17,6 +37,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   (disableexecuteapiendpoint.attr_value #>> '{}')::boolean AS disableexecuteapiendpoint,
   stages.attr_value::jsonb AS stages,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -79,6 +100,10 @@ FROM
     ON stages.resource_id = R.id
     AND stages.type = 'provider'
     AND lower(stages.attr_name) = 'stages'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -112,6 +137,7 @@ SET
     tags = EXCLUDED.tags,
     disableexecuteapiendpoint = EXCLUDED.disableexecuteapiendpoint,
     stages = EXCLUDED.stages,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

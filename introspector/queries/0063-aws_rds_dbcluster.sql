@@ -1,4 +1,65 @@
-INSERT INTO aws_rds_dbcluster
+INSERT INTO aws_rds_dbcluster (
+  _id,
+  uri,
+  provider_account_id,
+  allocatedstorage,
+  availabilityzones,
+  backupretentionperiod,
+  charactersetname,
+  databasename,
+  dbclusteridentifier,
+  dbclusterparametergroup,
+  dbsubnetgroup,
+  status,
+  percentprogress,
+  earliestrestorabletime,
+  endpoint,
+  readerendpoint,
+  customendpoints,
+  multiaz,
+  engine,
+  engineversion,
+  latestrestorabletime,
+  port,
+  masterusername,
+  dbclusteroptiongroupmemberships,
+  preferredbackupwindow,
+  preferredmaintenancewindow,
+  replicationsourceidentifier,
+  readreplicaidentifiers,
+  dbclustermembers,
+  vpcsecuritygroups,
+  hostedzoneid,
+  storageencrypted,
+  kmskeyid,
+  dbclusterresourceid,
+  dbclusterarn,
+  associatedroles,
+  iamdatabaseauthenticationenabled,
+  clonegroupid,
+  clustercreatetime,
+  earliestbacktracktime,
+  backtrackwindow,
+  backtrackconsumedchangerecords,
+  enabledcloudwatchlogsexports,
+  capacity,
+  enginemode,
+  scalingconfigurationinfo,
+  deletionprotection,
+  httpendpointenabled,
+  activitystreammode,
+  activitystreamstatus,
+  activitystreamkmskeyid,
+  activitystreamkinesisstreamname,
+  copytagstosnapshot,
+  crossaccountclone,
+  domainmemberships,
+  taglist,
+  globalwriteforwardingstatus,
+  globalwriteforwardingrequested,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -58,6 +119,7 @@ SELECT
   taglist.attr_value::jsonb AS taglist,
   globalwriteforwardingstatus.attr_value #>> '{}' AS globalwriteforwardingstatus,
   (globalwriteforwardingrequested.attr_value #>> '{}')::boolean AS globalwriteforwardingrequested,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -284,6 +346,10 @@ FROM
     ON globalwriteforwardingrequested.resource_id = R.id
     AND globalwriteforwardingrequested.type = 'provider'
     AND lower(globalwriteforwardingrequested.attr_name) = 'globalwriteforwardingrequested'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -358,6 +424,7 @@ SET
     taglist = EXCLUDED.taglist,
     globalwriteforwardingstatus = EXCLUDED.globalwriteforwardingstatus,
     globalwriteforwardingrequested = EXCLUDED.globalwriteforwardingrequested,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

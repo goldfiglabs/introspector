@@ -1,4 +1,34 @@
-INSERT INTO aws_dynamodb_table
+INSERT INTO aws_dynamodb_table (
+  _id,
+  uri,
+  provider_account_id,
+  attributedefinitions,
+  tablename,
+  keyschema,
+  tablestatus,
+  creationdatetime,
+  provisionedthroughput,
+  tablesizebytes,
+  itemcount,
+  tablearn,
+  tableid,
+  billingmodesummary,
+  localsecondaryindexes,
+  globalsecondaryindexes,
+  streamspecification,
+  lateststreamlabel,
+  lateststreamarn,
+  globaltableversion,
+  replicas,
+  restoresummary,
+  ssedescription,
+  archivalsummary,
+  continuousbackupsstatus,
+  pointintimerecoverydescription,
+  tags,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -27,6 +57,7 @@ SELECT
   continuousbackupsstatus.attr_value #>> '{}' AS continuousbackupsstatus,
   pointintimerecoverydescription.attr_value::jsonb AS pointintimerecoverydescription,
   tags.attr_value::jsonb AS tags,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -129,6 +160,10 @@ FROM
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -172,6 +207,7 @@ SET
     continuousbackupsstatus = EXCLUDED.continuousbackupsstatus,
     pointintimerecoverydescription = EXCLUDED.pointintimerecoverydescription,
     tags = EXCLUDED.tags,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 

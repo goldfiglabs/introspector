@@ -1,4 +1,19 @@
-INSERT INTO aws_logs_loggroup
+INSERT INTO aws_logs_loggroup (
+  _id,
+  uri,
+  provider_account_id,
+  loggroupname,
+  creationtime,
+  retentionindays,
+  metricfiltercount,
+  arn,
+  storedbytes,
+  kmskeyid,
+  tags,
+  metricfilters,
+  _tags,
+  _account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -12,6 +27,7 @@ SELECT
   kmskeyid.attr_value #>> '{}' AS kmskeyid,
   tags.attr_value::jsonb AS tags,
   metricfilters.attr_value::jsonb AS metricfilters,
+  _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
 FROM
@@ -54,6 +70,10 @@ FROM
     ON metricfilters.resource_id = R.id
     AND metricfilters.type = 'provider'
     AND lower(metricfilters.attr_name) = 'metricfilters'
+  LEFT JOIN resource_attribute AS _tags
+    ON _tags.resource_id = R.id
+    AND _tags.type = 'Metadata'
+    AND lower(_tags.attr_name) = '_tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -82,6 +102,7 @@ SET
     kmskeyid = EXCLUDED.kmskeyid,
     tags = EXCLUDED.tags,
     metricfilters = EXCLUDED.metricfilters,
+    _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
 
