@@ -18,6 +18,7 @@ INSERT INTO aws_ses_identity (
   policies,
   verificationstatus,
   verificationtoken,
+  _policy,
   _bouncetopic_id,_complainttopic_id,_deliverytopic_id,_account_id
 )
 SELECT
@@ -40,6 +41,7 @@ SELECT
   policies.attr_value::jsonb AS policies,
   verificationstatus.attr_value #>> '{}' AS verificationstatus,
   verificationtoken.attr_value #>> '{}' AS verificationtoken,
+  _policy.attr_value::jsonb AS _policy,
   
     _bouncetopic_id.target_id AS _bouncetopic_id,
     _complainttopic_id.target_id AS _complainttopic_id,
@@ -113,6 +115,10 @@ FROM
     ON verificationtoken.resource_id = R.id
     AND verificationtoken.type = 'provider'
     AND lower(verificationtoken.attr_name) = 'verificationtoken'
+  LEFT JOIN resource_attribute AS _policy
+    ON _policy.resource_id = R.id
+    AND _policy.type = 'Metadata'
+    AND lower(_policy.attr_name) = '_policy'
   LEFT JOIN (
     SELECT
       _aws_sns_topic_relation.resource_id AS resource_id,
@@ -187,6 +193,7 @@ SET
     policies = EXCLUDED.policies,
     verificationstatus = EXCLUDED.verificationstatus,
     verificationtoken = EXCLUDED.verificationtoken,
+    _policy = EXCLUDED._policy,
     _bouncetopic_id = EXCLUDED._bouncetopic_id,
     _complainttopic_id = EXCLUDED._complainttopic_id,
     _deliverytopic_id = EXCLUDED._deliverytopic_id,

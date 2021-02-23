@@ -36,6 +36,7 @@ INSERT INTO aws_lambda_function (
   tags,
   policy,
   _tags,
+  _policy,
   _iam_role_id,_ec2_vpc_id,_account_id
 )
 SELECT
@@ -76,6 +77,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   Policy.attr_value::jsonb AS policy,
   _tags.attr_value::jsonb AS _tags,
+  _policy.attr_value::jsonb AS _policy,
   
     _iam_role_id.target_id AS _iam_role_id,
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
@@ -220,6 +222,10 @@ FROM
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = '_tags'
+  LEFT JOIN resource_attribute AS _policy
+    ON _policy.resource_id = R.id
+    AND _policy.type = 'Metadata'
+    AND lower(_policy.attr_name) = '_policy'
   LEFT JOIN (
     SELECT
       _aws_iam_role_relation.resource_id AS resource_id,
@@ -299,6 +305,7 @@ SET
     tags = EXCLUDED.tags,
     Policy = EXCLUDED.Policy,
     _tags = EXCLUDED._tags,
+    _policy = EXCLUDED._policy,
     _iam_role_id = EXCLUDED._iam_role_id,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id

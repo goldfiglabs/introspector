@@ -13,6 +13,7 @@ INSERT INTO aws_ecr_repository (
   tags,
   policy,
   _tags,
+  _policy,
   _account_id
 )
 SELECT
@@ -30,6 +31,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   policy.attr_value::jsonb AS policy,
   _tags.attr_value::jsonb AS _tags,
+  _policy.attr_value::jsonb AS _policy,
   
     _account_id.target_id AS _account_id
 FROM
@@ -80,6 +82,10 @@ FROM
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = '_tags'
+  LEFT JOIN resource_attribute AS _policy
+    ON _policy.resource_id = R.id
+    AND _policy.type = 'Metadata'
+    AND lower(_policy.attr_name) = '_policy'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -110,6 +116,7 @@ SET
     tags = EXCLUDED.tags,
     policy = EXCLUDED.policy,
     _tags = EXCLUDED._tags,
+    _policy = EXCLUDED._policy,
     _account_id = EXCLUDED._account_id
   ;
 

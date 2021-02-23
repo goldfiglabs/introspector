@@ -27,6 +27,7 @@ INSERT INTO aws_es_domain (
   advancedsecurityoptions,
   tags,
   _tags,
+  _policy,
   _ec2_vpc_id,_account_id
 )
 SELECT
@@ -58,6 +59,7 @@ SELECT
   advancedsecurityoptions.attr_value::jsonb AS advancedsecurityoptions,
   tags.attr_value::jsonb AS tags,
   _tags.attr_value::jsonb AS _tags,
+  _policy.attr_value::jsonb AS _policy,
   
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
@@ -165,6 +167,10 @@ FROM
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = '_tags'
+  LEFT JOIN resource_attribute AS _policy
+    ON _policy.resource_id = R.id
+    AND _policy.type = 'Metadata'
+    AND lower(_policy.attr_name) = '_policy'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -222,6 +228,7 @@ SET
     advancedsecurityoptions = EXCLUDED.advancedsecurityoptions,
     tags = EXCLUDED.tags,
     _tags = EXCLUDED._tags,
+    _policy = EXCLUDED._policy,
     _ec2_vpc_id = EXCLUDED._ec2_vpc_id,
     _account_id = EXCLUDED._account_id
   ;
