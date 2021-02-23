@@ -25,6 +25,9 @@ resources:
         Tags:
           path: Tags
           transform: aws_tags
+        Policy:
+          path: AssumeRolePolicyDocument
+          transform: aws_policy
   category: Role
   relations:
   - relation: manages

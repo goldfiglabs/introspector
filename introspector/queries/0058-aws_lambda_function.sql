@@ -29,6 +29,8 @@ INSERT INTO aws_lambda_function (
   lastupdatestatusreason,
   lastupdatestatusreasoncode,
   filesystemconfigs,
+  packagetype,
+  imageconfigresponse,
   signingprofileversionarn,
   signingjobarn,
   tags,
@@ -67,6 +69,8 @@ SELECT
   lastupdatestatusreason.attr_value #>> '{}' AS lastupdatestatusreason,
   lastupdatestatusreasoncode.attr_value #>> '{}' AS lastupdatestatusreasoncode,
   filesystemconfigs.attr_value::jsonb AS filesystemconfigs,
+  packagetype.attr_value #>> '{}' AS packagetype,
+  imageconfigresponse.attr_value::jsonb AS imageconfigresponse,
   signingprofileversionarn.attr_value #>> '{}' AS signingprofileversionarn,
   signingjobarn.attr_value #>> '{}' AS signingjobarn,
   tags.attr_value::jsonb AS tags,
@@ -188,6 +192,14 @@ FROM
     ON filesystemconfigs.resource_id = R.id
     AND filesystemconfigs.type = 'provider'
     AND lower(filesystemconfigs.attr_name) = 'filesystemconfigs'
+  LEFT JOIN resource_attribute AS packagetype
+    ON packagetype.resource_id = R.id
+    AND packagetype.type = 'provider'
+    AND lower(packagetype.attr_name) = 'packagetype'
+  LEFT JOIN resource_attribute AS imageconfigresponse
+    ON imageconfigresponse.resource_id = R.id
+    AND imageconfigresponse.type = 'provider'
+    AND lower(imageconfigresponse.attr_name) = 'imageconfigresponse'
   LEFT JOIN resource_attribute AS signingprofileversionarn
     ON signingprofileversionarn.resource_id = R.id
     AND signingprofileversionarn.type = 'provider'
@@ -280,6 +292,8 @@ SET
     lastupdatestatusreason = EXCLUDED.lastupdatestatusreason,
     lastupdatestatusreasoncode = EXCLUDED.lastupdatestatusreasoncode,
     filesystemconfigs = EXCLUDED.filesystemconfigs,
+    packagetype = EXCLUDED.packagetype,
+    imageconfigresponse = EXCLUDED.imageconfigresponse,
     signingprofileversionarn = EXCLUDED.signingprofileversionarn,
     signingjobarn = EXCLUDED.signingjobarn,
     tags = EXCLUDED.tags,

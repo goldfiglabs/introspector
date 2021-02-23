@@ -1,7 +1,5 @@
-from contextlib import contextmanager
-from introspector.aws.svc import ImportSpec, resource_gate, service_gate
 import os
-from typing import ContextManager, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
 
@@ -10,6 +8,7 @@ from introspector.aws import account_paths_for_import, load_boto_session
 from introspector.aws.ec2_adjunct import find_adjunct_data
 from introspector.aws.fetch import Proxy
 from introspector.aws.iam import synthesize_account_root
+from introspector.aws.svc import ImportSpec, resource_gate, service_gate
 from introspector.aws.uri import get_arn_fn
 from introspector.delta.partial import map_partial_deletes, map_partial_prefix
 from introspector.delta.resource import map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
@@ -77,11 +76,75 @@ def _lambda_alias_relations(parent_uri, target_raw, **kwargs):
       remaining
   }]
 
+def _arrayize(inval: Union[str, List[str]]) -> List[str]:
+  if isinstance(inval, str):
+    return [inval]
+  return sorted(inval)
+
+
+EFFECTS = {
+  'allow': 'Allow',
+  'deny': 'Deny'
+}
+def _policy_statement(inval: Dict[str, Any]) -> Dict[str, Any]:
+  result = {}
+  lc = {k.lower(): v for k, v in inval.items()}
+  def _normalize(s: str):
+    val = lc.get(s.lower())
+    if val is not None:
+      result[s] = _arrayize(val)
+  sid = lc.get('sid')
+  if sid is not None:
+    result['Sid'] = sid
+  _normalize('Principal')
+  _normalize('NotPrincipal')
+  result['Effect'] = EFFECTS[lc['effect'].lower()]
+  _normalize('Action')
+  _normalize('NotAction')
+  _normalize('Resource')
+  _normalize('NotResource')
+  condition = lc.get('condition')
+  if condition is not None:
+    # TODO: deeper normalization
+    result['Condition'] = condition
+  return result
+
+
+EMPTY_POLICY = {
+  'Version': '2012-10-17',
+  'Statement': []
+}
+def _policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+  if policy is None:
+    return EMPTY_POLICY
+  result = {}
+  lc = {k.lower(): v for k, v in policy.items()}
+  result['Version'] = lc.get('version', '2012-10-17')
+  policy_id = lc.get('id')
+  if policy_id is not None:
+    result['Id'] = policy_id
+  result['Statement'] = [_policy_statement(s) for s in lc.get('statement', [])]
+  return result
+
+def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
+  if m is None or len(m) == 0:
+    return EMPTY_POLICY
+  policies = [_policy(policy) for policy in m.values()]
+  statements = []
+  for policy in policies:
+    statements.append(*policy['Statement'])
+  return {
+    'Version': '2012-10-17',
+    'Id': 'Synthesized from map',
+    'Statement': statements
+  }
 
 AWS_TRANSFORMS = {
     'aws_zone_to_region': _zone_to_region,
     'aws_tags': _tag_list_to_object,
-    'aws_lambda_alias': _lambda_alias_relations
+    'aws_lambda_alias': _lambda_alias_relations,
+    'aws_policy': _policy,
+    'aws_policy_map': _policy_map
 }
 
 

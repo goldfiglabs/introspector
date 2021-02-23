@@ -14,6 +14,7 @@ resources:
     - createdAt
     - imageTagMutability
     - imageScanningConfiguration
+    - encryptionConfiguration
     - Tags
     - Policy
     custom:
@@ -21,4 +22,7 @@ resources:
         Tags:
           path: Tags
           transform: aws_tags
+        Policy:
+          path: Policy
+          transform: aws_policy
   resource_name: repository

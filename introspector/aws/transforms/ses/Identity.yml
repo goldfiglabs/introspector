@@ -23,6 +23,11 @@ resources:
     - Policies
     - VerificationStatus
     - VerificationToken
+    custom:
+      Metadata:
+        Policy:
+          path: Policies
+          transform: aws_policy_map
   resource_name: identity
   relations:
   - relation: publishes-to

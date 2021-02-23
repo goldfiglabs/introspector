@@ -19,11 +19,15 @@ resources:
     - endpointConfiguration
     - policy
     - tags
+    - disableExecuteApiEndpoint
     - Stages
     custom:
       Metadata:
         Tags:
           path: tags
+        Policy:
+          path: policy
+          transform: aws_policy
   relations:
   - relation: belongs-to
     path: Stages

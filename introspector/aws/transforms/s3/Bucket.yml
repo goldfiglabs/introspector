@@ -42,4 +42,7 @@ resources:
         Tags:
           path: Tagging.TagSet
           transform: aws_tags
+        Policy:
+          path: Policy
+          transform: aws_policy
   category: StorageBucket

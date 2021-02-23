@@ -1,4 +1,25 @@
-INSERT INTO aws_ses_identity
+INSERT INTO aws_ses_identity (
+  _id,
+  uri,
+  provider_account_id,
+  dkimenabled,
+  dkimverificationstatus,
+  dkimtokens,
+  mailfromdomain,
+  mailfromdomainstatus,
+  behavioronmxfailure,
+  bouncetopic,
+  complainttopic,
+  deliverytopic,
+  forwardingenabled,
+  headersinbouncenotificationsenabled,
+  headersincomplaintnotificationsenabled,
+  headersindeliverynotificationsenabled,
+  policies,
+  verificationstatus,
+  verificationtoken,
+  _bouncetopic_id,_complainttopic_id,_deliverytopic_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,

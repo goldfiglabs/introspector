@@ -30,6 +30,9 @@ resources:
       Metadata:
         Tags:
           path: Tags
+        Policy:
+          path: Policy
+          transform: aws_policy
   resource_name: queue
   relations:
   - relation: has-key

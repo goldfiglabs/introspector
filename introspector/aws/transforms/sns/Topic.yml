@@ -23,3 +23,6 @@ resources:
         Tags:
           path: Tags
           transform: aws_tags
+        Policy:
+          path: Policy
+          transform: aws_policy

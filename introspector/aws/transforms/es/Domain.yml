@@ -36,6 +36,9 @@ resources:
         Tags:
           path: Tags
           transform: aws_tags
+        Policy:
+          path: AccessPolicies
+          transform: aws_policy
   resource_name: domain
   relations:
   - relation: in
