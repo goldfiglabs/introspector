@@ -118,7 +118,7 @@ FROM
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
-    AND lower(_policy.attr_name) = '_policy'
+    AND lower(_policy.attr_name) = 'policy'
   LEFT JOIN (
     SELECT
       _aws_sns_topic_relation.resource_id AS resource_id,
