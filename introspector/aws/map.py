@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Any, Dict, List, Optional, Union
 
 from sqlalchemy.orm import Session
@@ -81,28 +82,44 @@ def _arrayize(inval: Union[str, List[str]]) -> List[str]:
     return [inval]
   return sorted(inval)
 
+ALL_DIGITS = re.compile(r'^[0-9]{10}[0-9]*$')
+def _normalize_principal_map(raw: Dict[str, Any]) -> Dict[str, List[Any]]:
+  result = {}
+  for key, value in raw.items():
+    values = _arrayize(value)
+    if key == 'AWS':
+      # normalize account ids
+      principals = []
+      for principal in values:
+        if ':' not in principal and ALL_DIGITS.match(principal) is not None:
+          principals.append(f'arn:aws:iam::{principal}:root')
+        else:
+          principals.append(principal)
+      values = principals
+    result[key] = values
+  return result
 
 EFFECTS = {
   'allow': 'Allow',
   'deny': 'Deny'
 }
-def _policy_statement(inval: Dict[str, Any]) -> Dict[str, Any]:
+def _policy_statement(raw: Dict[str, Any]) -> Dict[str, Any]:
   result = {}
-  lc = {k.lower(): v for k, v in inval.items()}
-  def _normalize(s: str):
+  lc = {k.lower(): v for k, v in raw.items()}
+  def _normalize(s: str, fn):
     val = lc.get(s.lower())
     if val is not None:
-      result[s] = _arrayize(val)
+      result[s] = fn(val)
   sid = lc.get('sid')
   if sid is not None:
     result['Sid'] = sid
-  _normalize('Principal')
-  _normalize('NotPrincipal')
+  _normalize('Principal', _normalize_principal_map)
+  _normalize('NotPrincipal', _normalize_principal_map)
   result['Effect'] = EFFECTS[lc['effect'].lower()]
-  _normalize('Action')
-  _normalize('NotAction')
-  _normalize('Resource')
-  _normalize('NotResource')
+  _normalize('Action', _arrayize)
+  _normalize('NotAction', _arrayize)
+  _normalize('Resource', _arrayize)
+  _normalize('NotResource', _arrayize)
   condition = lc.get('condition')
   if condition is not None:
     # TODO: deeper normalization
