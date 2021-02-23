@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 from typing import Any, Dict, List, Optional, Union
@@ -17,6 +18,7 @@ from introspector.error import GFError, GFInternal
 from introspector.mapper import DivisionURI, load_transforms, Mapper
 from introspector.models import ImportJob
 
+_log = logging.getLogger(__name__)
 
 def _zone_to_region(zone: str, **_) -> str:
   return zone[:-1]
@@ -83,8 +85,14 @@ def _arrayize(inval: Union[str, List[str]]) -> List[str]:
   return sorted(inval)
 
 ALL_DIGITS = re.compile(r'^[0-9]{10}[0-9]*$')
-def _normalize_principal_map(raw: Dict[str, Any]) -> Dict[str, List[Any]]:
+def _normalize_principal_map(raw: Union[str, Dict[str, Any]]) -> Dict[str, List[Any]]:
   result = {}
+  if not isinstance(raw, dict):
+    if raw != '*':
+      _log.warn(f'Invalid string literal principal {raw}')
+      return {}
+    else:
+      return {'AWS': ['*']}
   for key, value in raw.items():
     values = _arrayize(value)
     if key == 'AWS':
