@@ -1,4 +1,17 @@
-INSERT INTO aws_lambda_alias
+INSERT INTO aws_lambda_alias (
+  _id,
+  uri,
+  provider_account_id,
+  aliasarn,
+  name,
+  functionversion,
+  description,
+  routingconfig,
+  revisionid,
+  policy,
+  _policy,
+  _function_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -10,6 +23,7 @@ SELECT
   routingconfig.attr_value::jsonb AS routingconfig,
   revisionid.attr_value #>> '{}' AS revisionid,
   Policy.attr_value::jsonb AS policy,
+  _policy.attr_value::jsonb AS _policy,
   
     _function_id.target_id AS _function_id,
     _account_id.target_id AS _account_id
@@ -45,6 +59,10 @@ FROM
     ON Policy.resource_id = R.id
     AND Policy.type = 'provider'
     AND lower(Policy.attr_name) = 'policy'
+  LEFT JOIN resource_attribute AS _policy
+    ON _policy.resource_id = R.id
+    AND _policy.type = 'Metadata'
+    AND lower(_policy.attr_name) = 'policy'
   LEFT JOIN (
     SELECT
       _aws_lambda_function_relation.resource_id AS resource_id,
@@ -84,6 +102,7 @@ SET
     routingconfig = EXCLUDED.routingconfig,
     revisionid = EXCLUDED.revisionid,
     Policy = EXCLUDED.Policy,
+    _policy = EXCLUDED._policy,
     _function_id = EXCLUDED._function_id,
     _account_id = EXCLUDED._account_id
   ;

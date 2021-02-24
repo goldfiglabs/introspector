@@ -23,23 +23,25 @@ def _get_policy(proxy: ServiceProxy, arn: str) -> Optional[Dict]:
   return None
 
 
-def _import_function(proxy: ServiceProxy, function: Dict):
+def _import_function(proxy: ServiceProxy, function: Dict, spec: ServiceSpec):
   name = function['FunctionName']
   arn = function['FunctionArn']
-  versions_resp = proxy.list('list_versions_by_function', FunctionName=name)
-  if versions_resp is not None:
-    versions = versions_resp[1]['Versions']
-    for version in versions:
-      version['ParentFunctionArn'] = arn
-      version['Policy'] = _get_policy(proxy, version['FunctionArn'])
-      yield 'FunctionVersion', version
-  aliases_resp = proxy.list('list_aliases', FunctionName=name)
-  if aliases_resp is not None:
-    aliases = aliases_resp[1]['Aliases']
-    for alias in aliases:
-      alias['FunctionArn'] = arn
-      alias['Policy'] = _get_policy(proxy, alias['AliasArn'])
-      yield 'Alias', alias
+  if resource_gate(spec, 'FunctionVersion'):
+    versions_resp = proxy.list('list_versions_by_function', FunctionName=name)
+    if versions_resp is not None:
+      versions = versions_resp[1]['Versions']
+      for version in versions:
+        version['ParentFunctionArn'] = arn
+        version['Policy'] = _get_policy(proxy, version['FunctionArn'])
+        yield 'FunctionVersion', version
+  if resource_gate(spec, 'Alias'):
+    aliases_resp = proxy.list('list_aliases', FunctionName=name)
+    if aliases_resp is not None:
+      aliases = aliases_resp[1]['Aliases']
+      for alias in aliases:
+        alias['FunctionArn'] = arn
+        alias['Policy'] = _get_policy(proxy, alias['AliasArn'])
+        yield 'Alias', alias
 
 
 def _import_functions(proxy: ServiceProxy, spec: ServiceSpec):
@@ -55,8 +57,7 @@ def _import_functions(proxy: ServiceProxy, spec: ServiceSpec):
           function['Tags'] = tags_result[1].get('Tags', [])
       function['Policy'] = _get_policy(proxy, function['FunctionArn'])
       yield 'Function', function
-      yield from _import_function(proxy, function)
-
+      yield from _import_function(proxy, function, spec)
 
 def _import_lambda_region(
     proxy: ServiceProxy, region: str,
