@@ -1,0 +1,25 @@
+version: 1
+resources:
+- service: glacier
+  provider_type: Vault
+  name: VaultName
+  uri:
+    uri: VaultARN
+  attributes:
+    provider:
+    - VaultARN
+    - VaultName
+    - CreationDate
+    - LastInventoryDate
+    - NumberOfArchives
+    - SizeInBytes
+    - Policy
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+        Policy:
+          path: Policy
+          transform: aws_policy
+  resource_name: vaults
