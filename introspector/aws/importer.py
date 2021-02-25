@@ -14,7 +14,7 @@ from introspector.models import ImportJob, ProviderCredential
 SVC_MODULES = [
     'acm', 'apigateway', 'apigatewayv2', 'autoscaling', 'cloudformation',
     'cloudfront', 'cloudtrail', 'cloudwatch', 'config', 'dynamodb', 'ec2',
-    'ecr', 'ecs', 'eks', 'elasticbeanstalk', 'elb', 'elbv2', 'es', 'iam',
+    'ecr', 'ecs', 'efs', 'eks', 'elasticbeanstalk', 'elb', 'elbv2', 'es', 'iam',
     'kms', 'lambdax', 'logs', 'organizations', 'rds', 'redshift', 'route53',
     's3', 'ses', 'sns', 'sqs', 'ssm'
 ]

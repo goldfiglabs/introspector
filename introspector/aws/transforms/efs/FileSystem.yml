@@ -1,0 +1,40 @@
+version: 1
+resources:
+- service: efs
+  provider_type: FileSystem
+  name: Name
+  uri:
+    uri: FileSystemArn
+  attributes:
+    provider:
+    - OwnerId
+    - CreationToken
+    - FileSystemId
+    - FileSystemArn
+    - CreationTime
+    - LifeCycleState
+    - Name
+    - NumberOfMountTargets
+    - SizeInBytes
+    - PerformanceMode
+    - Encrypted
+    - KmsKeyId
+    - ThroughputMode
+    - ProvisionedThroughputInMibps
+    - Tags
+    - Policy
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+        Policy:
+          path: Policy
+          transform: aws_policy
+  resource_name: file-system
+  relations:
+  - relation: encrypted-by
+    path: KmsKeyId
+    uri:
+      uri:
+        path: ''
