@@ -117,7 +117,9 @@ class ClientProxy(object):
         return attr_result
     except botocore.exceptions.ClientError as e:
       error = e.response.get('Error', {}).get('Code', '')
-      if error.startswith('NoSuch') or error.endswith('NotFoundError'):
+      if error.startswith('NoSuch') \
+        or error.endswith('NotFoundError') \
+          or error == 'ResourceNotFoundException':
         # No results, nothing to return
         pass
       else:

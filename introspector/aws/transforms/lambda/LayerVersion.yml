@@ -1,0 +1,23 @@
+version: 1
+resources:
+- service: lambda
+  provider_type: LayerVersion
+  name: Name
+  uri:
+    uri: LayerVersionArn
+  attributes:
+    provider:
+    - LayerVersionArn
+    - Version
+    - Description
+    - CreatedDate
+    - CompatibleRuntimes
+    - LicenseInfo
+    - Policy
+    - Name
+    custom:
+      Metadata:
+        Policy:
+          path: Policy
+          transform: aws_policy
+  resource_name: layer

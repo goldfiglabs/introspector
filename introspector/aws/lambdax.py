@@ -59,13 +59,42 @@ def _import_functions(proxy: ServiceProxy, spec: ServiceSpec):
       yield 'Function', function
       yield from _import_function(proxy, function, spec)
 
+
+def _import_layer(proxy: ServiceProxy, layer_arn: str, layer_name: str):
+  layer_versions_resp = proxy.list('list_layer_versions', LayerName=layer_arn)
+  if layer_versions_resp is not None:
+    layer_versions = layer_versions_resp[1]['LayerVersions']
+    for layer_version in layer_versions:
+      policy = proxy.get('get_layer_version_policy', LayerName=layer_arn, VersionNumber=layer_version['Version'])
+      if policy is not None:
+        policy_string = policy.get('Policy')
+        if policy_string is not None:
+          layer_version['Policy'] = json.loads(policy_string)
+        else:
+          layer_version['Policy'] = None
+        layer_version['PolicyRevisionId'] = policy.get('RevisionId')
+      layer_version['Name'] = layer_name
+      yield 'LayerVersion', layer_version
+
+
+def _import_layers(proxy: ServiceProxy):
+  layers_resp = proxy.list('list_layers')
+  if layers_resp is not None:
+    layer_versions = layers_resp[1]['Layers']
+    for layer_version in layer_versions:
+      layer_arn = layer_version['LayerArn']
+      yield from _import_layer(proxy, layer_arn, layer_version['LayerName'])
+
+
 def _import_lambda_region(
     proxy: ServiceProxy, region: str,
     spec: ServiceSpec) -> Generator[Tuple[str, Any], None, None]:
   if resource_gate(spec, 'Function'):
     _log.info(f'Importing functions in {region}')
     yield from _import_functions(proxy, spec)
-  # TODO: layers, event sources
+  if resource_gate(spec, 'LayerVersion'):
+    yield from _import_layers(proxy)
+  # TODO: event sources
 
 
 SVC = RegionalService('lambda', _import_lambda_region)
