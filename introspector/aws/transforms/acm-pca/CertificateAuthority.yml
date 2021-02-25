@@ -1,0 +1,33 @@
+version: 1
+resources:
+- service: acm-pca
+  provider_type: CertificateAuthority
+  name: Serial
+  uri:
+    uri: Arn
+  attributes:
+    provider:
+    - Arn
+    - OwnerAccount
+    - CreatedAt
+    - LastStateChangeAt
+    - Type
+    - Serial
+    - Status
+    - NotBefore
+    - NotAfter
+    - FailureReason
+    - CertificateAuthorityConfiguration
+    - RevocationConfiguration
+    - RestorableUntil
+    - Policy
+    - Tags
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+        Policy:
+          path: Policy
+          transform: aws_policy
+  resource_name: certificate-authoriy

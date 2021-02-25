@@ -12,11 +12,40 @@ from introspector.aws.svc import GlobalService, ImportSpec, RegionalService, ser
 from introspector.models import ImportJob, ProviderCredential
 
 SVC_MODULES = [
-    'acm', 'apigateway', 'apigatewayv2', 'autoscaling', 'cloudformation',
-    'cloudfront', 'cloudtrail', 'cloudwatch', 'config', 'dynamodb', 'ec2',
-    'ecr', 'ecs', 'efs', 'eks', 'elasticbeanstalk', 'elb', 'elbv2', 'es', 'glacier',
-    'iam', 'kms', 'lambdax', 'logs', 'organizations', 'rds', 'redshift', 'route53',
-    's3', 'ses', 'sns', 'sqs', 'ssm'
+    'acm',
+    'acm_pca',
+    'apigateway',
+    'apigatewayv2',
+    'autoscaling',
+    'cloudformation',
+    'cloudfront',
+    'cloudtrail',
+    'cloudwatch',
+    'config',
+    'dynamodb',
+    'ec2',
+    'ecr',
+    'ecs',
+    'efs',
+    'eks',
+    'elasticbeanstalk',
+    'elb',
+    'elbv2',
+    'es',
+    'glacier',
+    'iam',
+    'kms',
+    'lambdax',
+    'logs',
+    'organizations',
+    'rds',
+    'redshift',
+    'route53',
+    's3',
+    'ses',
+    'sns',
+    'sqs',
+    'ssm'
 ]
 
 GOV_SKIPLIST = ['cloudfront']
