@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS aws_secretsmanager_secret (
   secretversionstostages JSONB,
   owningservice TEXT,
   createddate TIMESTAMP WITH TIME ZONE,
+  policy JSONB,
   _tags JSONB,
   _policy JSONB,
   _kms_key_id INTEGER,

@@ -17,6 +17,7 @@ INSERT INTO aws_secretsmanager_secret (
   secretversionstostages,
   owningservice,
   createddate,
+  policy,
   _tags,
   _policy,
   _kms_key_id,_account_id
@@ -40,6 +41,7 @@ SELECT
   secretversionstostages.attr_value::jsonb AS secretversionstostages,
   owningservice.attr_value #>> '{}' AS owningservice,
   (TO_TIMESTAMP(createddate.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createddate,
+  policy.attr_value::jsonb AS policy,
   _tags.attr_value::jsonb AS _tags,
   _policy.attr_value::jsonb AS _policy,
   
@@ -109,6 +111,10 @@ FROM
     ON createddate.resource_id = R.id
     AND createddate.type = 'provider'
     AND lower(createddate.attr_name) = 'createddate'
+  LEFT JOIN resource_attribute AS policy
+    ON policy.resource_id = R.id
+    AND policy.type = 'provider'
+    AND lower(policy.attr_name) = 'policy'
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
@@ -164,6 +170,7 @@ SET
     secretversionstostages = EXCLUDED.secretversionstostages,
     owningservice = EXCLUDED.owningservice,
     createddate = EXCLUDED.createddate,
+    policy = EXCLUDED.policy,
     _tags = EXCLUDED._tags,
     _policy = EXCLUDED._policy,
     _kms_key_id = EXCLUDED._kms_key_id,
