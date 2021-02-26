@@ -42,6 +42,7 @@ SVC_MODULES = [
     'redshift',
     'route53',
     's3',
+    'secretsmanager',
     'ses',
     'sns',
     'sqs',
