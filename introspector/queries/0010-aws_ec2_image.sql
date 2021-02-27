@@ -28,6 +28,7 @@ INSERT INTO aws_ec2_image (
   statereason,
   tags,
   virtualizationtype,
+  launchpermissions,
   _tags,
   _account_id
 )
@@ -61,6 +62,7 @@ SELECT
   statereason.attr_value::jsonb AS statereason,
   tags.attr_value::jsonb AS tags,
   virtualizationtype.attr_value #>> '{}' AS virtualizationtype,
+  launchpermissions.attr_value::jsonb AS launchpermissions,
   _tags.attr_value::jsonb AS _tags,
   
     _account_id.target_id AS _account_id
@@ -172,10 +174,14 @@ FROM
     ON virtualizationtype.resource_id = R.id
     AND virtualizationtype.type = 'provider'
     AND lower(virtualizationtype.attr_name) = 'virtualizationtype'
+  LEFT JOIN resource_attribute AS launchpermissions
+    ON launchpermissions.resource_id = R.id
+    AND launchpermissions.type = 'provider'
+    AND lower(launchpermissions.attr_name) = 'launchpermissions'
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -221,6 +227,7 @@ SET
     statereason = EXCLUDED.statereason,
     tags = EXCLUDED.tags,
     virtualizationtype = EXCLUDED.virtualizationtype,
+    launchpermissions = EXCLUDED.launchpermissions,
     _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;

@@ -33,6 +33,7 @@ resources:
     - StateReason
     - Tags
     - VirtualizationType
+    - LaunchPermissions
     custom:
       Metadata:
         Tags:

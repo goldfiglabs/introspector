@@ -47,8 +47,14 @@ def _add_launch_permissions(proxy: ServiceProxy, response: Dict):
     permissions = permission_resp.get('CreateVolumePermissions', [])
     snapshot['CreateVolumePermissions'] = permissions
 
-
-# TODO: add to transform for snapshots
+def _add_image_attributes(proxy: ServiceProxy, response: Dict[str, Any]):
+  images = response.get('Images', [])
+  for image in images:
+    launch_permission = proxy.get('describe_image_attribute', Attribute='launchPermission', ImageId=image['ImageId'])
+    if launch_permission is not None:
+      image['LaunchPermissions'] = launch_permission.get('LaunchPermissions', [])
+    else:
+      image['LaunchPermissions'] = []
 
 RESOURCES = [
     'Addresses', 'FlowLogs'
@@ -73,6 +79,8 @@ def _import_ec2_region(
             _add_user_data(proxy, result[1])
           elif resource == 'describe_snapshots':
             _add_launch_permissions(proxy, result[1])
+          elif resource == 'describe_images':
+            _add_image_attributes(proxy, result[1])
           yield result[0], result[1]
         _log.info(f'done with {resource}')
   if resource_gate(spec, 'Defaults'):
@@ -95,5 +103,7 @@ def add_amis_to_import_job(proxy: Proxy, writer: ImportWriter, ps: PathStack,
   if result is not None:
     resource_name = result[0]
     raw_resources = result[1]
+    # We can't add launch permissions here because we don't own the images
+    #_add_image_attributes(service_proxy, raw_resources)
     writer(ps, resource_name, raw_resources, {'region': region})
   return ps.path()
