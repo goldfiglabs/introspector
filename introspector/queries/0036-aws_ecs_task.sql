@@ -76,7 +76,7 @@ SELECT
   taskdefinitionarn.attr_value #>> '{}' AS taskdefinitionarn,
   (version.attr_value #>> '{}')::bigint AS version,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _cluster_id.target_id AS _cluster_id,
     _account_id.target_id AS _account_id
 FROM
@@ -218,7 +218,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_ecs_cluster_relation.resource_id AS resource_id,
@@ -288,4 +288,3 @@ SET
     _cluster_id = EXCLUDED._cluster_id,
     _account_id = EXCLUDED._account_id
   ;
-

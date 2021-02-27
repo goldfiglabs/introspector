@@ -132,7 +132,7 @@ SELECT
   (maxallocatedstorage.attr_value #>> '{}')::integer AS maxallocatedstorage,
   taglist.attr_value::jsonb AS taglist,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _dbcluster_id.target_id AS _dbcluster_id,
     _account_id.target_id AS _account_id
 FROM
@@ -386,7 +386,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_rds_dbcluster_relation.resource_id AS resource_id,

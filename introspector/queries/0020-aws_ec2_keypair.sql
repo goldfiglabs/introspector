@@ -18,7 +18,7 @@ SELECT
   keyname.attr_value #>> '{}' AS keyname,
   tags.attr_value::jsonb AS tags,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -43,7 +43,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -70,4 +70,3 @@ SET
     _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
-

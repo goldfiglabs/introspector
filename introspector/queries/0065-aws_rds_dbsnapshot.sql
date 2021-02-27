@@ -70,7 +70,7 @@ SELECT
   taglist.attr_value::jsonb AS taglist,
   restore.attr_value::jsonb AS restore,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _kms_key_id.target_id AS _kms_key_id,
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _dbinstance_id.target_id AS _dbinstance_id,
@@ -202,7 +202,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -297,4 +297,3 @@ SET
     _dbinstance_id = EXCLUDED._dbinstance_id,
     _account_id = EXCLUDED._account_id
   ;
-

@@ -80,7 +80,7 @@ SELECT
   (TO_TIMESTAMP(cert_1_last_rotated.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS cert_1_last_rotated,
   (cert_2_active.attr_value #>> '{}')::boolean AS cert_2_active,
   (TO_TIMESTAMP(cert_2_last_rotated.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS cert_2_last_rotated,
-  
+
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -157,7 +157,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN resource_attribute AS password_enabled
     ON password_enabled.resource_id = R.id
     AND password_enabled.type = 'provider'
@@ -287,4 +287,3 @@ SET
     cert_2_last_rotated = EXCLUDED.cert_2_last_rotated,
     _account_id = EXCLUDED._account_id
   ;
-

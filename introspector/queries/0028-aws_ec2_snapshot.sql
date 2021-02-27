@@ -40,7 +40,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   createvolumepermissions.attr_value::jsonb AS createvolumepermissions,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _kms_key_id.target_id AS _kms_key_id,
     _volume_id.target_id AS _volume_id,
     _account_id.target_id AS _account_id
@@ -111,7 +111,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -177,4 +177,3 @@ SET
     _volume_id = EXCLUDED._volume_id,
     _account_id = EXCLUDED._account_id
   ;
-

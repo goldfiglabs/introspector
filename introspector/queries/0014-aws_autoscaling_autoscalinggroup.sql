@@ -64,7 +64,7 @@ SELECT
   (maxinstancelifetime.attr_value #>> '{}')::integer AS maxinstancelifetime,
   (capacityrebalance.attr_value #>> '{}')::boolean AS capacityrebalance,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _launchconfiguration_id.target_id AS _launchconfiguration_id,
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -183,7 +183,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_autoscaling_launchconfiguration_relation.resource_id AS resource_id,
@@ -261,4 +261,3 @@ SET
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id
   ;
-

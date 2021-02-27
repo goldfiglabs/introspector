@@ -68,7 +68,7 @@ SELECT
   triggers.attr_value::jsonb AS triggers,
   queues.attr_value::jsonb AS queues,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _application_id.target_id AS _application_id,
     _applicationversion_id.target_id AS _applicationversion_id,
     _iam_role_id.target_id AS _iam_role_id,
@@ -196,7 +196,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_elasticbeanstalk_application_relation.resource_id AS resource_id,

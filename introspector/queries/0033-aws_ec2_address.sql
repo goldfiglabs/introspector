@@ -38,7 +38,7 @@ SELECT
   customerownedipv4pool.attr_value #>> '{}' AS customerownedipv4pool,
   carrierip.attr_value #>> '{}' AS carrierip,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _networkinterface_id.target_id AS _networkinterface_id,
     _instance_id.target_id AS _instance_id,
     _account_id.target_id AS _account_id
@@ -105,7 +105,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_networkinterface_relation.resource_id AS resource_id,
@@ -170,4 +170,3 @@ SET
     _instance_id = EXCLUDED._instance_id,
     _account_id = EXCLUDED._account_id
   ;
-

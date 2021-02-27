@@ -22,7 +22,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   vpcpeeringconnectionid.attr_value #>> '{}' AS vpcpeeringconnectionid,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _acceptervpc_id.target_id AS _acceptervpc_id,
     _requestervpc_id.target_id AS _requestervpc_id,
     _account_id.target_id AS _account_id
@@ -57,7 +57,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -114,4 +114,3 @@ SET
     _requestervpc_id = EXCLUDED._requestervpc_id,
     _account_id = EXCLUDED._account_id
   ;
-

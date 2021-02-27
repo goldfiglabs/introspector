@@ -50,7 +50,7 @@ SELECT
   launchtemplate.attr_value::jsonb AS launchtemplate,
   tags.attr_value::jsonb AS tags,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _cluster_id.target_id AS _cluster_id,
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -141,7 +141,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_eks_cluster_relation.resource_id AS resource_id,

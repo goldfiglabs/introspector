@@ -62,7 +62,7 @@ SELECT
   (lambda_multi_value_headers_enabled.attr_value #>> '{}')::boolean AS lambda_multi_value_headers_enabled,
   (proxy_protocol_v2_enabled.attr_value #>> '{}')::boolean AS proxy_protocol_v2_enabled,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _ec2_vpc_id.target_id AS _ec2_vpc_id,
     _account_id.target_id AS _account_id
 FROM
@@ -176,7 +176,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,

@@ -52,7 +52,7 @@ SELECT
   tagset.attr_value::jsonb AS tagset,
   vpcid.attr_value #>> '{}' AS vpcid,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _instance_id.target_id AS _instance_id,
     _vpc_id.target_id AS _vpc_id,
     _subnet_id.target_id AS _subnet_id,
@@ -148,7 +148,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_ec2_instance_relation.resource_id AS resource_id,

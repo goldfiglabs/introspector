@@ -80,7 +80,7 @@ SELECT
   tags.attr_value::jsonb AS tags,
   eventselectors.attr_value::jsonb AS eventselectors,
   _tags.attr_value::jsonb AS _tags,
-  
+
     _s3_bucket_id.target_id AS _s3_bucket_id,
     _logs_loggroup_id.target_id AS _logs_loggroup_id,
     _account_id.target_id AS _account_id
@@ -231,7 +231,7 @@ FROM
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = '_tags'
+    AND lower(_tags.attr_name) = 'tags'
   LEFT JOIN (
     SELECT
       _aws_s3_bucket_relation.resource_id AS resource_id,
@@ -317,4 +317,3 @@ SET
     _logs_loggroup_id = EXCLUDED._logs_loggroup_id,
     _account_id = EXCLUDED._account_id
   ;
-
