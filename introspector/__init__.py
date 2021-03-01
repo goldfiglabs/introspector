@@ -17,7 +17,7 @@ _log = logging.getLogger(__name__)
 class PathStack(object):
   @classmethod
   def from_import_job(cls, import_job: ImportJob) -> 'PathStack':
-    return cls([])
+    return cls([import_job.path_prefix])
 
   def __init__(self, tokens: List[str]):
     self._tokens = tokens

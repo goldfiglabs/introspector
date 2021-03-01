@@ -66,8 +66,8 @@ class ImportJob(Base):
   _aws_config: Optional[AwsConfig] = None
 
   @classmethod
-  def create(cls, provider: ProviderAccount, config) -> 'ImportJob':
-    return cls(provider=provider, configuration=config, path_prefix='')
+  def create(cls, provider: ProviderAccount, config, account: str) -> 'ImportJob':
+    return cls(provider=provider, configuration=config, path_prefix=account)
 
   @classmethod
   def latest(cls, db: Session,

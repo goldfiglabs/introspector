@@ -102,6 +102,9 @@ def _import_graph(import_job: ImportJob, writer: ImportWriter,
   config = import_job.configuration
   org = config['aws_org']
   is_mocked = org['Id'].startswith('OrgDummy')
+  is_master_account = import_job.path_prefix == org['MasterAccountId']
+  if not is_master_account:
+    return []
   master_account_arn = org['MasterAccountArn']
   proxies = _AccountProxies(account_credentials, master_account_arn)
   ps = PathStack.from_import_job(import_job)
@@ -114,17 +117,17 @@ def _import_graph(import_job: ImportJob, writer: ImportWriter,
         _import_organization(ps, writer, entry)
     elif typ == 'Root':
       if resource_gate(spec, 'Root'):
-        _import_root(proxies.master_account_proxy(), ps.scope(path), writer,
+        _import_root(proxies.master_account_proxy(), ps, writer,
                      entry)
     elif typ == 'OrganizationalUnit':
       if resource_gate(spec, 'OrganizationalUnit'):
         _import_organizational_unit(proxies.master_account_proxy(),
-                                    ps.scope(path), writer, entry)
+                                    ps, writer, entry)
     elif typ == 'Account':
       if resource_gate(spec, 'Account'):
         is_master_account = entry['Arn'] == master_account_arn
         proxy = proxies.master_account_proxy()
-        _import_account(proxy, proxy, ps.scope(path), writer, entry,
+        _import_account(proxy, proxy, ps, writer, entry,
                         is_master_account)
     else:
       raise GFInternal(f'Unknown AWS graph type {typ}')

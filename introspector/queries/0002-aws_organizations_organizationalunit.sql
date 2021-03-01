@@ -1,4 +1,14 @@
-INSERT INTO aws_organizations_organizationalunit
+INSERT INTO aws_organizations_organizationalunit (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  arn,
+  name,
+  servicecontrolpolicies,
+  tagpolicies,
+  _root_id,_organizational_unit_id
+)
 SELECT
   R.id AS _id,
   R.uri,

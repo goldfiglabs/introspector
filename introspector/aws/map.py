@@ -249,20 +249,12 @@ def _get_mapper(import_job: ImportJob,
 # Everything has a 'base' source, these are extra
 AWS_SOURCES = ['credentialreport']
 
-# def service_gate(service: Optional[str]):
-#   if service is None:
-#     return lambda _: True
-#   else:
-#     return lambda target: target == service
 
-
-# TODO: consider how to rework with tables
 def map_import(db: Session, import_job_id: int, partition: str,
                spec: ImportSpec):
   import_job = db.query(ImportJob).get(import_job_id)
   if import_job is None:
     raise GFInternal('Lost ImportJob')
-  assert import_job.path_prefix == ''
   ps = PathStack.from_import_job(import_job)
   mapper = _get_mapper(import_job)
   adjunct_writer = db_import_writer(db,
@@ -280,7 +272,7 @@ def map_import(db: Session, import_job_id: int, partition: str,
     if gate('iam') is not None:
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
-      synthesize_account_root(proxy, db, import_job, path, account.scope,
+      synthesize_account_root(proxy, db, import_job, import_job.path_prefix, account.scope,
                               partition)
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source,
@@ -292,14 +284,13 @@ def map_import(db: Session, import_job_id: int, partition: str,
       if boto is None or proxy is None:
         boto = load_boto_session(account)
         proxy = Proxy.build(boto)
-      find_adjunct_data(db, proxy, adjunct_writer, import_job, ps.scope(path),
-                        import_job)
+      find_adjunct_data(db, proxy, adjunct_writer, import_job, ps, import_job)
 
     # Re-map anything we've added
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
 
     # Handle deletes
-    map_resource_deletes(db, ps.scope(path).path(), import_job, spec)
+    map_resource_deletes(db, ps.path(), import_job, spec)
 
     found_relations = map_resource_relations(db, import_job,
                                              import_job.path_prefix, mapper,

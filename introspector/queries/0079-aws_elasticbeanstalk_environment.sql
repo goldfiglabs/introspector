@@ -68,7 +68,7 @@ SELECT
   triggers.attr_value::jsonb AS triggers,
   queues.attr_value::jsonb AS queues,
   _tags.attr_value::jsonb AS _tags,
-
+  
     _application_id.target_id AS _application_id,
     _applicationversion_id.target_id AS _applicationversion_id,
     _iam_role_id.target_id AS _iam_role_id,
@@ -241,13 +241,28 @@ FROM
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
-      resource_relation AS _aws_organizations_account_relation
-      INNER JOIN resource AS _aws_organizations_account
-        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-        AND _aws_organizations_account.provider_type = 'Account'
-        AND _aws_organizations_account.service = 'organizations'
+    (
+      SELECT
+        _aws_organizations_account_relation.resource_id AS resource_id
+      FROM
+        resource_relation AS _aws_organizations_account_relation
+        INNER JOIN resource AS _aws_organizations_account
+          ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+          AND _aws_organizations_account.provider_type = 'Account'
+          AND _aws_organizations_account.service = 'organizations'
+      WHERE
+        _aws_organizations_account_relation.relation = 'in'
+      GROUP BY _aws_organizations_account_relation.resource_id
+      HAVING COUNT(*) = 1
+    ) AS unique_account_mapping
+    INNER JOIN resource_relation AS _aws_organizations_account_relation
+      ON _aws_organizations_account_relation.resource_id = unique_account_mapping.resource_id
+    INNER JOIN resource AS _aws_organizations_account
+      ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+      AND _aws_organizations_account.provider_type = 'Account'
+      AND _aws_organizations_account.service = 'organizations'
     WHERE
-      _aws_organizations_account_relation.relation = 'in'
+        _aws_organizations_account_relation.relation = 'in'
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'

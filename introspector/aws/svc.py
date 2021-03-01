@@ -141,7 +141,7 @@ class GlobalService:
       for path, account in account_paths_for_import(db, job):
         boto = load_boto_session(account)
         proxy = Proxy.build(boto)
-        ps = PathStack.from_import_job(job).scope(path)
+        ps = PathStack.from_import_job(job)
         service_proxy = proxy.service(self.name)
         for fn in resource_fns:
           fn(service_proxy, writer, account.scope, ps, service_spec)
@@ -158,7 +158,7 @@ class GlobalService:
       for path, account in accounts:
         for fn in resource_fns:
           future = pool.submit(_global_async_proxy,
-                               ps=ps.scope(path),
+                               ps=ps,
                                import_job_id=import_job_id,
                                provider_account_id=provider_account_id,
                                config=account.config,
@@ -188,7 +188,7 @@ def make_import_to_db(svc_name: str,
     for path, account in account_paths_for_import(db, job):
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
-      ps = PathStack.from_import_job(job).scope(path)
+      ps = PathStack.from_import_job(job)
       service_proxy = proxy.service(svc_name, region)
       ps = ps.scope(region)
       for resource_name, raw_resources in fn(service_proxy, region,
@@ -231,7 +231,7 @@ def make_import_with_pool(svc_name: str,
                            import_job_id=import_job_id,
                            provider_account_id=provider_account_id,
                            region=region,
-                           ps=ps.scope(path),
+                           ps=ps,
                            config=account.config,
                            svc_name=svc_name,
                            service_spec=service_spec,

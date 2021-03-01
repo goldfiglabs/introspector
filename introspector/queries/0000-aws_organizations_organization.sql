@@ -1,4 +1,18 @@
-INSERT INTO aws_organizations_organization
+INSERT INTO aws_organizations_organization (
+  _id,
+  uri,
+  provider_account_id,
+  id,
+  arn,
+  featureset,
+  masteraccountarn,
+  masteraccountid,
+  masteraccountemail,
+  availablepolicytypes,
+  servicecontrolpolicies,
+  tagpolicies
+  
+)
 SELECT
   R.id AS _id,
   R.uri,

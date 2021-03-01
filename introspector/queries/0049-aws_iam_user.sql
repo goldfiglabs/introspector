@@ -80,7 +80,7 @@ SELECT
   (TO_TIMESTAMP(cert_1_last_rotated.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS cert_1_last_rotated,
   (cert_2_active.attr_value #>> '{}')::boolean AS cert_2_active,
   (TO_TIMESTAMP(cert_2_last_rotated.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS cert_2_last_rotated,
-
+  
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -235,13 +235,28 @@ FROM
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
-      resource_relation AS _aws_organizations_account_relation
-      INNER JOIN resource AS _aws_organizations_account
-        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-        AND _aws_organizations_account.provider_type = 'Account'
-        AND _aws_organizations_account.service = 'organizations'
+    (
+      SELECT
+        _aws_organizations_account_relation.resource_id AS resource_id
+      FROM
+        resource_relation AS _aws_organizations_account_relation
+        INNER JOIN resource AS _aws_organizations_account
+          ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+          AND _aws_organizations_account.provider_type = 'Account'
+          AND _aws_organizations_account.service = 'organizations'
+      WHERE
+        _aws_organizations_account_relation.relation = 'in'
+      GROUP BY _aws_organizations_account_relation.resource_id
+      HAVING COUNT(*) = 1
+    ) AS unique_account_mapping
+    INNER JOIN resource_relation AS _aws_organizations_account_relation
+      ON _aws_organizations_account_relation.resource_id = unique_account_mapping.resource_id
+    INNER JOIN resource AS _aws_organizations_account
+      ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+      AND _aws_organizations_account.provider_type = 'Account'
+      AND _aws_organizations_account.service = 'organizations'
     WHERE
-      _aws_organizations_account_relation.relation = 'in'
+        _aws_organizations_account_relation.relation = 'in'
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
@@ -287,3 +302,4 @@ SET
     cert_2_last_rotated = EXCLUDED.cert_2_last_rotated,
     _account_id = EXCLUDED._account_id
   ;
+

@@ -1,4 +1,39 @@
-INSERT INTO aws_lambda_functionversion
+INSERT INTO aws_lambda_functionversion (
+  _id,
+  uri,
+  provider_account_id,
+  functionname,
+  functionarn,
+  runtime,
+  role,
+  handler,
+  codesize,
+  description,
+  timeout,
+  memorysize,
+  lastmodified,
+  codesha256,
+  version,
+  vpcconfig,
+  deadletterconfig,
+  environment,
+  kmskeyarn,
+  tracingconfig,
+  masterarn,
+  revisionid,
+  layers,
+  state,
+  statereason,
+  statereasoncode,
+  lastupdatestatus,
+  lastupdatestatusreason,
+  lastupdatestatusreasoncode,
+  filesystemconfigs,
+  signingprofileversionarn,
+  signingjobarn,
+  policy,
+  _function_id,_iam_role_id,_account_id
+)
 SELECT
   R.id AS _id,
   R.uri,
@@ -33,7 +68,7 @@ SELECT
   signingprofileversionarn.attr_value #>> '{}' AS signingprofileversionarn,
   signingjobarn.attr_value #>> '{}' AS signingjobarn,
   Policy.attr_value::jsonb AS policy,
-  
+
     _function_id.target_id AS _function_id,
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -192,13 +227,28 @@ FROM
       _aws_organizations_account_relation.resource_id AS resource_id,
       _aws_organizations_account.id AS target_id
     FROM
-      resource_relation AS _aws_organizations_account_relation
-      INNER JOIN resource AS _aws_organizations_account
-        ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-        AND _aws_organizations_account.provider_type = 'Account'
-        AND _aws_organizations_account.service = 'organizations'
+    (
+      SELECT
+        _aws_organizations_account_relation.resource_id AS resource_id
+      FROM
+        resource_relation AS _aws_organizations_account_relation
+        INNER JOIN resource AS _aws_organizations_account
+          ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+          AND _aws_organizations_account.provider_type = 'Account'
+          AND _aws_organizations_account.service = 'organizations'
+      WHERE
+        _aws_organizations_account_relation.relation = 'in'
+      GROUP BY _aws_organizations_account_relation.resource_id
+      HAVING COUNT(*) = 1
+    ) AS unique_account_mapping
+    INNER JOIN resource_relation AS _aws_organizations_account_relation
+      ON _aws_organizations_account_relation.resource_id = unique_account_mapping.resource_id
+    INNER JOIN resource AS _aws_organizations_account
+      ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+      AND _aws_organizations_account.provider_type = 'Account'
+      AND _aws_organizations_account.service = 'organizations'
     WHERE
-      _aws_organizations_account_relation.relation = 'in'
+        _aws_organizations_account_relation.relation = 'in'
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   PA.provider = 'aws'
@@ -240,4 +290,3 @@ SET
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id
   ;
-

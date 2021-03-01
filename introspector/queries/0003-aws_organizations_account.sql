@@ -30,7 +30,7 @@ SELECT
   tagpolicies.attr_value::jsonb AS tagpolicies,
   tags.attr_value::jsonb AS tags,
   _tags.attr_value::jsonb AS _tags,
-
+  
     _root_id.target_id AS _root_id,
     _organizational_unit_id.target_id AS _organizational_unit_id
 FROM
@@ -127,3 +127,4 @@ SET
     _root_id = EXCLUDED._root_id,
     _organizational_unit_id = EXCLUDED._organizational_unit_id
   ;
+

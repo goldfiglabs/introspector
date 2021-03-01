@@ -7,7 +7,7 @@ import botocore.session as boto
 from dateutil.tz import tzutc
 from sqlalchemy.orm import Session
 
-from introspector.aws.fetch import Proxy
+from introspector.aws.fetch import Proxy, ServiceProxy
 from introspector.error import GFInternal, GFError
 from introspector.models import ImportJob, ProviderAccount, ProviderCredential
 
@@ -46,12 +46,21 @@ def _create_provider_and_credential(db: Session, proxy: Proxy,
   provider = ProviderAccount(provider='aws', name=org_id)
   db.add(provider)
   db.flush()
-  credential = ProviderCredential(scope=account_id,
-                                  principal_uri=identity['Arn'],
-                                  config={'from_environment': True})
-  credential.provider_id = provider.id
-  db.add(credential)
+  _require_credential(db, provider.id, identity)
   return provider
+
+def _require_credential(db: Session, provider_id: int, identity: Dict[str, Any]):
+  account_id = identity['Account']
+  cred = db.query(ProviderCredential).filter(
+    ProviderCredential.scope==account_id,
+    ProviderCredential.provider_id == provider_id).one_or_none()
+  if cred is None:
+    cred = ProviderCredential(scope=account_id,
+                              provider_id = provider_id,
+                              principal_uri=identity['Arn'],
+                              config={'from_environment': True})
+    db.add(cred)
+
 
 
 def walk_graph(org, graph) -> Generator[Tuple[str, str, Dict], None, None]:
@@ -83,7 +92,7 @@ def build_aws_import_job(db: Session, session: boto.Session,
   identity = sts.get_caller_identity()
   provider = _get_or_create_provider(db, proxy, identity, confirm)
   desc = _build_import_job_desc(proxy, identity)
-  return ImportJob.create(provider, desc)
+  return ImportJob.create(provider, desc, identity['Account'])
 
 
 def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
@@ -102,6 +111,7 @@ def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
       ProviderAccount.provider == 'aws',
       ProviderAccount.name == org_id).one_or_none()
   if account is not None:
+    _require_credential(db, account.id, identity)
     return account
   add = confirm(identity)
   if not add:
@@ -111,7 +121,7 @@ def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
 
 def _build_import_job_desc(proxy: Proxy, identity: Dict) -> Dict:
   account_id = identity['Account']
-  org, graph = _build_org_graph(proxy, account_id)
+  org, graph = _build_org_graph(proxy.service('organizations'), account_id)
   return {
       'account': {
           'account_id': org['Id'],
@@ -132,41 +142,33 @@ def _require_resp(tup: Optional[Tuple[str, Dict[str, Any]]]) -> Dict[str, Any]:
   else:
     return tup[1]
 
-
-def _build_org_graph(proxy: Proxy, account_id: str):
-  org = proxy.service('organizations')
-  try:
-    org_resp = org.get('describe_organization')['Organization']
-  except botocore.exceptions.ClientError as e:
-    code = e.response.get('Error', {}).get('Code')
-    if code == 'AWSOrganizationsNotInUseException':
-      org_id = f'OrgDummy:{account_id}'
-
-      org_resp = {
-          'Id':
-          org_id,
-          "Arn":
-          f"arn:aws:organizations::{account_id}:organization/{org_id}",
-          "MasterAccountId":
-          account_id,
-          "MasterAccountArn":
-          f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}",
-      }
-      root_id = 'r-dummy'
-      root = {
-          "Id": root_id,
-          "Arn":
-          f"arn:aws:organizations::{account_id}:root/{org_id}/{root_id}",
-          "Name": "Root",
-          "PolicyTypes": []
-      }
-      account = {
-          "Id":
-          account_id,
-          "Arn":
-          f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}"
-      }
-      return org_resp, {
+def _build_dummy_org_graph(account_id: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+  org_id = f'OrgDummy:{account_id}'
+  org_resp = {
+      'Id':
+      org_id,
+      "Arn":
+      f"arn:aws:organizations::{account_id}:organization/{org_id}",
+      "MasterAccountId":
+      account_id,
+      "MasterAccountArn":
+      f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}",
+  }
+  root_id = 'r-dummy'
+  root = {
+      "Id": root_id,
+      "Arn":
+      f"arn:aws:organizations::{account_id}:root/{org_id}/{root_id}",
+      "Name": "Root",
+      "PolicyTypes": []
+  }
+  account = {
+      "Id":
+      account_id,
+      "Arn":
+      f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}"
+  }
+  return org_resp, {
           'accounts': {
               root_id: [account]
           },
@@ -174,21 +176,65 @@ def _build_org_graph(proxy: Proxy, account_id: str):
               '': [root]
           }
       }
+
+
+def _build_sub_account_graph(account_id: str, org: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+  org_id = org['Id']
+  master_account_id = org['MasterAccountId']
+  account = {
+      "Id":
+      account_id,
+      "Arn":
+      f"arn:aws:organizations::{master_account_id}:account/{org_id}/{account_id}"
+  }
+  root_id = 'r-dummy'
+  root = {
+      "Id": root_id,
+      "Arn":
+      f"arn:aws:organizations::{master_account_id}:root/{org_id}/{root_id}",
+      "Name": "Root",
+      "PolicyTypes": []
+  }
+  return org, {
+    'accounts': {
+      root_id: [account]
+    },
+    'organizational_units': {'': [root]}
+  }
+
+def _build_org_graph(proxy: ServiceProxy, account_id: str):
+  try:
+    org_resp = proxy.get('describe_organization')['Organization']
+  except botocore.exceptions.ClientError as e:
+    code = e.response.get('Error', {}).get('Code')
+    if code == 'AWSOrganizationsNotInUseException':
+      return _build_dummy_org_graph(account_id)
     else:
       raise
-  roots_resp = _require_resp(org.list('list_roots'))
+
+  try:
+    return _build_master_account_graph(proxy, org_resp)
+  except botocore.exceptions.ClientError as e:
+    code = e.response.get('Error', {}).get('Code')
+    if code == 'AccessDeniedException':
+      return _build_sub_account_graph(account_id, org_resp)
+    else:
+      raise
+
+def _build_master_account_graph(proxy: ServiceProxy, organization: Dict[str, Any]):
+  roots_resp = _require_resp(proxy.list('list_roots'))
   roots = roots_resp['Roots']
   accounts = {}
   organizational_units = {}
 
   def build_graph(parent_id: str, path: List[str]):
     accounts_resp = _require_resp(
-        org.list('list_accounts_for_parent', ParentId=parent_id))
+        proxy.list('list_accounts_for_parent', ParentId=parent_id))
     next_path = [*path, parent_id]
     path_str = '/'.join(next_path)
     accounts[path_str] = accounts_resp['Accounts']
     organizational_units_resp = _require_resp(
-        org.list('list_organizational_units_for_parent', ParentId=parent_id))
+        proxy.list('list_organizational_units_for_parent', ParentId=parent_id))
     ous = organizational_units_resp['OrganizationalUnits']
     if len(ous) > 0:
       organizational_units[path_str] = ous
@@ -198,7 +244,7 @@ def _build_org_graph(proxy: Proxy, account_id: str):
   organizational_units[''] = roots
   for root in roots:
     build_graph(root['Id'], [])
-  return org_resp, {
+  return organization, {
       'accounts': accounts,
       'organizational_units': organizational_units
   }
