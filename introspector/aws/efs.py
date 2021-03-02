@@ -18,7 +18,7 @@ def _import_file_system(proxy: ServiceProxy, file_system: Dict[str, Any]):
       file_system['Policy'] = json.loads(policy_resp['Policy'])
   except ClientError as e:
     code = e.response.get('Error', {}).get('Code')
-    if code != 'AccessDeniedException':
+    if code != 'AccessDeniedException' or 'PolicyNotFound':
       raise
   return file_system
 

@@ -119,7 +119,8 @@ class ClientProxy(object):
       error = e.response.get('Error', {}).get('Code', '')
       if error.startswith('NoSuch') \
         or error.endswith('NotFoundError') \
-          or error == 'ResourceNotFoundException':
+          or error.endswith('NotFound') \
+            or error == 'ResourceNotFoundException':
         # No results, nothing to return
         pass
       else:
