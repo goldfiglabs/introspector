@@ -57,7 +57,7 @@ def _add_image_attributes(proxy: ServiceProxy, response: Dict[str, Any]):
       image['LaunchPermissions'] = []
 
 RESOURCES = [
-    'Addresses', 'FlowLogs'
+    'Addresses', 'FlowLogs',
     'Images', 'Instances', 'KeyPairs', 'NetworkInterfaces', 'RouteTables',
     'SecurityGroups', 'Snapshots', 'Subnets', 'Volumes',
     'VpcPeeringConnections', 'Vpcs'

@@ -184,7 +184,7 @@ class EC2ClientProxy(ClientProxy):
       'describe_images': {
           'Filters': [{
               'Name': 'is-public',
-              'Values': ['False']
+              'Values': ['false']
           }]
       },
       'describe_snapshots': {
