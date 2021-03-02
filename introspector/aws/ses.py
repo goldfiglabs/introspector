@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any, Dict, Generator, Tuple
 
@@ -38,7 +39,9 @@ def _import_identity(proxy: ServiceProxy, identity_name: str) -> Dict:
     policy_resp = proxy.get('get_identity_policies',
                             Identity=identity_name,
                             PolicyNames=names)
-    policies.update(policy_resp.get('Policies', {}))
+    policy_map = policy_resp.get('Policies', {})
+    for name, policy_string in policy_map.items():
+      policies[name] = json.loads(policy_string)
   identity['Policies'] = policies
   return identity
 

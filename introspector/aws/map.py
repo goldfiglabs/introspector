@@ -157,7 +157,7 @@ def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
   policies = [_policy(policy) for policy in m.values()]
   statements = []
   for policy in policies:
-    statements.append(*policy['Statement'])
+    statements += policy.get('Statement', [])
   return {
     'Version': '2012-10-17',
     'Id': 'Synthesized from map',
