@@ -1,5 +1,7 @@
 # Introspector CLI & SQL Database Schema
 
+![kiddopaint-1614728453761](https://user-images.githubusercontent.com/291215/109745547-e6083b80-7b88-11eb-85c1-a64bb935a841.png)
+
 Introspector is a tool and schema for importing cloud infrastructure configuration.
 The goal is to unlock the expressive power of SQL and relational databases to ask questions about what is currently deployed in your cloud.
 
