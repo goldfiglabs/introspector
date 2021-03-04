@@ -100,6 +100,13 @@ _ReadonlyScopedCredential = DbCredential(
     host=HOST,
     port=PORT)
 
+_SuperUserCredential = DbCredential(
+    db_name=DBNAME,
+    host=HOST,
+    user=os.environ.get('INTROSPECTOR_DB_SU_USER', 'postgres'),
+    password=os.environ.get('INTROSPECTOR_DB_SU_PASSWORD', 'postgres'),
+    port=PORT)
+
 _import_engine: Optional[Engine] = None
 _readonly_engine: Optional[Engine] = None
 
@@ -149,9 +156,23 @@ def refresh_views(db: Session, provider_account_id: int):
     for query in to_run:
       result = db.execute(query)
 
-def _run_migration(cred: DbCredential, folder: str, label: str):
+
+def _run_migration(cred: DbCredential,
+                   folder: str,
+                   label: str,
+                   skip_if_empty: bool = False):
   cwd = os.getcwd()
   migrations_root = os.path.join(cwd, 'migrations')
+  migrations_folder = os.path.join(migrations_root, folder)
+  if skip_if_empty:
+    if not os.path.exists(migrations_folder):
+      _log.debug(
+          f'Skipping migrations in {migrations_folder}, it does not exist')
+      return
+    files = os.listdir(migrations_folder)
+    if len(files) == 0:
+      _log.debug(f'Skipping migrations in {migrations_folder}, it is empty')
+      return
   db_mate = os.path.join(cwd, 'dbmate')
   subprocess.run([
       db_mate,
@@ -160,7 +181,7 @@ def _run_migration(cred: DbCredential, folder: str, label: str):
       # TODO: support rds here
       cred.db_url(),
       '--migrations-dir',
-      os.path.join(migrations_root, folder),
+      migrations_folder,
       '--migrations-table',
       f'schema_migrations_{label}',
       'up'
@@ -168,16 +189,18 @@ def _run_migration(cred: DbCredential, folder: str, label: str):
 
 
 def _install_db_and_roles():
-  su_cred = DbCredential(db_name=DBNAME,
-                         host=HOST,
-                         user=os.environ.get('INTROSPECTOR_DB_SU_USER',
-                                             'postgres'),
-                         password=os.environ.get('INTROSPECTOR_DB_SU_PASSWORD',
-                                                 'postgres'),
-                         port=PORT)
-  _run_migration(su_cred, 'superuser', 'superuser')
+  _run_migration(_SuperUserCredential, 'superuser', 'superuser')
   _run_migration(_ImportCredential, 'introspector', 'introspector')
   _run_migration(_ImportCredential, 'provider/aws', 'aws')
+
+
+def run_tool_migrations(tool_name: str):
+  folder = os.path.join('tools', tool_name)
+  label = 'tools_' + tool_name
+  _run_migration(_SuperUserCredential, os.path.join(folder, 'superuser'),
+                 label + '_superuser', skip_if_empty=True)
+  _run_migration(_ImportCredential, os.path.join(folder, 'import_user'),
+                 label, skip_if_empty=True)
 
 
 def init_db():

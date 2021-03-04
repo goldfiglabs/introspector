@@ -3,6 +3,7 @@ from typing import Optional
 
 import click
 
+from introspector.bootstrap_db import run_tool_migrations
 from introspector.cli.provider import provider_scoped_db
 import introspector.tools.cis.aws_foundation as aws_foundation
 
@@ -24,5 +25,6 @@ def cmd():
     'An optional identifier for which account to benchmark. Required if more than one account has been imported'
 )
 def foundation(provider_spec: Optional[str]):
+  run_tool_migrations('cis_foundation')
   scoped_db = provider_scoped_db(provider_spec)
   aws_foundation.run(scoped_db.db, scoped_db.provider_account_id)
