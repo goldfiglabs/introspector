@@ -10,7 +10,9 @@ from introspector.aws import account_paths_for_import, load_boto_session
 from introspector.aws.ec2_adjunct import find_adjunct_data
 from introspector.aws.fetch import Proxy
 from introspector.aws.iam import synthesize_account_root
+from introspector.aws.logs import add_logs_resource_policies
 from introspector.aws.svc import ImportSpec, resource_gate, service_gate
+from introspector.aws.region import RegionCache
 from introspector.aws.uri import get_arn_fn
 from introspector.delta.partial import map_partial_deletes, map_partial_prefix
 from introspector.delta.resource import map_relation_deletes, map_resource_deletes, map_resource_prefix, map_resource_relations
@@ -19,6 +21,7 @@ from introspector.mapper import DivisionURI, load_transforms, Mapper
 from introspector.models import ImportJob
 
 _log = logging.getLogger(__name__)
+
 
 def _zone_to_region(zone: str, **_) -> str:
   return zone[:-1]
@@ -79,13 +82,18 @@ def _lambda_alias_relations(parent_uri, target_raw, **kwargs):
       remaining
   }]
 
+
 def _arrayize(inval: Union[str, List[str]]) -> List[str]:
   if isinstance(inval, str):
     return [inval]
   return sorted(inval)
 
+
 ALL_DIGITS = re.compile(r'^[0-9]{10}[0-9]*$')
-def _normalize_principal_map(raw: Union[str, Dict[str, Any]]) -> Dict[str, List[Any]]:
+
+
+def _normalize_principal_map(
+    raw: Union[str, Dict[str, Any]]) -> Dict[str, List[Any]]:
   result = {}
   if not isinstance(raw, dict):
     if raw != '*':
@@ -107,17 +115,19 @@ def _normalize_principal_map(raw: Union[str, Dict[str, Any]]) -> Dict[str, List[
     result[key] = values
   return result
 
-EFFECTS = {
-  'allow': 'Allow',
-  'deny': 'Deny'
-}
-def _policy_statement(raw: Dict[str, Any]) -> Dict[str, Any]:
+
+EFFECTS = {'allow': 'Allow', 'deny': 'Deny'}
+
+
+def policy_statement(raw: Dict[str, Any]) -> Dict[str, Any]:
   result = {}
   lc = {k.lower(): v for k, v in raw.items()}
+
   def _normalize(s: str, fn):
     val = lc.get(s.lower())
     if val is not None:
       result[s] = fn(val)
+
   sid = lc.get('sid')
   if sid is not None:
     result['Sid'] = sid
@@ -135,10 +145,9 @@ def _policy_statement(raw: Dict[str, Any]) -> Dict[str, Any]:
   return result
 
 
-EMPTY_POLICY = {
-  'Version': '2012-10-17',
-  'Statement': []
-}
+EMPTY_POLICY = {'Version': '2012-10-17', 'Statement': []}
+
+
 def _policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
   if policy is None:
     return EMPTY_POLICY
@@ -148,8 +157,9 @@ def _policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
   policy_id = lc.get('id')
   if policy_id is not None:
     result['Id'] = policy_id
-  result['Statement'] = [_policy_statement(s) for s in lc.get('statement', [])]
+  result['Statement'] = [policy_statement(s) for s in lc.get('statement', [])]
   return result
+
 
 def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
   if m is None or len(m) == 0:
@@ -159,10 +169,11 @@ def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
   for policy in policies:
     statements += policy.get('Statement', [])
   return {
-    'Version': '2012-10-17',
-    'Id': 'Synthesized from map',
-    'Statement': statements
+      'Version': '2012-10-17',
+      'Id': 'Synthesized from map',
+      'Statement': statements
   }
+
 
 AWS_TRANSFORMS = {
     'aws_zone_to_region': _zone_to_region,
@@ -247,7 +258,7 @@ def _get_mapper(import_job: ImportJob,
 
 
 # Everything has a 'base' source, these are extra
-AWS_SOURCES = ['credentialreport']
+AWS_SOURCES = ['credentialreport', 'logspolicies']
 
 
 def map_import(db: Session, import_job_id: int, partition: str,
@@ -257,12 +268,6 @@ def map_import(db: Session, import_job_id: int, partition: str,
     raise GFInternal('Lost ImportJob')
   ps = PathStack.from_import_job(import_job)
   mapper = _get_mapper(import_job)
-  adjunct_writer = db_import_writer(db,
-                                    import_job.id,
-                                    import_job.provider_account_id,
-                                    'ec2',
-                                    phase=1,
-                                    source='base')
   gate = service_gate(spec)
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope, partition)
@@ -272,20 +277,41 @@ def map_import(db: Session, import_job_id: int, partition: str,
     if gate('iam') is not None:
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
-      synthesize_account_root(proxy, db, import_job, import_job.path_prefix, account.scope,
-                              partition)
-    for source in AWS_SOURCES:
-      map_partial_prefix(db, mapper, import_job, source,
-                         import_job.path_prefix, uri_fn)
-      map_partial_deletes(db, import_job, source, spec)
+      synthesize_account_root(proxy, db, import_job, import_job.path_prefix,
+                              account.scope, partition)
     ec2_spec = gate('ec2')
     if ec2_spec is not None and resource_gate(ec2_spec, 'Images'):
       # Additional ec2 work
       if boto is None or proxy is None:
         boto = load_boto_session(account)
         proxy = Proxy.build(boto)
+      adjunct_writer = db_import_writer(db,
+                                        import_job.id,
+                                        import_job.provider_account_id,
+                                        'ec2',
+                                        phase=1,
+                                        source='base')
       find_adjunct_data(db, proxy, adjunct_writer, import_job, ps, import_job)
 
+    logs_spec = gate('logs')
+    if logs_spec is not None and resource_gate(logs_spec, 'ResourcePolicies'):
+      if boto is None or proxy is None:
+        boto = load_boto_session(account)
+        proxy = Proxy.build(boto)
+      region_cache = RegionCache(boto, partition)
+      adjunct_writer = db_import_writer(db,
+                                        import_job.id,
+                                        import_job.provider_account_id,
+                                        'logs',
+                                        phase=1,
+                                        source='logspolicies')
+      add_logs_resource_policies(db, proxy, region_cache, adjunct_writer,
+                                 import_job, ps, account.scope)
+
+    for source in AWS_SOURCES:
+      map_partial_prefix(db, mapper, import_job, source,
+                         import_job.path_prefix, uri_fn)
+      map_partial_deletes(db, import_job, source, spec)
     # Re-map anything we've added
     map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
 

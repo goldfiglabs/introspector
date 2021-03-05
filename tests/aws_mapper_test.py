@@ -1,3 +1,6 @@
+import json
+
+from introspector.aws.logs import normalize_resource_policies
 from introspector.aws.map import AWS_TRANSFORMS
 
 def test_account_principal():
@@ -21,3 +24,26 @@ def test_account_principal():
   from pprint import pprint
   pprint(normalized)
   assert normalized['Statement'][0]['Principal']['AWS'][0] == 'arn:aws:iam::0123456789:root'
+
+def test_logs_resource_policies():
+  fixture = [
+    {
+      'policyName': 'policy1',
+      'policyDocument': json.dumps({
+        'Version': 'dummy',
+        'Statement': [
+          {
+            'Resource': [
+              'a:b/*',
+              'c'
+            ],
+            'Effect': 'Allow'
+          }
+        ]
+      })
+    }
+  ]
+  from pprint import pprint
+  result = normalize_resource_policies(fixture)
+  pprint(result)
+  assert False
