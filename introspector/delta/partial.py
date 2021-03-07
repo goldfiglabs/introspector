@@ -1,9 +1,9 @@
-from introspector.aws.svc import ImportSpec
 import logging
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
+from introspector.aws.svc import ImportSpec
 from introspector.delta.attrs import diff_attrs
 from introspector.delta.types import Raw
 from introspector.mapper import Mapper
@@ -27,29 +27,27 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
     for partial in mapper.map_partials(raw_import.raw_resources(), ctx,
                                        raw_import.service, uri_fn,
                                        raw_import.resource_name):
-      db.merge(
-          MappedURI(uri=partial.target_uri,
-                    source=source,
-                    import_job_id=import_job.id,
-                    provider_account_id=import_job.provider_account_id,
-                    raw_import_id=raw_import.id))
-      target: Optional[Resource] = db.query(Resource).filter(
-          Resource.uri == partial.target_uri, Resource.provider_account_id ==
-          import_job.provider_account_id).one_or_none()
-      if target is None:
+      target_uris = Resource.get_by_uri(db, partial.target_uri, import_job.provider_account_id)
+      if len(target_uris) == 0:
         _log.warn(f'Missing target for partial {partial.target_uri}')
-        continue
-      resource_attrs = [
-          ResourceAttribute(resource_id=target.id,
-                            source=source,
-                            attr_type=attr.type,
-                            name=attr.name,
-                            value=attr.value,
-                            provider_account_id=import_job.provider_account_id)
-          for attr in partial.attrs
-      ]
-      apply_partial(db, import_job, source, partial.target_uri, target.id,
-                    partial.raw, resource_attrs)
+      for target in target_uris:
+        db.merge(
+            MappedURI(uri=target.uri,
+                      source=source,
+                      import_job_id=import_job.id,
+                      provider_account_id=import_job.provider_account_id,
+                      raw_import_id=raw_import.id))
+        resource_attrs = [
+            ResourceAttribute(resource_id=target.id,
+                              source=source,
+                              attr_type=attr.type,
+                              name=attr.name,
+                              value=attr.value,
+                              provider_account_id=import_job.provider_account_id)
+            for attr in partial.attrs
+        ]
+        apply_partial(db, import_job, source, target.uri, target.id,
+                      partial.raw, resource_attrs)
 
 
 def apply_partial(db: Session, import_job: ImportJob, source: str,
