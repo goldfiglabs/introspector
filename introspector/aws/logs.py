@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from introspector import ImportWriter, PathStack
 from introspector.aws.fetch import Proxy, ServiceProxy
+from introspector.aws.mapper_fns import policy_statement
 from introspector.aws.region import RegionCache
 from introspector.aws.svc import RegionalService, ServiceSpec, resource_gate
 from introspector.models import ImportJob, Resource
@@ -34,7 +35,6 @@ def _import_log_groups(proxy: ServiceProxy):
 
 
 def normalize_resource_policies(policies: List) -> Dict[str, List[Any]]:
-  from introspector.aws.map import policy_statement
   resource_statements_map: Dict[str, List[Any]] = {}
   for policy_data in policies:
     name = policy_data.get('policyName', 'unnamed')
