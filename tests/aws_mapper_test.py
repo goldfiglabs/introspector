@@ -1,4 +1,7 @@
-from introspector.aws.map import AWS_TRANSFORMS
+import json
+
+from introspector.aws.logs import normalize_resource_policies
+from introspector.aws.mapper_fns import AWS_TRANSFORMS
 
 def test_account_principal():
   policy = {

@@ -1,0 +1,12 @@
+version: 1
+partials:
+  - uri:
+      uri: arn
+    attributes:
+      provider:
+        - Policy
+      custom:
+        Metadata:
+          Policy:
+            path: Policy
+            transform: aws_policy
