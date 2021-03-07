@@ -1,13 +1,13 @@
 from functools import partial
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
 from introspector.error import GFError, GFInternal
-from introspector.models.resource import Uri, UriFn
+from introspector.models.resource import DbFn, Uri, UriFn
 
 
-def _iam_uri_fn(resource_name: str, partition: str, account_id: str, **kwargs):
+def _iam_uri_fn(resource_name: str, partition: str, account_id: str, **kwargs) -> str:
   if resource_name == 'policy-version':
     return f'{kwargs["policy_arn"]}:{kwargs["version_id"]}'
   elif resource_name in ('RolePolicy', 'UserPolicy', 'GroupPolicy'):
@@ -62,13 +62,16 @@ def _get_with_parent(key: str, args: Dict) -> Optional[str]:
   return None
 
 
-def _security_group_by_name(partition: str, **kwargs):
+def _security_group_by_name(partition: str, **kwargs) -> DbFn:
   from introspector.models.resource import Resource, ResourceId
 
-  def _f(db: Session, provider_account_id: int) -> Optional[ResourceId]:
+  def _f(db: Session, provider_account_id: int) -> List[ResourceId]:
     name = kwargs['name']
-    return Resource.get_by_attrs(db, provider_account_id, 'SecurityGroup',
+    r = Resource.get_by_attrs(db, provider_account_id, 'SecurityGroup',
                                  {'GroupName': name})
+    if r is None:
+      return []
+    return [r]
 
   return _f
 
@@ -89,7 +92,7 @@ def _ec2_arn_fn(resource_name, account: str, partition: str, **kwargs) -> Uri:
 
 
 def _logs_uri_fn(partition: str, account_id: str, resource_name: str,
-                 **kwargs):
+                 **kwargs) -> str:
   if resource_name == 'metric-filter':
     arn = _get_with_parent('arn', kwargs)
     name = kwargs['filter_name']
@@ -114,7 +117,7 @@ def _logs_uri_fn(partition: str, account_id: str, resource_name: str,
 #   raise GFInternal(f'Unknown cloudformation resource {resource_name}')
 
 
-def _config_uri_fn(resource_name: str, **kwargs):
+def _config_uri_fn(resource_name: str, **kwargs) -> str:
   if resource_name == 'ConfigurationRecorder':
     name = kwargs['name']
     region = _get_with_parent('region', kwargs)
@@ -125,7 +128,7 @@ def _config_uri_fn(resource_name: str, **kwargs):
 
 
 def _apigatewayv2_uri_fn(partition: str, account_id: str, resource_name: str,
-                         **kwargs):
+                         **kwargs) -> str:
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
@@ -143,7 +146,7 @@ def _apigatewayv2_uri_fn(partition: str, account_id: str, resource_name: str,
 
 
 def _apigateway_uri_fn(partition: str, account_id: str, resource_name: str,
-                       **kwargs):
+                       **kwargs) -> str:
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')
@@ -161,7 +164,7 @@ def _apigateway_uri_fn(partition: str, account_id: str, resource_name: str,
 
 
 def _redshift_uri_fn(partition: str, account_id: str, resource_name: str,
-                     **kwargs):
+                     **kwargs) -> str:
   id = kwargs.get('id')
   if id is None:
     raise GFInternal(f'Missing id in {kwargs}')

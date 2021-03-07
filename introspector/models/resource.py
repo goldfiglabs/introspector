@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from psycopg2 import sql
 from psycopg2.extras import DictCursor
@@ -16,7 +16,7 @@ class ResourceId:
   uri: str
 
 
-DbFn = Callable[[Session, int], Optional[ResourceId]]
+DbFn = Callable[[Session, int], List[ResourceId]]
 LikeExpr = Tuple[str, str]
 Uri = Union[str, LikeExpr, DbFn]
 UriFn = Callable[..., Uri]
@@ -114,7 +114,7 @@ class Resource(Base):
 
   @classmethod
   def get_by_uri(cls, session, uri: Uri,
-                 provider_account_id: int) -> Optional[ResourceId]:
+                 provider_account_id: int) -> List[ResourceId]:
     if callable(uri):
       return uri(session, provider_account_id)
     else:
@@ -126,8 +126,8 @@ class Resource(Base):
         q = q.filter(Resource.uri.like(f'{uri[0]}%{uri[1]}'))
       r = q.one_or_none()
       if r is not None:
-        return ResourceId(id=r.id, uri=r.uri)
-      return None
+        return [ResourceId(id=r.id, uri=r.uri)]
+      return []
 
   @classmethod
   def get_by_attrs(cls, session: Session, provider_account_id: int,

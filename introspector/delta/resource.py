@@ -51,43 +51,45 @@ def map_resource_relations(db: Session,
     for parent_uri_spec, relation_type, target_uri_spec, attrs in relations:
       # TODO: pull out this
       _log.info(f'{parent_uri_spec} {relation_type} {target_uri_spec}')
-      parent = Resource.get_by_uri(db, parent_uri_spec, provider_account_id)
+      parents = Resource.get_by_uri(db, parent_uri_spec, provider_account_id)
       # TODO: accumulate errors on import into an import report
-      if parent is None:
+      if len(parents) == 0:
         _log.warn(
             f'Missing parent for relation {parent_uri_spec} {relation_type} {target_uri_spec} ({provider_account_id})'
         )
         continue
-      parent_uri = parent.uri
-      target = Resource.get_by_uri(db, target_uri_spec, provider_account_id)
-      if target is None:
-        _log.warn(
-            f'Missing target for relation {parent_uri} {relation_type} [{target_uri_spec}] ({provider_account_id})'
-        )
-        continue
-      target_uri = target.uri
-      relation = ResourceRelation(
-          resource_id=parent.id,
-          target_id=target.id,
-          relation=relation_type,
-          raw={
-              'resource': parent_uri,
-              'target': target_uri,
-              'relation': relation_type,
-              'attributes': attrs
-          },
-          provider_account_id=import_job.provider_account_id)
-      relation_attrs = [
-          ResourceRelationAttribute(
-              relation=relation,
-              name=attr['name'],
-              value=attr['value'],
+      for parent in parents:
+        parent_uri = parent.uri
+        targets = Resource.get_by_uri(db, target_uri_spec, provider_account_id)
+        if len(targets) == 0:
+          _log.warn(
+              f'Missing target for relation {parent_uri} {relation_type} [{target_uri_spec}] ({provider_account_id})'
+          )
+          continue
+        for target in targets:
+          target_uri = target.uri
+          relation = ResourceRelation(
+              resource_id=parent.id,
+              target_id=target.id,
+              relation=relation_type,
+              raw={
+                  'resource': parent_uri,
+                  'target': target_uri,
+                  'relation': relation_type,
+                  'attributes': attrs
+              },
               provider_account_id=import_job.provider_account_id)
-          for attr in attrs
-      ]
-      found = _apply_relation(db, import_job, relation, parent_uri, target_uri,
-                              relation_attrs)
-      found_relations.add(found)
+          relation_attrs = [
+              ResourceRelationAttribute(
+                  relation=relation,
+                  name=attr['name'],
+                  value=attr['value'],
+                  provider_account_id=import_job.provider_account_id)
+              for attr in attrs
+          ]
+          found = _apply_relation(db, import_job, relation, parent_uri, target_uri,
+                                  relation_attrs)
+          found_relations.add(found)
   return found_relations
 
 

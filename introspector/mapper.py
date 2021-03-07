@@ -44,7 +44,7 @@ MapResult = Tuple[MappedResource, List[MappedAttribute]]
 
 @dataclass
 class Partial:
-  target_uri: str
+  target_uri: Uri
   raw: Any
   attrs: List[MappedAttribute]
 
@@ -356,32 +356,35 @@ class Mapper:
                                           parent_args=parent_params)
 
   def _map_partial_v1(self, partial_spec: PartialSpec, raw_list: List[Any],
-                      ctx: Context, service: str, raw_uri_fn: Callable,
+                      ctx: Context, service: str, raw_uri_fn: UriFn,
                       resource_name: str) -> Iterator[Partial]:
     provider_attr_spec = partial_spec.attributes.get('provider', [])
-    uri_fn = partial(raw_uri_fn, resource_name=resource_name)
+    custom_attr_spec = partial_spec.attributes.get('custom', {})
+    uri_fn: UriFn = partial(raw_uri_fn, resource_name=resource_name)
     for raw in raw_list:
       uri_args = {
           key: _find_path(path, raw)
           for key, path in partial_spec.uri.items()
       }
-      target_uri = uri_fn(**uri_args, service=service, context=ctx)
+      target_uri: Uri = uri_fn(**uri_args, service=service, context=ctx)
       if target_uri is None:
         raise GFInternal(
             f'Failed to produce target uri {uri_args} {resource_name} {service} {ctx}'
         )
       provider_attrs = self._map_provider_attrs(provider_attr_spec, raw)
-      yield Partial(target_uri=target_uri, raw=raw, attrs=provider_attrs)
+      custom_attrs = self._map_custom_attrs(custom_attr_spec, None,
+                                            raw, ctx)
+      yield Partial(target_uri=target_uri, raw=raw, attrs=provider_attrs + custom_attrs)
 
   def _map_partials_v1(self, transform: Transform, raw_list: List[Any],
-                       ctx: Context, service: str, raw_uri_fn: Callable,
+                       ctx: Context, service: str, raw_uri_fn: UriFn,
                        resource_name: str) -> Iterator[Partial]:
     for partial in transform.partials:
       yield from self._map_partial_v1(partial, raw_list, ctx, service,
                                       raw_uri_fn, resource_name)
 
   def map_partials(self, raw_list: List[Any], ctx: Context, service: str,
-                   raw_uri_fn: Callable,
+                   raw_uri_fn: UriFn,
                    resource_name: str) -> Iterator[Partial]:
     transform = self._find_transform(service, resource_name)
     if transform.version >= 1:
