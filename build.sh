@@ -12,7 +12,7 @@ pipenv lock -r > requirements.txt
 
 INTROSPECTOR_DOCKER_REPO=${DOCKER_REPO:-goldfig}
 IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}"
-DOCKER_BUILDKIT=1 docker build -t ${IMAGE} .
+DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t ${IMAGE} .
 
 echo "Building launcher"
 launcher/build.sh

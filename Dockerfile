@@ -1,4 +1,4 @@
-FROM python:3.7-slim
+FROM python:3.9-slim
 
 ADD https://github.com/amacneil/dbmate/releases/download/v1.11.0/dbmate-linux-amd64 /app/dbmate
 RUN chmod a+x /app/dbmate
