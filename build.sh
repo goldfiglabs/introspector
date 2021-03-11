@@ -34,5 +34,10 @@ ln introspector_osx introspector
 zip introspector_osx.zip introspector docker-compose.yml
 unlink introspector
 
+# Build m1 osx package
+ln introspector_osx_m1 introspector
+zip introspector_osx_m1.zip introspector docker-compose.yml
+unlink introspector
+
 echo "To publish"
 echo "docker push ${IMAGE}:latest"

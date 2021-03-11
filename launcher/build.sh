@@ -11,4 +11,6 @@ cd $DIR
 
 GOOS=darwin GOARCH=amd64 go build -o dist/introspector_osx
 
+GOOS=darwin GOARCH=arm64 go build -o dist/introspector_osx_m1
+
 GOOS=linux GOARCH=amd64 go build -o dist/introspector_linux
