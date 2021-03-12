@@ -6,3 +6,4 @@ __pycache__/
 /gf
 dist/
 dbmate
+*.whl

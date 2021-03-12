@@ -2,17 +2,8 @@
 
 set -e
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
-PACKAGE=`basename $DIR`
-
-echo "Building package ${PACKAGE}"
-
-pipenv lock -r > requirements.txt
-
-INTROSPECTOR_DOCKER_REPO=${DOCKER_REPO:-goldfig}
-IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}"
-DOCKER_BUILDKIT=1 docker build --platform linux/amd64 -t ${IMAGE} .
+echo "Building images"
+docker/build.sh
 
 echo "Building launcher"
 launcher/build.sh
