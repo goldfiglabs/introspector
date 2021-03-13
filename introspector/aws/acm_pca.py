@@ -9,7 +9,7 @@ _log = logging.getLogger(__name__)
 
 
 def _import_certificate_authority(proxy: ServiceProxy, certificate_authority: Dict[str, Any]):
-  arn = certificate_authority['FileSystemId']
+  arn = certificate_authority['Arn']
   policy_resp = proxy.get('get_policy', ResourceArn=arn)
   if policy_resp is not None:
     certificate_authority['Policy'] = json.loads(policy_resp['Policy'])
