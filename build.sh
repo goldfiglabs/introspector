@@ -29,6 +29,3 @@ unlink introspector
 ln introspector_osx_m1 introspector
 zip introspector_osx_m1.zip introspector docker-compose.yml
 unlink introspector
-
-echo "To publish"
-echo "docker push ${IMAGE}:latest"
