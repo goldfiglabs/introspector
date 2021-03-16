@@ -86,7 +86,8 @@ class ClientProxy(object):
         return resource_name, {ERROR_KEY: 'missing parameter'}
       elif code == 'OptInRequired':
         return resource_name, {ERROR_KEY: 'missing opt-in'}
-      elif code == 'AuthFailure':
+      elif code in ('AuthFailure', 'AccessDeniedException'):
+        _log.info(f'Missing permissions for {key}')
         return resource_name, {ERROR_KEY: 'auth failure'}
       elif code == 'InvalidClientTokenId':
         return resource_name, {ERROR_KEY: 'invalid token'}
@@ -122,7 +123,10 @@ class ClientProxy(object):
           or error.endswith('NotFound') \
             or error == 'ResourceNotFoundException':
         # No results, nothing to return
-        pass
+        return None
+      elif error in ('AuthFailure',):
+        # Auth failure
+        _log.info(f'Missing permissions for {key}')
       else:
         raise e
 
