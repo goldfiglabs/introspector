@@ -26,4 +26,4 @@ def show_status():
     GROUP BY PA.id
   ''')
   headers = ['Id', 'Account', 'Provider', 'Recent Import Id']
-  print(tabulate(result, headers=headers))
+  print(tabulate([row.values() for row in result], headers=headers))
