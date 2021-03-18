@@ -1,5 +1,5 @@
 -- migrate:up
-CREATE EXTENSION plv8;
+CREATE EXTENSION IF NOT EXISTS plv8;
 
 -- migrate:down
 DROP EXTENSION plv8;
