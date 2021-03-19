@@ -2,14 +2,19 @@
 
 set -e
 
+PACKAGE=introspector
+
 echo "Building images"
-docker/build.sh
+docker/build.sh $PACKAGE
 
 echo "Building launcher"
 launcher/build.sh
 
 mkdir -p dist
 
+
+INTROSPECTOR_DOCKER_REPO=${DOCKER_REPO:-goldfig}
+IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}"
 ESCAPED_IMAGE=$(printf '%s\n' "$IMAGE" | sed -e 's/[\/&]/\\&/g')
 sed "s/build: ./image: ${ESCAPED_IMAGE}:latest/g" docker-compose.yml > dist/docker-compose.yml
 cp launcher/dist/* dist/
@@ -29,3 +34,4 @@ unlink introspector
 ln introspector_osx_m1 introspector
 zip introspector_osx_m1.zip introspector docker-compose.yml
 unlink introspector
+
