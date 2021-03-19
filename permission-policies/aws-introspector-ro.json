@@ -3,6 +3,9 @@
     "Statement": [
         {
             "Action": [
+                "acm-pca:ListCertificateAuthorities",
+                "acm-pca:ListTags",
+                "acm-pca:GetPolicy",
                 "apigateway:GetRestApis",
                 "dax:ListTables",
                 "ds:ListAuthorizedApplications",
@@ -10,6 +13,8 @@
                 "ec2:GetEbsEncryptionByDefault",
                 "ec2:GetEbsDefaultKmsKeyId",
                 "ecr:Describe*",
+                "efs:Describe*",
+                "efs:ListTagsForResource",
                 "support:Describe*",
                 "ses:GetIdentity*",
                 "sns:GetSubscriptionAttributes",
