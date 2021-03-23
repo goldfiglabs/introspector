@@ -9,7 +9,7 @@ _log = logging.getLogger(__name__)
 
 
 def _import_bucket(proxy: ServiceProxy, bucket_metadata) -> Dict:
-  _log.info(f'Importing {bucket_metadata["Name"]}')
+  _log.debug(f'Importing {bucket_metadata["Name"]}')
   result = bucket_metadata.copy()
   for op_name in proxy.resource_names():
     canonical_name = proxy.canonical_name(op_name)
@@ -42,6 +42,7 @@ def _import_bucket(proxy: ServiceProxy, bucket_metadata) -> Dict:
 def _import_s3(service_proxy: ServiceProxy,
                spec: ServiceSpec) -> Iterator[Tuple[str, Any]]:
   if resource_gate(spec, 'Bucket'):
+    _log.info('Importing global s3')
     result = service_proxy.list('list_buckets')
     if result is not None:
       buckets = result[1]

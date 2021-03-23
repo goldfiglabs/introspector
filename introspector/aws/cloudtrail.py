@@ -40,7 +40,7 @@ def _import_trails(proxy: ServiceProxy, region: str):
 def _import_cloudtrail_region(
     proxy: ServiceProxy, region: str,
     spec: ServiceSpec) -> Generator[Tuple[str, Any], None, None]:
-  _log.info(f'importing describe_trails')
+  _log.info(f'importing describe_trails in {region}')
   if resource_gate(spec, 'Trail'):
     yield from _import_trails(proxy, region)
 

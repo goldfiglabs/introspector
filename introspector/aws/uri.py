@@ -7,7 +7,8 @@ from introspector.error import GFError, GFInternal
 from introspector.models.resource import DbFn, Uri, UriFn
 
 
-def _iam_uri_fn(resource_name: str, partition: str, account_id: str, **kwargs) -> str:
+def _iam_uri_fn(resource_name: str, partition: str, account_id: str,
+                **kwargs) -> str:
   if resource_name == 'policy-version':
     return f'{kwargs["policy_arn"]}:{kwargs["version_id"]}'
   elif resource_name in ('RolePolicy', 'UserPolicy', 'GroupPolicy'):
@@ -68,7 +69,7 @@ def _security_group_by_name(partition: str, **kwargs) -> DbFn:
   def _f(db: Session, provider_account_id: int) -> List[ResourceId]:
     name = kwargs['name']
     r = Resource.get_by_attrs(db, provider_account_id, 'SecurityGroup',
-                                 {'GroupName': name})
+                              {'GroupName': name})
     if r is None:
       return []
     return [r]

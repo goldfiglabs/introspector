@@ -59,7 +59,7 @@ class ImportWriter:
                context: Optional[Dict] = None):
     if isinstance(path, PathStack):
       path = path.path()
-    _log.info(f'writing {self.source} - {path} - {resource_name}')
+    _log.debug(f'writing {self.source} - {path} - {resource_name}')
     model = RawImport(import_job_id=self._import_job_id,
                       provider_account_id=self._provider_account_id,
                       path=path,

@@ -39,7 +39,7 @@ def _import_sqs_region(
     proxy: ServiceProxy, region: str,
     spec: ServiceSpec) -> Generator[Tuple[str, Any], None, None]:
   if resource_gate(spec, 'Queue'):
-    _log.info(f'importing sqs Queues')
+    _log.info(f'importing sqs Queues in {region}')
     yield from _import_queues(proxy, region)
 
 
