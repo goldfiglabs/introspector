@@ -3,7 +3,7 @@
 ![kiddopaint-1614728453761](https://user-images.githubusercontent.com/291215/109745547-e6083b80-7b88-11eb-85c1-a64bb935a841.png)
 
 Introspector is a tool and schema for importing cloud infrastructure configuration.
-The goal is to unlock the expressive power of SQL and relational databases to ask questions about what is currently deployed in your cloud.
+The goal is to unlock the expressive power of SQL and relational databases to ask questions about your infrastructure's security, compliance, and governance posture.
 
 ## Why?
 
@@ -11,7 +11,7 @@ We (@ [Gold Fig Labs](https://goldfiglabs.com)) were inspired by `osquery` to br
 
 ## Introspector Components
 
-1. Import - Run an import job against a cloud platform (currently AWS is supported) to retrieve your deployment details. This takes a snapshot of your current deployment's configuration. Your database is updated to match the status of your infrastructure, and observed deltas from the previous snapshot are logged.
+1. Import - Run an import job against a cloud platform (currently AWS is supported) to retrieve your deployment details. This takes a snapshot of your current deployment's configuration, settings, and policies. Your database is updated to match the status of your infrastructure, and observed deltas from the previous snapshot are logged.
 
 1. Analyze - Introspector comes with some [tools](#prepackaged-tools) out of the box to start analyzing your cloud infrastructure. But, these tools are mostly just wrappers around SQL queries. You can extend these tools or implement your own by writing SQL. See [Example Queries](#example-queries) below.
 
