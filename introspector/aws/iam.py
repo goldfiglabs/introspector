@@ -73,8 +73,8 @@ def _import_credential_report(proxy: ServiceProxy, spec: ServiceSpec):
         code = e.response.get('Error', {}).get('Code')
         is_throttled = code == 'Throttling'
         # If we're throttled, we've at least kicked it off already
-        _log.error('credential report error', exc_info=e)
         if not is_throttled:
+          _log.error('credential report error', exc_info=e)
           raise
         else:
           started = True
@@ -89,10 +89,14 @@ def _import_credential_report(proxy: ServiceProxy, spec: ServiceSpec):
     while attempts < 20 and report is None:
       try:
         report = proxy.get('get_credential_report')
-      except Exception as e:
-        _log.error('credenetial report fetch error', exc_info=e)
-        attempts += 1
-        time.sleep(1)
+      except ClientError as e:
+        code = e.response.get('Error', {}).get('Code')
+        if code == 'ReportInProgress':
+          attempts += 1
+          time.sleep(1)
+        else:
+          _log.error('credenetial report fetch error', exc_info=e)
+          raise
     if report is None:
       raise GFError('Failed to fetch credential report')
     decoded = report['Content'].decode('utf-8')
