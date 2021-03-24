@@ -42,7 +42,7 @@ def _setup_logging():
   if DEBUG:
     log_format = '[%(asctime)s] {%(filename)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=logging.WARN, format=log_format)
-    logging.getLogger('introspector').setLevel(logging.INFO)
+    logging.getLogger('introspector').setLevel(logging.WARN)
     # AWS
     logging.getLogger('botocore').setLevel(logging.WARN)
     logging.getLogger('bcdocs').setLevel(logging.WARN)
