@@ -96,6 +96,14 @@ def _import_organizational_unit(proxy: Proxy, ps: PathStack,
   writer(ps, 'OrganizationalUnit', ou)
 
 
+def _has_master_account(master_account_id: str,
+                        accounts: list[ProviderCredential]) -> bool:
+  for account in accounts:
+    if account.scope == master_account_id:
+      return True
+  return False
+
+
 def _import_graph(import_job: ImportJob, writer: ImportWriter,
                   account_credentials: List[ProviderCredential],
                   spec: ServiceSpec) -> List[f.Future]:
@@ -103,11 +111,12 @@ def _import_graph(import_job: ImportJob, writer: ImportWriter,
   org = config['aws_org']
   is_mocked = org['Id'].startswith('OrgDummy')
   is_master_account = import_job.path_prefix == org['MasterAccountId']
-  if not is_master_account:
+
+  if not _has_master_account(org['MasterAccountId'], account_credentials):
     return []
   master_account_arn = org['MasterAccountArn']
   proxies = _AccountProxies(account_credentials, master_account_arn)
-  ps = PathStack.from_import_job(import_job)
+  ps = PathStack.from_import_job(import_job).scope(org['MasterAccountId'])
   results = []
   for path, typ, entry in walk_graph(org, config['aws_graph']):
     if is_mocked:
@@ -117,18 +126,16 @@ def _import_graph(import_job: ImportJob, writer: ImportWriter,
         _import_organization(ps, writer, entry)
     elif typ == 'Root':
       if resource_gate(spec, 'Root'):
-        _import_root(proxies.master_account_proxy(), ps, writer,
-                     entry)
+        _import_root(proxies.master_account_proxy(), ps, writer, entry)
     elif typ == 'OrganizationalUnit':
       if resource_gate(spec, 'OrganizationalUnit'):
-        _import_organizational_unit(proxies.master_account_proxy(),
-                                    ps, writer, entry)
+        _import_organizational_unit(proxies.master_account_proxy(), ps, writer,
+                                    entry)
     elif typ == 'Account':
       if resource_gate(spec, 'Account'):
         is_master_account = entry['Arn'] == master_account_arn
         proxy = proxies.master_account_proxy()
-        _import_account(proxy, proxy, ps, writer, entry,
-                        is_master_account)
+        _import_account(proxy, proxy, ps, writer, entry, is_master_account)
     else:
       raise GFInternal(f'Unknown AWS graph type {typ}')
   return results
@@ -157,13 +164,14 @@ class OrgImport(GlobalService):
 
   def _make_global_import_with_pool(
       self, _: List[GlobalResourceSpec]) -> GlobalPoolImportFn:
-    def import_with_pool(
-        pool: f.ProcessPoolExecutor, import_job_id: int,
-        provider_account_id: int, _: PathStack,
-        __: List[Tuple[str, ProviderCredential]], spec: ServiceSpec) -> List[f.Future]:
+    def import_with_pool(pool: f.ProcessPoolExecutor, import_job_id: int,
+                         provider_account_id: int, _: PathStack,
+                         __: List[Tuple[str, ProviderCredential]],
+                         spec: ServiceSpec) -> List[f.Future]:
       future = pool.submit(_async_proxy,
                            import_job_id=import_job_id,
-                           svc_name=self.name, spec=spec)
+                           svc_name=self.name,
+                           spec=spec)
       return [future]
 
     return import_with_pool

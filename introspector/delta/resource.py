@@ -50,7 +50,7 @@ def map_resource_relations(db: Session,
     _log.debug(f'checking for map {raw_import.path}, {import_resource_name}')
     for parent_uri_spec, relation_type, target_uri_spec, attrs in relations:
       # TODO: pull out this
-      _log.info(f'{parent_uri_spec} {relation_type} {target_uri_spec}')
+      _log.debug(f'{parent_uri_spec} {relation_type} {target_uri_spec}')
       parents = Resource.get_by_uri(db, parent_uri_spec, provider_account_id)
       # TODO: accumulate errors on import into an import report
       if len(parents) == 0:
@@ -87,8 +87,8 @@ def map_resource_relations(db: Session,
                   provider_account_id=import_job.provider_account_id)
               for attr in attrs
           ]
-          found = _apply_relation(db, import_job, relation, parent_uri, target_uri,
-                                  relation_attrs)
+          found = _apply_relation(db, import_job, relation, parent_uri,
+                                  target_uri, relation_attrs)
           found_relations.add(found)
   return found_relations
 
@@ -111,7 +111,7 @@ def map_relation_deletes(db: Session, import_job: ImportJob, path_prefix: str,
                  Resource.provider_type.in_(tuple(resources))))
     deletes = deletes.filter(or_(*clauses))
   for deleted in deletes:
-    _log.info(f'Deleting relation {deleted.id}')
+    _log.debug(f'Deleting relation {deleted.id}')
     parent = db.query(Resource).get(deleted.resource_id)
     parent_uri = parent.uri
     target = db.query(Resource).get(deleted.target_id)
@@ -148,7 +148,7 @@ def _delete_relation(db: Session, import_job: ImportJob,
     # Don't need to explicitly delete here, deletes will
     # cascade when we delete the relation
     #db.delete(existing_attr)
-  _log.info(f'deleted {deleted}')
+  _log.debug(f'deleted {deleted}')
   db.delete(deleted)
 
 
@@ -205,9 +205,9 @@ def _apply_relation(db: Session, import_job: ImportJob,
   else:
     stanzas = json_diff(previous.raw, relation.raw)
     if len(stanzas) == 0:
-      _log.info(f'no change {relation}')
+      _log.debug(f'no change {relation}')
     else:
-      _log.info('relation delta')
+      _log.debug('relation delta')
       delta = ResourceRelationDelta(
           import_job=import_job,
           provider_account_id=import_job.provider_account_id,
@@ -246,7 +246,7 @@ def _apply_relation(db: Session, import_job: ImportJob,
         else:
           value_delta = json_diff(existing_attr.value, attr.value)
           if len(value_delta) != 0:
-            _log.info(f'updated attr {attr.name}, {value_delta}')
+            _log.debug(f'updated attr {attr.name}, {value_delta}')
             old_value = existing_attr.value
             existing_attr.value = attr.value
             db.add(existing_attr)

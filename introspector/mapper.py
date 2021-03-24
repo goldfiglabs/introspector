@@ -372,9 +372,10 @@ class Mapper:
             f'Failed to produce target uri {uri_args} {resource_name} {service} {ctx}'
         )
       provider_attrs = self._map_provider_attrs(provider_attr_spec, raw)
-      custom_attrs = self._map_custom_attrs(custom_attr_spec, None,
-                                            raw, ctx)
-      yield Partial(target_uri=target_uri, raw=raw, attrs=provider_attrs + custom_attrs)
+      custom_attrs = self._map_custom_attrs(custom_attr_spec, None, raw, ctx)
+      yield Partial(target_uri=target_uri,
+                    raw=raw,
+                    attrs=provider_attrs + custom_attrs)
 
   def _map_partials_v1(self, transform: Transform, raw_list: List[Any],
                        ctx: Context, service: str, raw_uri_fn: UriFn,
@@ -384,8 +385,7 @@ class Mapper:
                                       raw_uri_fn, resource_name)
 
   def map_partials(self, raw_list: List[Any], ctx: Context, service: str,
-                   raw_uri_fn: UriFn,
-                   resource_name: str) -> Iterator[Partial]:
+                   raw_uri_fn: UriFn, resource_name: str) -> Iterator[Partial]:
     transform = self._find_transform(service, resource_name)
     if transform.version >= 1:
       yield from self._map_partials_v1(transform, raw_list, ctx, service,
@@ -433,11 +433,14 @@ class Mapper:
   def _map_in_relation(
       self, path: str, category: str,
       resource_uri: Uri) -> Iterator[Tuple[Uri, str, str, List[Any]]]:
+    if not isinstance(resource_uri, str):
+      _log.warn(f'No in relation for unknown uri {resource_uri}')
+      return
     if category == 'Organization':
       # Orgs are not in anything
       return
     elif category == 'Division':
-      division_uri = self._division_uri.uri_for_parent(path)
+      division_uri = self._division_uri.uri_for_parent(resource_uri)
     else:
       division_uri = self._division_uri.uri_for_path(path)
     yield resource_uri, 'in', division_uri, []

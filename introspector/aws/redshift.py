@@ -27,7 +27,7 @@ def _import_redshift_region(
     proxy: ServiceProxy, region: str,
     spec: ServiceSpec) -> Generator[Tuple[str, Any], None, None]:
   if resource_gate(spec, 'Cluster'):
-    _log.info(f'importing Redshift Clusters')
+    _log.info(f'importing Redshift Clusters in {region}')
     yield from _import_clusters(proxy, region)
 
 

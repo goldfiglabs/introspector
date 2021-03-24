@@ -24,10 +24,10 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
                attrs: List[ResourceAttribute]) -> bool:
   stanzas = json_diff(previous, current)
   if len(stanzas) == 0:
-    _log.info(f'no change {uri}')
+    _log.debug(f'no change {uri}')
     return False
 
-  _log.info(f'delta found for {uri}')
+  _log.debug(f'delta found for {uri}')
   delta = ResourceDelta(provider_account_id=provider_account_id,
                         import_job_id=import_job_id,
                         resource_id=resource_id,

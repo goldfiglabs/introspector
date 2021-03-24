@@ -17,9 +17,10 @@ KeyFilter = Callable[[str], bool]
 
 
 class ClientProxy(object):
-  def __init__(self, client):
+  def __init__(self, client, service: str):
     self._client = client
     self._patch_client()
+    self._service = service
 
   @property
   def _is_gov(self) -> bool:
@@ -80,14 +81,13 @@ class ClientProxy(object):
       if code == 'UnsupportedOperation':
         _log.info(f'{resource_name} Not supported in this region')
         return resource_name, {ERROR_KEY: 'unsupported in region'}
-      elif code == 'UnauthorizedOperation':
-        return resource_name, {ERROR_KEY: 'unauthorized'}
       elif code == 'MissingParameter':
         return resource_name, {ERROR_KEY: 'missing parameter'}
       elif code == 'OptInRequired':
         return resource_name, {ERROR_KEY: 'missing opt-in'}
-      elif code in ('AuthFailure', 'AccessDeniedException'):
-        _log.info(f'Missing permissions for {key}')
+      elif code in ('AuthFailure', 'AccessDeniedException',
+                    'UnauthorizedOperation'):
+        _log.warn(f'Missing permissions for {self._service} {key}')
         return resource_name, {ERROR_KEY: 'auth failure'}
       elif code == 'InvalidClientTokenId':
         return resource_name, {ERROR_KEY: 'invalid token'}
@@ -124,9 +124,9 @@ class ClientProxy(object):
             or error == 'ResourceNotFoundException':
         # No results, nothing to return
         return None
-      elif error in ('AuthFailure',):
+      elif error in ('AuthFailure', ):
         # Auth failure
-        _log.info(f'Missing permissions for {key}')
+        _log.warn(f'Missing permissions for {self._service} {key}')
       else:
         raise e
 
@@ -385,7 +385,7 @@ class AWSFetch(object):
     if region is not None:
       kwargs['region_name'] = region
     client = self._boto.create_client(service, **kwargs)
-    return client_class(client)
+    return client_class(client, service)
 
 
 class ServiceProxy(object):
@@ -396,11 +396,11 @@ class ServiceProxy(object):
     return self._impl.resource_names()
 
   def list(self, resource: str, **kwargs) -> Optional[Tuple[str, Any]]:
-    _log.info(f'calling list {resource} {kwargs}')
+    _log.debug(f'calling list {resource} {kwargs}')
     return self._impl.list(resource, kwargs)
 
   def get(self, resource: str, **kwargs):
-    _log.info(f'calling get {resource} {kwargs}')
+    _log.debug(f'calling get {resource} {kwargs}')
     return self._impl.get(resource, kwargs)
 
   def canonical_name(self, py_name: str) -> str:

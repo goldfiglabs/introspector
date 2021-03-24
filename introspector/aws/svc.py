@@ -158,7 +158,7 @@ class GlobalService:
       for path, account in accounts:
         for fn in resource_fns:
           future = pool.submit(_global_async_proxy,
-                               ps=ps,
+                               ps=ps.scope(account.scope),
                                import_job_id=import_job_id,
                                provider_account_id=provider_account_id,
                                config=account.config,
@@ -188,7 +188,7 @@ def make_import_to_db(svc_name: str,
     for path, account in account_paths_for_import(db, job):
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
-      ps = PathStack.from_import_job(job)
+      ps = PathStack.from_import_job(job).scope(account.scope)
       service_proxy = proxy.service(svc_name, region)
       ps = ps.scope(region)
       for resource_name, raw_resources in fn(service_proxy, region,
@@ -212,10 +212,12 @@ def _async_proxy(ps: PathStack, import_job_id: int, provider_account_id: int,
                             svc_name,
                             phase=0,
                             source='base')
+  _log.debug(f'Starting {svc_name} - {region}')
   for resource_name, raw_resources in import_fn(service_proxy, region,
                                                 service_spec):
     writer(ps, resource_name, raw_resources, {'region': region})
   db.commit()
+  _log.debug(f'Committed {svc_name} - {region}')
 
 
 def make_import_with_pool(svc_name: str,
@@ -231,7 +233,7 @@ def make_import_with_pool(svc_name: str,
                            import_job_id=import_job_id,
                            provider_account_id=provider_account_id,
                            region=region,
-                           ps=ps,
+                           ps=ps.scope(account.scope),
                            config=account.config,
                            svc_name=svc_name,
                            service_spec=service_spec,

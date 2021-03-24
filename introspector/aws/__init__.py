@@ -49,18 +49,19 @@ def _create_provider_and_credential(db: Session, proxy: Proxy,
   _require_credential(db, provider.id, identity)
   return provider
 
-def _require_credential(db: Session, provider_id: int, identity: Dict[str, Any]):
+
+def _require_credential(db: Session, provider_id: int, identity: Dict[str,
+                                                                      Any]):
   account_id = identity['Account']
   cred = db.query(ProviderCredential).filter(
-    ProviderCredential.scope==account_id,
-    ProviderCredential.provider_id == provider_id).one_or_none()
+      ProviderCredential.scope == account_id,
+      ProviderCredential.provider_id == provider_id).one_or_none()
   if cred is None:
     cred = ProviderCredential(scope=account_id,
-                              provider_id = provider_id,
+                              provider_id=provider_id,
                               principal_uri=identity['Arn'],
                               config={'from_environment': True})
     db.add(cred)
-
 
 
 def walk_graph(org, graph) -> Generator[Tuple[str, str, Dict], None, None]:
@@ -92,7 +93,8 @@ def build_aws_import_job(db: Session, session: boto.Session,
   identity = sts.get_caller_identity()
   provider = _get_or_create_provider(db, proxy, identity, confirm)
   desc = _build_import_job_desc(proxy, identity)
-  return ImportJob.create(provider, desc, identity['Account'])
+  org_id = desc['aws_org']['Id']
+  return ImportJob.create(provider, desc, org_id)
 
 
 def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
@@ -142,7 +144,9 @@ def _require_resp(tup: Optional[Tuple[str, Dict[str, Any]]]) -> Dict[str, Any]:
   else:
     return tup[1]
 
-def _build_dummy_org_graph(account_id: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+
+def _build_dummy_org_graph(
+    account_id: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
   org_id = f'OrgDummy:{account_id}'
   org_resp = {
       'Id':
@@ -157,28 +161,28 @@ def _build_dummy_org_graph(account_id: str) -> Tuple[Dict[str, Any], Dict[str, A
   root_id = 'r-dummy'
   root = {
       "Id": root_id,
-      "Arn":
-      f"arn:aws:organizations::{account_id}:root/{org_id}/{root_id}",
+      "Arn": f"arn:aws:organizations::{account_id}:root/{org_id}/{root_id}",
       "Name": "Root",
       "PolicyTypes": []
   }
   account = {
-      "Id":
-      account_id,
+      "Id": account_id,
       "Arn":
       f"arn:aws:organizations::{account_id}:account/{org_id}/{account_id}"
   }
   return org_resp, {
-          'accounts': {
-              root_id: [account]
-          },
-          'organizational_units': {
-              '': [root]
-          }
+      'accounts': {
+          root_id: [account]
+      },
+      'organizational_units': {
+          '': [root]
       }
+  }
 
 
-def _build_sub_account_graph(account_id: str, org: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def _build_sub_account_graph(
+    account_id: str, org: Dict[str,
+                               Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
   org_id = org['Id']
   master_account_id = org['MasterAccountId']
   account = {
@@ -196,11 +200,14 @@ def _build_sub_account_graph(account_id: str, org: Dict[str, Any]) -> Tuple[Dict
       "PolicyTypes": []
   }
   return org, {
-    'accounts': {
-      root_id: [account]
-    },
-    'organizational_units': {'': [root]}
+      'accounts': {
+          root_id: [account]
+      },
+      'organizational_units': {
+          '': [root]
+      }
   }
+
 
 def _build_org_graph(proxy: ServiceProxy, account_id: str):
   try:
@@ -212,17 +219,15 @@ def _build_org_graph(proxy: ServiceProxy, account_id: str):
     else:
       raise
 
-  try:
-    return _build_master_account_graph(proxy, org_resp)
-  except botocore.exceptions.ClientError as e:
-    code = e.response.get('Error', {}).get('Code')
-    if code == 'AccessDeniedException':
-      return _build_sub_account_graph(account_id, org_resp)
-    else:
-      raise
-
-def _build_master_account_graph(proxy: ServiceProxy, organization: Dict[str, Any]):
   roots_resp = _require_resp(proxy.list('list_roots'))
+  if roots_resp.get('introspector') == 'auth failure':
+    return _build_sub_account_graph(account_id, org_resp)
+  else:
+    return _build_master_account_graph(proxy, org_resp, roots_resp)
+
+
+def _build_master_account_graph(proxy: ServiceProxy,
+                                organization: Dict[str, Any], roots_resp):
   roots = roots_resp['Roots']
   accounts = {}
   organizational_units = {}
@@ -276,15 +281,20 @@ def account_paths_for_import(
   def find_credential(account_id: str) -> ProviderCredential:
     return next(cred for cred in creds if cred.scope == account_id)
 
+  import_account_id = import_job.configuration['principal'][
+      'provider_uri'].split(':')[4]
   account_paths = import_job.aws_config.graph.accounts
   results = []
   for path, accounts in account_paths.items():
     for account in accounts:
-      try:
-        cred = find_credential(account.id)
-        results.append((f'{path}/{cred.scope}', cred))
-      except StopIteration:
-        # If we don't have credentials, don't import it
-        _log.info(f'Skipping account id {account.id}, no credentials')
-        continue
+      if account.id == import_account_id:
+        try:
+          cred = find_credential(account.id)
+          results.append((f'{path}/{cred.scope}', cred))
+        except StopIteration:
+          # If we don't have credentials, don't import it
+          _log.debug(f'Skipping account id {account.id}, no credentials')
+          continue
+      else:
+        _log.debug(f'Skipping account id {account.id}, no credentials')
   return results
