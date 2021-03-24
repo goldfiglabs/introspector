@@ -1,3 +1,4 @@
+from multiprocessing import get_context, get_start_method
 import concurrent.futures as f
 import importlib
 import logging
@@ -12,40 +13,11 @@ from introspector.aws.svc import GlobalService, ImportSpec, RegionalService, ser
 from introspector.models import ImportJob, ProviderCredential
 
 SVC_MODULES = [
-    'acm',
-    'acm_pca',
-    'apigateway',
-    'apigatewayv2',
-    'autoscaling',
-    'cloudformation',
-    'cloudfront',
-    'cloudtrail',
-    'cloudwatch',
-    'config',
-    'dynamodb',
-    'ec2',
-    'ecr',
-    'ecs',
-    'efs',
-    'eks',
-    'elasticbeanstalk',
-    'elb',
-    'elbv2',
-    'es',
-    'glacier',
-    'iam',
-    'kms',
-    'lambdax',
-    'logs',
-    'organizations',
-    'rds',
-    'redshift',
-    'route53',
-    's3',
-    'secretsmanager',
-    'ses',
-    'sns',
-    'sqs',
+    'acm', 'acm_pca', 'apigateway', 'apigatewayv2', 'autoscaling',
+    'cloudformation', 'cloudfront', 'cloudtrail', 'cloudwatch', 'config',
+    'dynamodb', 'ec2', 'ecr', 'ecs', 'efs', 'eks', 'elasticbeanstalk', 'elb',
+    'elbv2', 'es', 'glacier', 'iam', 'kms', 'lambdax', 'logs', 'organizations',
+    'rds', 'redshift', 'route53', 's3', 'secretsmanager', 'ses', 'sns', 'sqs',
     'ssm'
 ]
 
@@ -98,7 +70,9 @@ def run_parallel_session(region_cache: RegionCache,
   else:
     workers = 1
   ps = PathStack.from_import_job(import_job)
-  with f.ProcessPoolExecutor(max_workers=workers * 4) as pool:
+  mp_context = get_context('fork')
+  with f.ProcessPoolExecutor(max_workers=workers * 4,
+                             mp_context=mp_context) as pool:
     results = []
 
     for module_name in _modules(is_gov_cloud):

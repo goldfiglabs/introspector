@@ -92,7 +92,8 @@ def build_aws_import_job(db: Session, session: boto.Session,
   identity = sts.get_caller_identity()
   provider = _get_or_create_provider(db, proxy, identity, confirm)
   desc = _build_import_job_desc(proxy, identity)
-  return ImportJob.create(provider, desc, identity['Account'])
+  org_id = desc['aws_org']['Id']
+  return ImportJob.create(provider, desc, org_id)
 
 
 def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,

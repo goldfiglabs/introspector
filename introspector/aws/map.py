@@ -25,16 +25,18 @@ _log = logging.getLogger(__name__)
 class AWSDivisionURI(DivisionURI):
   def __init__(self,
                master_account_id: str,
+               graph,
                org_id: str,
                partition: str = 'aws'):
     self._master_account_id = master_account_id
     self._org_id = org_id
+    self._graph = graph
     self._partition = partition
 
   def uri_for_path(self, path: str) -> str:
     assert path != ''
     # Remove any trailing region or other data
-    org_path = path.split('$')[0]
+    org_path = path.split('$')[1]
     org_segments = org_path.split('/')
     # Since this is not for a division, expect this to be an
     # account id
@@ -42,15 +44,35 @@ class AWSDivisionURI(DivisionURI):
     arn = f'arn:{self._partition}:organizations::{self._master_account_id}:account/{self._org_id}/{tail}'
     return arn
 
-  def uri_for_parent(self, path: str) -> str:
+  def _path_to_account(self, account_id: str) -> str:
+    for path, accounts in self._graph['accounts'].items():
+      for account in accounts:
+        if account['Id'] == account_id:
+          return path.split('/')[-1]
+    raise GFInternal('Could not find account')
+
+  def _path_to_ou(self, ou_id: str) -> str:
+    for path, ous in self._graph['organizational_units'].items():
+      for ou in ous:
+        if ou['Id'] == ou_id:
+          return path.split('/')[-1]
+    raise GFInternal('Could not find organizational unit')
+
+  def uri_for_parent(self, uri: str) -> str:
     # Only called for division, so no regions, just paths
+    parts = uri.split(':')
+    path = parts[5]
     org_segments = path.split('/')
-    assert len(org_segments) > 0
-    org_segments.pop()
-    if len(org_segments) == 0:
+    node_type = org_segments[0]
+    if node_type == 'root':
       # This was the root, and it's in the organization
       return f'arn:{self._partition}:organizations::{self._master_account_id}:organization/{self._org_id}'
-    tail = org_segments[-1]
+    elif node_type == 'account':
+      account_id = org_segments[2]
+      tail = self._path_to_account(account_id)
+    else:
+      ou_id = org_segments[2]
+      tail = self._path_to_ou(ou_id)
     if tail.startswith('r-'):
       # This is contained directly in the root
       return f'arn:{self._partition}:organizations::{self._master_account_id}:root/{self._org_id}/{tail}'
@@ -66,6 +88,7 @@ def _get_mapper(import_job: ImportJob,
                 extra_fns=None) -> Mapper:
   org_config = import_job.configuration['aws_org']
   division_uri = AWSDivisionURI(org_config['MasterAccountId'],
+                                import_job.configuration['aws_graph'],
                                 org_config['Id'])
   transform_path = os.path.join(os.path.dirname(__file__), 'transforms')
   transforms = load_transforms(transform_path)
@@ -97,14 +120,15 @@ def map_import(db: Session, import_job_id: int, partition: str,
   gate = service_gate(spec)
   for path, account in account_paths_for_import(db, import_job):
     uri_fn = get_arn_fn(account.scope, partition)
-    map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
+    ps = PathStack.from_import_job(import_job).scope(account.scope)
+    map_resource_prefix(db, import_job, ps.path(), mapper, uri_fn)
     boto = None
     proxy = None
     if gate('iam') is not None:
       boto = load_boto_session(account)
       proxy = Proxy.build(boto)
-      synthesize_account_root(proxy, db, import_job, import_job.path_prefix,
-                              account.scope, partition)
+      synthesize_account_root(proxy, db, import_job, ps.path(), account.scope,
+                              partition)
     ec2_spec = gate('ec2')
     if ec2_spec is not None and resource_gate(ec2_spec, 'Images'):
       # Additional ec2 work
@@ -135,18 +159,15 @@ def map_import(db: Session, import_job_id: int, partition: str,
                                  import_job, ps, account.scope)
 
     for source in AWS_SOURCES:
-      map_partial_prefix(db, mapper, import_job, source,
-                         import_job.path_prefix, uri_fn)
+      map_partial_prefix(db, mapper, import_job, source, ps.path(), uri_fn)
       map_partial_deletes(db, import_job, source, spec)
     # Re-map anything we've added
-    map_resource_prefix(db, import_job, import_job.path_prefix, mapper, uri_fn)
+    map_resource_prefix(db, import_job, ps.path(), mapper, uri_fn)
 
     # Handle deletes
     map_resource_deletes(db, ps.path(), import_job, spec)
 
-    found_relations = map_resource_relations(db, import_job,
-                                             import_job.path_prefix, mapper,
+    found_relations = map_resource_relations(db, import_job, ps.path(), mapper,
                                              uri_fn)
 
-    map_relation_deletes(db, import_job, import_job.path_prefix,
-                         found_relations, spec)
+    map_relation_deletes(db, import_job, ps.path(), found_relations, spec)
