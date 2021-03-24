@@ -548,9 +548,16 @@ class Mapper:
                       parent_args=parent_args)
         continue
       target_args = {'parent_uri': uri_args.copy(), 'service': service}
+      skip = False
       for key, spec in relation_spec['uri'].items():
         value = self.value_from_spec(spec, target, parent=raw)
+        if value is None:
+          skip = True
+          _log.debug(f'Missing value for {spec} in {raw}, skipping relation')
+          break
         target_args[key] = value
+      if skip:
+        continue
       try:
         target_uri = uri_fn(**target_args, **parent_args, context=ctx)
       except:
