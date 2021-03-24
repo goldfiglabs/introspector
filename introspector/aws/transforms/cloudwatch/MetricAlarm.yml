@@ -42,9 +42,7 @@ resources:
           transform: aws_tags
   relations:
   - relation: fires-on
-    path:
-      metric_name: MetricName
-      metric_namespace: Namespace
+    path: ''
     uri:
       service:
         value: cloudwatch
