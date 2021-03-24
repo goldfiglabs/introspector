@@ -27,7 +27,8 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
     for partial in mapper.map_partials(raw_import.raw_resources(), ctx,
                                        raw_import.service, uri_fn,
                                        raw_import.resource_name):
-      target_uris = Resource.get_by_uri(db, partial.target_uri, import_job.provider_account_id)
+      target_uris = Resource.get_by_uri(db, partial.target_uri,
+                                        import_job.provider_account_id)
       if len(target_uris) == 0:
         _log.warn(f'Missing target for partial {partial.target_uri}')
       for target in target_uris:
@@ -38,12 +39,13 @@ def map_partial_prefix(db: Session, mapper: Mapper, import_job: ImportJob,
                       provider_account_id=import_job.provider_account_id,
                       raw_import_id=raw_import.id))
         resource_attrs = [
-            ResourceAttribute(resource_id=target.id,
-                              source=source,
-                              attr_type=attr.type,
-                              name=attr.name,
-                              value=attr.value,
-                              provider_account_id=import_job.provider_account_id)
+            ResourceAttribute(
+                resource_id=target.id,
+                source=source,
+                attr_type=attr.type,
+                name=attr.name,
+                value=attr.value,
+                provider_account_id=import_job.provider_account_id)
             for attr in partial.attrs
         ]
         apply_partial(db, import_job, source, target.uri, target.id,
@@ -99,8 +101,8 @@ def apply_partial(db: Session, import_job: ImportJob, source: str,
       db.add(previous)
 
 
-def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
-                        spec: ImportSpec):
+def map_partial_deletes(db: Session, import_job: ImportJob, path: str,
+                        source: str, spec: ImportSpec):
   if spec is None:
     deletes = db.execute(
         '''
@@ -115,6 +117,7 @@ def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
           AND Raw.source = :source
       WHERE
         R.provider_account_id = :provider_account_id
+        AND R.path LIKE :path_prefix
         AND R.uri NOT IN (
           SELECT
             uri
@@ -127,7 +130,8 @@ def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
     ''', {
             'source': source,
             'import_job_id': import_job.id,
-            'provider_account_id': import_job.provider_account_id
+            'provider_account_id': import_job.provider_account_id,
+            'path_prefix': path + '%'
         })
   else:
     clauses = []
@@ -147,12 +151,16 @@ def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
           params[resource_param] = resource_type
           types.append(resource_param)
         type_string = ', '.join(map(lambda s: ':' + s, types))
-        clauses.append(f'R.service = :{service_param} AND R.provider_type IN ({type_string})')
-    restrictions = '(' + ' OR '.join(map(lambda clause: f'({clause})', clauses)) + ')'
+        clauses.append(
+            f'R.service = :{service_param} AND R.provider_type IN ({type_string})'
+        )
+    restrictions = '(' + ' OR '.join(map(lambda clause: f'({clause})',
+                                         clauses)) + ')'
     params.update({
-      'source': source,
-      'import_job_id': import_job.id,
-      'provider_account_id': import_job.provider_account_id
+        'source': source,
+        'import_job_id': import_job.id,
+        'provider_account_id': import_job.provider_account_id,
+        'path_prefix': path + '%'
     })
     deletes = db.execute(
         f'''
@@ -167,6 +175,7 @@ def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
           AND Raw.source = :source
       WHERE
         R.provider_account_id = :provider_account_id
+        AND R.path LIKE :path_prefix
         AND {restrictions}
         AND R.uri NOT IN (
           SELECT
@@ -189,12 +198,11 @@ def map_partial_deletes(db: Session, import_job: ImportJob, source: str,
                           change_details={'source_deleted': source})
     db.add(delta)
     db.query(ResourceRaw).filter(ResourceRaw.id == raw_id).delete()
-    existing_attrs = db.query(
-        ResourceAttribute).filter(
-            ResourceAttribute.resource_id == resource_id,
-            ResourceAttribute.source == source,
-            ResourceAttribute.provider_account_id ==
-            import_job.provider_account_id)
+    existing_attrs = db.query(ResourceAttribute).filter(
+        ResourceAttribute.resource_id == resource_id,
+        ResourceAttribute.source == source,
+        ResourceAttribute.provider_account_id ==
+        import_job.provider_account_id)
     for attr in existing_attrs:
       attr_delta = ResourceAttributeDelta(
           provider_account_id=import_job.provider_account_id,

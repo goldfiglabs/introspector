@@ -160,7 +160,7 @@ def map_import(db: Session, import_job_id: int, partition: str,
 
     for source in AWS_SOURCES:
       map_partial_prefix(db, mapper, import_job, source, ps.path(), uri_fn)
-      map_partial_deletes(db, import_job, source, spec)
+      map_partial_deletes(db, import_job, ps.path(), source, spec)
     # Re-map anything we've added
     map_resource_prefix(db, import_job, ps.path(), mapper, uri_fn)
 
