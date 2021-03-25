@@ -67,17 +67,20 @@ def _import_credential_report(proxy: ServiceProxy, spec: ServiceSpec):
     init_attempts = 0
     while not started:
       try:
-        proxy.get('generate_credential_report')
-        started = True
+        resp = proxy.get('generate_credential_report')
+        started = resp.get('State') in ('STARTED', 'COMPLETE')
       except ClientError as e:
         code = e.response.get('Error', {}).get('Code')
         is_throttled = code == 'Throttling'
-        # If we're throttled, we've at least kicked it off already
         if not is_throttled:
           _log.error('credential report error', exc_info=e)
           raise
-        else:
-          started = True
+          # wait and try again?
+        init_attempts += 1
+        if init_attempts >= 3:
+          _log.error('credential report error', exc_info=e)
+          raise GFError('Failed to generate credential report')
+        time.sleep(0.1)
       except SSLError:
         # wait and try again?
         init_attempts += 1
