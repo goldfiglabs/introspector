@@ -3,6 +3,7 @@
 set -e
 
 PACKAGE=$1
+VERSION=$2
 
 export DOCKER_BUILDKIT=1
 WHEEL_TAG=goldfig/tempbuildwheel:latest
@@ -23,7 +24,7 @@ sed '/psycopg2-binary.*/d' requirements.tmp > requirements.txt
 rm requirements.tmp
 
 INTROSPECTOR_DOCKER_REPO=${DOCKER_REPO:-goldfig}
-IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}:arm64-latest"
+IMAGE="${INTROSPECTOR_DOCKER_REPO}/${PACKAGE}:arm64-${VERSION}"
 DOCKER_BUILDKIT=1 docker build -f docker/Dockerfile-arm --platform linux/arm64 -t ${IMAGE} .
 
 echo "Built ${IMAGE}"
