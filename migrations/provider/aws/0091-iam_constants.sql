@@ -1,0 +1,50 @@
+-- migrate:up
+
+CREATE OR REPLACE VIEW aws_iam_constants
+AS
+SELECT
+  CAST(6144 AS INT) AS managed_policy_max_size,
+  CAST(5120 AS INT) AS group_policy_max_size,
+  CAST(10240 AS INT) AS role_policy_max_size,
+  CAST(2048 AS INT) AS user_policy_max_size,
+  CAST(128 AS INT) AS tag_key_max_size,
+  CAST(256 AS INT) AS tag_value_max_size,
+  CAST(50 AS INT) AS tag_max_count_per_entity,
+  CAST(10 AS INT) AS session_managed_policies_max_count,
+  CAST(2048 AS INT) AS session_policy_max_size,
+  CAST(12 * 60 * 60 AS INT) AS session_duration_max_seconds,
+  CAST(64 AS INT) AS session_name_max_size,
+  CAST(128 AS INT) AS policy_name_max_size,
+  CAST(128 AS INT) AS instance_profile_name_max_size,
+  CAST(64 AS INT) AS role_name_max_size,
+  CAST(64 AS INT) AS user_name_max_size,
+  CAST(128 AS INT) AS group_name_max_size,
+  CAST(512 AS INT) AS path_max_size,
+  CAST(5 AS INT) AS managed_policy_versions_stored_max_count,
+  CAST(5000 AS INT) AS users_max_count,
+  CAST(5 AS INT) AS ssh_keys_max_count_per_user,
+  CAST(2 AS INT) AS signing_certificates_max_count_per_user,
+  CAST(100 AS INT) AS saml_providers_max_count,
+  CAST(100 AS INT) AS oidc_identity_providers_max_count,
+  CAST(10 AS INT) AS keys_max_count_per_saml_provider,
+  CAST(10 AS INT) AS idps_max_count_per_saml_provider_object,
+  CAST(10 AS INT) AS group_memberships_max_per_user,
+  CAST(2 AS INT) AS domains_max_count,
+  CAST(2 AS INT) AS access_keys_max_per_entity,
+  CAST(20 AS INT) AS server_certificates_default_max_count,
+  CAST(1000 AS INT) AS server_certificates_max_count,
+  CAST(1000 AS INT) AS instance_profiles_default_max_count,
+  CAST(5000 AS INT) AS instance_profile_max_count,
+  CAST(10 AS INT) AS managed_policy_default_max_per_entity,
+  CAST(20 AS INT) AS managed_policy_max_per_entity,
+  CAST(1000 AS INT) AS roles_default_max_count,
+  CAST(5000 AS INT) AS roles_max_count,
+  CAST(300 AS INT) AS groups_default_max_count,
+  CAST(500 AS INT) AS groups_max_count,
+  CAST(1500 AS INT) AS managed_polices_default_max_count,
+  CAST(5000 AS INT) AS managed_polices_max_count,
+  CAST(2048 AS INT) AS trust_policy_default_max_size,
+  CAST(4096 AS INT) AS trust_policy_max_size;
+
+-- migrate:down
+DROP VIEW aws_iam_constants;
