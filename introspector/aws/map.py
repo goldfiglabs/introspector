@@ -61,7 +61,7 @@ class AWSDivisionURI(DivisionURI):
   def uri_for_parent(self, uri: str) -> str:
     # Only called for division, so no regions, just paths
     parts = uri.split(':')
-    path = parts[5]
+    path = ':'.join(parts[5:])
     org_segments = path.split('/')
     node_type = org_segments[0]
     if node_type == 'root':
