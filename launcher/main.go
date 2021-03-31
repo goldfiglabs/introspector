@@ -20,6 +20,7 @@ import (
 type authError struct {
 	Err error
 }
+
 func (e *authError) Error() string {
 	return "Failed to find AWS Credentials"
 }
@@ -27,7 +28,7 @@ func (e *authError) Error() string {
 func (e *authError) Unwrap() error {
 	return e.Err
 }
- 
+
 func requireIntrospectorComposition(ctx context.Context, cli *client.Client) types.Container {
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		Filters: filters.NewArgs(filters.Arg("label", "introspector-cli")),
@@ -63,6 +64,11 @@ func loadAwsCredentials(ctx context.Context) (map[string]string, error) {
 }
 
 func needsAwsCredential(userCmd []string) bool {
+	for _, token := range userCmd {
+		if token == "--help" || token == "-h" {
+			return false
+		}
+	}
 	if len(userCmd) >= 3 {
 		if userCmd[0] == "account" && userCmd[1] == "aws" && (userCmd[2] == "import" || userCmd[2] == "remap") {
 			return true
