@@ -17,6 +17,17 @@ import (
 	"github.com/pkg/errors"
 )
 
+type authError struct {
+	Err error
+}
+func (e *authError) Error() string {
+	return "Failed to find AWS Credentials"
+}
+
+func (e *authError) Unwrap() error {
+	return e.Err
+}
+ 
 func requireIntrospectorComposition(ctx context.Context, cli *client.Client) types.Container {
 	containers, err := cli.ContainerList(ctx, types.ContainerListOptions{
 		Filters: filters.NewArgs(filters.Arg("label", "introspector-cli")),
@@ -36,11 +47,11 @@ func requireIntrospectorComposition(ctx context.Context, cli *client.Client) typ
 func loadAwsCredentials(ctx context.Context) (map[string]string, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
-		return nil, err
+		return nil, &authError{err}
 	}
 	creds, err := cfg.Credentials.Retrieve(ctx)
 	if err != nil {
-		return nil, err
+		return nil, &authError{err}
 	}
 	env := make(map[string]string)
 	env["AWS_ACCESS_KEY_ID"] = creds.AccessKeyID
@@ -205,7 +216,13 @@ func main() {
 	for _, cmd := range cmds {
 		err = cmdPassthrough(ctx, cli, introspector, cmd)
 		if err != nil {
-			panic(err)
+			var authErr *authError
+			if errors.As(err, &authErr) {
+				fmt.Println("Failed to find AWS Credentials. Please ensure that your enviroment is correctly configued as described here: https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html")
+				os.Exit(1)
+			} else {
+				panic(err)
+			}
 		}
 	}
 }
