@@ -5,6 +5,8 @@
 *  https://github.com/devops-israel/aws-inventory - Client/browser side inventory.
 *  https://github.com/turbot/steampipe
 *  https://github.com/cloudquery/cloudquery
+*  https://github.com/scopely-devops/skew - Skew is a package for identifying and enumerating cloud resources.
+*  https://github.com/lyft/cartography - Python tool for infra assets and relationships; backed by Neo4j.
 
 ## Sec/compliance scanners
 *  https://github.com/toniblyx/prowler - AWS CIS + extras scanner.
