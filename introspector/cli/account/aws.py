@@ -42,12 +42,16 @@ def cmd():
               default=False,
               is_flag=True,
               help='Skip prompts for adding accounts')
-@click.option('-s',
-              '--service',
-              default=None,
-              type=str,
-              required=False,
-              help='Only import the specified service(s)')
+@click.option(
+    '-s',
+    '--service',
+    default=None,
+    type=str,
+    required=False,
+    help=
+    '''Only import the specified service(s). Use a \';\' delimited string for services. 
+To further scope to individual resources, use <svc>=<comma-separated resources>. For example: -s s3;ec2=Images,Snapshots
+to import all S3 resources as well as Images and Snapshots from ec2''')
 @click.option('-g',
               '--gov-cloud',
               default=False,
