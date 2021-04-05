@@ -63,6 +63,15 @@ def _get_with_parent(key: str, args: Dict) -> Optional[str]:
   return None
 
 
+def _require_account_id(args: Dict) -> str:
+  path = _get_with_parent('path', args)
+  if path is None:
+    raise GFInternal(f'Missing path in {args}')
+  path_parts = path.split('$')
+  if len(path_parts) < 2:
+    raise GFInternal(f'Invalid path {path}')
+  return path_parts[1]
+
 def _security_group_by_name(partition: str, **kwargs) -> DbFn:
   from introspector.models.resource import Resource, ResourceId
 
@@ -124,7 +133,8 @@ def _config_uri_fn(resource_name: str, **kwargs) -> str:
     region = _get_with_parent('region', kwargs)
     if region is None:
       raise GFInternal(f'Missing region in {kwargs}')
-    return f'configurationRecorders/{region}/{name}'
+    account_id = _require_account_id(kwargs)
+    return f'configurationRecorders/{account_id}/{region}/{name}'
   raise GFInternal(f'Failed logs uri fn {resource_name} {kwargs}')
 
 
@@ -181,6 +191,7 @@ def _cloudwatch_metrics(**kwargs) -> str:
   region = _get_with_parent('region', kwargs)
   if region is None:
     raise GFInternal(f'Missing region in {kwargs} for metric')
+  account_id = _require_account_id(kwargs)
   name = kwargs['metric_name']
   namespace = kwargs['metric_namespace']
   dimensions = kwargs['metric_dimensions'] or []
@@ -188,7 +199,7 @@ def _cloudwatch_metrics(**kwargs) -> str:
       f'{dim["Name"]}_{dim["Value"]}' for dim in dimensions
       if dim['Value'] is not None
   ])
-  return f'metrics/{region}/{namespace}/{name}/{flattened}'
+  return f'metrics/{account_id}/{region}/{namespace}/{name}/{flattened}'
 
 
 def _elastic_beanstalk(partition: str, account_id: str, resource_name: str,
