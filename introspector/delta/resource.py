@@ -311,9 +311,10 @@ def map_resource_prefix(db: Session,
     import_resource_name = resource_name \
       if resource_name is not None \
         else raw_import.resource_name
+    context = raw_import.context or {}
+    context['path'] = raw_import.path
     for mapped, attrs in mapper.map_resources(raw_import.raw_resources(),
-                                              raw_import.context or {},
-                                              raw_import.service,
+                                              context, raw_import.service,
                                               import_resource_name, uri_fn):
       apply_mapped_attrs(db,
                          import_job,
