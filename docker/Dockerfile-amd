@@ -10,5 +10,7 @@ EXPOSE 5000/tcp
 COPY introspector.py /app/
 COPY introspector /app/introspector
 LABEL introspector-cli=0.0.1
+ENV AWS_MAX_ATTEMPTS=5
+ENV AWS_RETRY_MODE=adaptive
 
 ENTRYPOINT ["/app/introspector.py", "serve"]
