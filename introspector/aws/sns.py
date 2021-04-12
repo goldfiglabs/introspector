@@ -51,18 +51,19 @@ _SUBSCRIPTION_BOOLEAN = set([
 def _import_subscription(proxy: ServiceProxy, subscription_data: Dict) -> Dict:
   arn = subscription_data['SubscriptionArn']
   attrs = proxy.get('get_subscription_attributes', SubscriptionArn=arn)
-  for attr, value in attrs['Attributes'].items():
-    if attr in _SUBSCRIPTION_SKIP:
-      continue
-    elif attr in _SUBSCRIPTION_JSON:
-      subscription_data[attr] = json.loads(value)
-    elif attr in _SUBSCRIPTION_BOOLEAN:
-      if value in ('true', 'True'):
-        subscription_data[attr] = True
+  if attrs is not None:
+    for attr, value in attrs.get('Attributes', {}).items():
+      if attr in _SUBSCRIPTION_SKIP:
+        continue
+      elif attr in _SUBSCRIPTION_JSON:
+        subscription_data[attr] = json.loads(value)
+      elif attr in _SUBSCRIPTION_BOOLEAN:
+        if value in ('true', 'True'):
+          subscription_data[attr] = True
+        else:
+          subscription_data[attr] = False
       else:
-        subscription_data[attr] = False
-    else:
-      subscription_data[attr] = value
+        subscription_data[attr] = value
   return subscription_data
 
 

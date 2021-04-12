@@ -124,7 +124,7 @@ class ClientProxy(object):
             or error == 'ResourceNotFoundException':
         # No results, nothing to return
         return None
-      elif error in ('AuthFailure', ):
+      elif error in ('AuthFailure', 'MethodNotAllowed'):
         # Auth failure
         _log.warn(f'Missing permissions for {self._service} {key}')
       else:
