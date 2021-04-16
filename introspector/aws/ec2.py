@@ -32,7 +32,8 @@ def _add_user_data(proxy: ServiceProxy, response: Dict):
         user_data = proxy.get('describe_instance_attribute',
                               InstanceId=instance_id,
                               Attribute='userData')
-        instance['UserData'] = user_data['UserData'].get('Value')
+        if user_data is not None:
+          instance['UserData'] = user_data.get('UserData', {}).get('Value')
       except botocore.exceptions.ClientError:
         pass
 
@@ -47,20 +48,24 @@ def _add_launch_permissions(proxy: ServiceProxy, response: Dict):
     permissions = permission_resp.get('CreateVolumePermissions', [])
     snapshot['CreateVolumePermissions'] = permissions
 
+
 def _add_image_attributes(proxy: ServiceProxy, response: Dict[str, Any]):
   images = response.get('Images', [])
   for image in images:
-    launch_permission = proxy.get('describe_image_attribute', Attribute='launchPermission', ImageId=image['ImageId'])
+    launch_permission = proxy.get('describe_image_attribute',
+                                  Attribute='launchPermission',
+                                  ImageId=image['ImageId'])
     if launch_permission is not None:
-      image['LaunchPermissions'] = launch_permission.get('LaunchPermissions', [])
+      image['LaunchPermissions'] = launch_permission.get(
+          'LaunchPermissions', [])
     else:
       image['LaunchPermissions'] = []
 
+
 RESOURCES = [
-    'Addresses', 'FlowLogs',
-    'Images', 'Instances', 'KeyPairs', 'NetworkInterfaces', 'RouteTables',
-    'SecurityGroups', 'Snapshots', 'Subnets', 'Volumes',
-    'VpcPeeringConnections', 'Vpcs'
+    'Addresses', 'FlowLogs', 'Images', 'Instances', 'KeyPairs',
+    'NetworkInterfaces', 'RouteTables', 'SecurityGroups', 'Snapshots',
+    'Subnets', 'Volumes', 'VpcPeeringConnections', 'Vpcs'
 ]
 
 

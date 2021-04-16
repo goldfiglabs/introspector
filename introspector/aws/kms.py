@@ -11,7 +11,7 @@ _log = logging.getLogger(__name__)
 
 
 def _import_key(proxy: ServiceProxy, key_id: str):
-  key_data = proxy.get('describe_key', KeyId=key_id)['KeyMetadata']
+  key_data = proxy.get('describe_key', KeyId=key_id).get('KeyMetadata', {})
   try:
     tags_resp = proxy.get('list_resource_tags', KeyId=key_id)
     if tags_resp is not None:
@@ -27,7 +27,8 @@ def _import_key(proxy: ServiceProxy, key_id: str):
     key_data['Policy'] = json.loads(policy_resp['Policy'])
   try:
     rotation_status = proxy.get('get_key_rotation_status', KeyId=key_id)
-    key_data['KeyRotationEnabled'] = rotation_status['KeyRotationEnabled']
+    if rotation_status is not None:
+      key_data['KeyRotationEnabled'] = rotation_status['KeyRotationEnabled']
   except ClientError as e:
     code = e.response.get('Error', {}).get('Code')
     if code == 'AccessDeniedException' and key_data['KeyManager'] == 'AWS':
