@@ -86,7 +86,7 @@ class ClientProxy(object):
       elif code == 'OptInRequired':
         return resource_name, {ERROR_KEY: 'missing opt-in'}
       elif code in ('AuthFailure', 'AccessDeniedException',
-                    'UnauthorizedOperation'):
+                    'UnauthorizedOperation', 'AccessDenied'):
         _log.warn(f'Missing permissions for {self._service} {key}')
         return resource_name, {ERROR_KEY: 'auth failure'}
       elif code == 'InvalidClientTokenId':
@@ -124,7 +124,8 @@ class ClientProxy(object):
             or error == 'ResourceNotFoundException':
         # No results, nothing to return
         return None
-      elif error in ('AuthFailure', 'MethodNotAllowed', 'AccessDeniedException'):
+      elif error in ('AuthFailure', 'MethodNotAllowed',
+                     'AccessDeniedException', 'AccessDenied'):
         # Auth failure
         _log.warn(f'Missing permissions for {self._service} {key}')
       else:
