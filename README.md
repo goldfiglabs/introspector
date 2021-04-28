@@ -169,7 +169,7 @@ See more in the `sample_queries/` folder.
 
 1. What's currently supported?
 
-   Introspector is being released with support for most common AWS services, including IAM, EC2, and S3, as well as higher level services such as Lambda, ECS, and plumbing such as SNS and SQS.
+   Introspector is being released with support for most common AWS services, including IAM, EC2, and S3, as well as higher level services such as Lambda, ECS, and plumbing such as SNS and SQS. Please check out the [https://www.goldfiglabs.com/introspector-schema-docs/](schema docs) to see all of the currently supported resources.
 
 1. What's the set of permissions needed to run an import?
 
