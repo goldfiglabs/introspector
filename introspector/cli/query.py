@@ -31,4 +31,6 @@ def cmd(query_source: str):
   db = readonly_session()
   for query in queries:
     results = run_query(db, query)
-    print(tabulate(results.rows, headers=results.columns))
+    print(
+        tabulate([row.values() for row in results.rows],
+                 headers=results.columns))
