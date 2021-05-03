@@ -58,9 +58,18 @@ to import all S3 resources as well as Images and Snapshots from ec2''')
               is_flag=True,
               required=False,
               help='Set this flag to import a govcloud account')
+@click.option(
+    '-e',
+    '--external_id',
+    default=None,
+    required=False,
+    type=int,
+    help=
+    '''Optional identifier to include in the provider_account row to facilitate joining against other data sources'''
+)
 @click.option('--dry-run', 'dry_run', default=False, hidden=True, is_flag=True)
-def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
-                   service: Optional[str], gov_cloud: bool):
+def import_aws_cmd(debug: bool, force: bool, external_id: Optional[int],
+                   dry_run: bool, service: Optional[str], gov_cloud: bool):
   partition = 'aws-us-gov' if gov_cloud else 'aws'
   os.environ[
       'AWS_DEFAULT_REGION'] = 'us-gov-east-1' if gov_cloud else 'us-east-2'
@@ -77,7 +86,7 @@ def import_aws_cmd(debug: bool, force: bool, dry_run: bool,
           default='yes')
 
     confirm = _confirm
-  import_job = build_aws_import_job(db, boto, confirm)
+  import_job = build_aws_import_job(db, boto, confirm, external_id)
   db.add(import_job)
   db.flush()
   region_cache = RegionCache(boto, partition)

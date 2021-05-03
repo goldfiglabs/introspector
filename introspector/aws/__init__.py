@@ -30,8 +30,9 @@ def get_boto_session() -> boto.Session:
   return session
 
 
-def _create_provider_and_credential(db: Session, proxy: Proxy,
-                                    identity) -> ProviderAccount:
+def _create_provider_and_credential(
+    db: Session, proxy: Proxy, identity,
+    external_id: Optional[int]) -> ProviderAccount:
   account_id = identity['Account']
   org = proxy.service('organizations')
   try:
@@ -43,7 +44,9 @@ def _create_provider_and_credential(db: Session, proxy: Proxy,
       org_id = f'OrgDummy:{account_id}'
     else:
       raise
-  provider = ProviderAccount(provider='aws', name=org_id)
+  provider = ProviderAccount(provider='aws',
+                             name=org_id,
+                             external_id=external_id)
   db.add(provider)
   db.flush()
   _require_credential(db, provider.id, identity)
@@ -87,18 +90,20 @@ ConfirmAcct = Callable[[Dict], bool]
 
 
 def build_aws_import_job(db: Session, session: boto.Session,
-                         confirm: ConfirmAcct) -> ImportJob:
+                         confirm: ConfirmAcct,
+                         external_id: Optional[int]) -> ImportJob:
   proxy = Proxy.build(session)
   sts = session.create_client('sts')
   identity = sts.get_caller_identity()
-  provider = _get_or_create_provider(db, proxy, identity, confirm)
+  provider = _get_or_create_provider(db, proxy, identity, confirm, external_id)
   desc = _build_import_job_desc(proxy, identity)
   org_id = desc['aws_org']['Id']
   return ImportJob.create(provider, desc, org_id)
 
 
 def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
-                            confirm: ConfirmAcct) -> ProviderAccount:
+                            confirm: ConfirmAcct,
+                            external_id: Optional[int]) -> ProviderAccount:
   org = proxy.service('organizations')
   try:
     org_resp = org.get('describe_organization')['Organization']
@@ -118,7 +123,7 @@ def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
   add = confirm(identity)
   if not add:
     raise GFError('User cancelled')
-  return _create_provider_and_credential(db, proxy, identity)
+  return _create_provider_and_credential(db, proxy, identity, external_id)
 
 
 def _build_import_job_desc(proxy: Proxy, identity: Dict) -> Dict:

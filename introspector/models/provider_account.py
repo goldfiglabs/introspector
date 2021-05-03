@@ -14,18 +14,9 @@ class ProviderAccount(Base):
   name = Column(String(256), comment='Provider name.')
   provider = Column(Enum('aws', 'gcp', 'azure', name='provider'),
                     comment='Provider enum.')
-
-  @classmethod
-  def get_or_create(cls, session: Session, account_info):
-    provider = account_info['provider']
-    account_id = account_info['account_id']
-    provider_account = session.query(ProviderAccount).filter(
-        ProviderAccount.provider == provider,
-        ProviderAccount.name == account_id).one_or_none()
-    if provider_account is None:
-      provider_account = ProviderAccount(provider=provider, name=account_id)
-      session.add(provider_account)
-    return provider_account
+  external_id = Column(
+      Integer,
+      comment='Optional external id for joining against external data sources')
 
   @classmethod
   def all(cls,
