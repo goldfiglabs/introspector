@@ -60,7 +60,7 @@ to import all S3 resources as well as Images and Snapshots from ec2''')
               help='Set this flag to import a govcloud account')
 @click.option(
     '-e',
-    '--external_id',
+    '--external-id',
     default=None,
     required=False,
     type=int,
