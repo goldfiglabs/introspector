@@ -2,6 +2,7 @@ import logging
 import traceback
 import os
 from typing import Dict, Optional
+import sys
 
 import click
 from tabulate import tabulate
@@ -126,6 +127,8 @@ def import_aws_cmd(debug: bool, force: bool, external_id: Optional[int],
     report = report_for_import(db, reloaded_import_job)
     print(f'Results - Import #{reloaded_import_job.id}')
     print_report(report)
+    if len(exceptions) > 0:
+      sys.exit(3)
 
 
 @cmd.command('remap', hidden=True)
