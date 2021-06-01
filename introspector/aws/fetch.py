@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import time
 from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 import yaml
 
@@ -47,7 +48,8 @@ class ClientProxy(object):
   def _map_error_code(self, code: str, resource_name: str) -> Optional[str]:
     return None
 
-  def list(self, key: str, kwargs) -> Optional[Tuple[str, Any]]:
+  def list(self, key: str, kwargs,
+           retry_on_throttle) -> Optional[Tuple[str, Any]]:
     prefix = len(key.split('_')[0])
     resource_name = self._client._PY_TO_OP_NAME[key][prefix:]
     extra_kwargs = dict(self._list_args(key), **kwargs)
@@ -94,6 +96,14 @@ class ClientProxy(object):
       elif code == 'NoSuchEntity':
         # No results, return nothing
         return None
+      elif code == 'Throttling':
+        if retry_on_throttle:
+          _log.warn(f'Throttled for {key}, retrying')
+          time.sleep(3)
+          return self.list(key, kwargs, retry_on_throttle=False)
+        else:
+          _log.error(f'Throttled for {key}, not retrying')
+          raise e
       else:
         mapped = self._map_error_code(code, resource_name)
         if mapped is not None:
@@ -398,7 +408,7 @@ class ServiceProxy(object):
 
   def list(self, resource: str, **kwargs) -> Optional[Tuple[str, Any]]:
     _log.debug(f'calling list {resource} {kwargs}')
-    return self._impl.list(resource, kwargs)
+    return self._impl.list(resource, kwargs, retry_on_throttle=True)
 
   def get(self, resource: str, **kwargs):
     _log.debug(f'calling get {resource} {kwargs}')
