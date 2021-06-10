@@ -23,7 +23,36 @@ def diff_attrs(db: Session, resource_id: int, source: str, import_job_id: int,
                provider_account_id: int, uri: str, previous: Raw, current: Raw,
                attrs: List[ResourceAttribute]) -> bool:
   stanzas = json_diff(previous, current)
-  if len(stanzas) == 0:
+  stanza_diff = len(stanzas) > 0
+  synthesized_diff = False
+  if not stanza_diff:
+    synthesized_attrs = [
+        attr for attr in attrs if attr.attr_type != 'provider'
+    ]
+    # check synthesized attributes
+    existing_synthesized_attrs = set(
+        db.query(ResourceAttribute).filter(
+            ResourceAttribute.resource_id == resource_id,
+            ResourceAttribute.source == source,
+            ResourceAttribute.provider_account_id == provider_account_id,
+            ResourceAttribute.attr_type != 'provider'))
+    # we're only interested in determining if there is a diff at this point,
+    # we'll do a full attribute diff later if we find one
+    if len(synthesized_attrs) == len(existing_synthesized_attrs):
+      # have to check that all the new ones exist already
+      for attr in synthesized_attrs:
+        existing_attr = _find_existing_attr(existing_synthesized_attrs, attr)
+        if existing_attr is None:
+          synthesized_diff = True
+          break
+        value_delta = json_diff(existing_attr.value, attr.value)
+        if len(value_delta) != 0:
+          synthesized_diff = True
+          break
+    else:
+      # different number of synthesized attrs, there's obviously a diff
+      synthesized_diff = True
+  if not stanza_diff and not synthesized_diff:
     _log.debug(f'no change {uri}')
     return False
 
