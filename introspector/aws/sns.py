@@ -73,6 +73,8 @@ def _import_subscriptions(proxy: ServiceProxy):
     for subscription_data in subs_resp[1]['Subscriptions']:
       if subscription_data['SubscriptionArn'] == 'PendingConfirmation':
         continue
+      if subscription_data['SubscriptionArn'] == 'Deleted':
+        continue
       yield 'Subscription', _import_subscription(proxy, subscription_data)
 
 
