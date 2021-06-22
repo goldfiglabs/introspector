@@ -35,34 +35,42 @@ FROM
     ON listenerarn.resource_id = R.id
     AND listenerarn.type = 'provider'
     AND lower(listenerarn.attr_name) = 'listenerarn'
+    AND listenerarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loadbalancerarn
     ON loadbalancerarn.resource_id = R.id
     AND loadbalancerarn.type = 'provider'
     AND lower(loadbalancerarn.attr_name) = 'loadbalancerarn'
+    AND loadbalancerarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS port
     ON port.resource_id = R.id
     AND port.type = 'provider'
     AND lower(port.attr_name) = 'port'
+    AND port.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS protocol
     ON protocol.resource_id = R.id
     AND protocol.type = 'provider'
     AND lower(protocol.attr_name) = 'protocol'
+    AND protocol.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS certificates
     ON certificates.resource_id = R.id
     AND certificates.type = 'provider'
     AND lower(certificates.attr_name) = 'certificates'
+    AND certificates.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sslpolicy
     ON sslpolicy.resource_id = R.id
     AND sslpolicy.type = 'provider'
     AND lower(sslpolicy.attr_name) = 'sslpolicy'
+    AND sslpolicy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS defaultactions
     ON defaultactions.resource_id = R.id
     AND defaultactions.type = 'provider'
     AND lower(defaultactions.attr_name) = 'defaultactions'
+    AND defaultactions.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS alpnpolicy
     ON alpnpolicy.resource_id = R.id
     AND alpnpolicy.type = 'provider'
     AND lower(alpnpolicy.attr_name) = 'alpnpolicy'
+    AND alpnpolicy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_elbv2_loadbalancer_relation.resource_id AS resource_id,
@@ -73,8 +81,10 @@ FROM
         ON _aws_elbv2_loadbalancer_relation.target_id = _aws_elbv2_loadbalancer.id
         AND _aws_elbv2_loadbalancer.provider_type = 'LoadBalancer'
         AND _aws_elbv2_loadbalancer.service = 'elbv2'
+        AND _aws_elbv2_loadbalancer.provider_account_id = :provider_account_id
     WHERE
       _aws_elbv2_loadbalancer_relation.relation = 'forwards-to'
+      AND _aws_elbv2_loadbalancer_relation.provider_account_id = :provider_account_id
   ) AS _loadbalancer_id ON _loadbalancer_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -92,6 +102,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -101,11 +112,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Listener'
   AND R.service = 'elbv2'
 ON CONFLICT (_id) DO UPDATE

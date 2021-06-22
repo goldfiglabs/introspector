@@ -81,122 +81,152 @@ FROM
     ON environmentid.resource_id = R.id
     AND environmentid.type = 'provider'
     AND lower(environmentid.attr_name) = 'environmentid'
+    AND environmentid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS applicationname
     ON applicationname.resource_id = R.id
     AND applicationname.type = 'provider'
     AND lower(applicationname.attr_name) = 'applicationname'
+    AND applicationname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS versionlabel
     ON versionlabel.resource_id = R.id
     AND versionlabel.type = 'provider'
     AND lower(versionlabel.attr_name) = 'versionlabel'
+    AND versionlabel.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS solutionstackname
     ON solutionstackname.resource_id = R.id
     AND solutionstackname.type = 'provider'
     AND lower(solutionstackname.attr_name) = 'solutionstackname'
+    AND solutionstackname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS platformarn
     ON platformarn.resource_id = R.id
     AND platformarn.type = 'provider'
     AND lower(platformarn.attr_name) = 'platformarn'
+    AND platformarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS templatename
     ON templatename.resource_id = R.id
     AND templatename.type = 'provider'
     AND lower(templatename.attr_name) = 'templatename'
+    AND templatename.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS endpointurl
     ON endpointurl.resource_id = R.id
     AND endpointurl.type = 'provider'
     AND lower(endpointurl.attr_name) = 'endpointurl'
+    AND endpointurl.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cname
     ON cname.resource_id = R.id
     AND cname.type = 'provider'
     AND lower(cname.attr_name) = 'cname'
+    AND cname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS datecreated
     ON datecreated.resource_id = R.id
     AND datecreated.type = 'provider'
     AND lower(datecreated.attr_name) = 'datecreated'
+    AND datecreated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dateupdated
     ON dateupdated.resource_id = R.id
     AND dateupdated.type = 'provider'
     AND lower(dateupdated.attr_name) = 'dateupdated'
+    AND dateupdated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS abortableoperationinprogress
     ON abortableoperationinprogress.resource_id = R.id
     AND abortableoperationinprogress.type = 'provider'
     AND lower(abortableoperationinprogress.attr_name) = 'abortableoperationinprogress'
+    AND abortableoperationinprogress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS health
     ON health.resource_id = R.id
     AND health.type = 'provider'
     AND lower(health.attr_name) = 'health'
+    AND health.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthstatus
     ON healthstatus.resource_id = R.id
     AND healthstatus.type = 'provider'
     AND lower(healthstatus.attr_name) = 'healthstatus'
+    AND healthstatus.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS resources
     ON resources.resource_id = R.id
     AND resources.type = 'provider'
     AND lower(resources.attr_name) = 'resources'
+    AND resources.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tier
     ON tier.resource_id = R.id
     AND tier.type = 'provider'
     AND lower(tier.attr_name) = 'tier'
+    AND tier.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS environmentlinks
     ON environmentlinks.resource_id = R.id
     AND environmentlinks.type = 'provider'
     AND lower(environmentlinks.attr_name) = 'environmentlinks'
+    AND environmentlinks.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS environmentarn
     ON environmentarn.resource_id = R.id
     AND environmentarn.type = 'provider'
     AND lower(environmentarn.attr_name) = 'environmentarn'
+    AND environmentarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS operationsrole
     ON operationsrole.resource_id = R.id
     AND operationsrole.type = 'provider'
     AND lower(operationsrole.attr_name) = 'operationsrole'
+    AND operationsrole.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS environmentname
     ON environmentname.resource_id = R.id
     AND environmentname.type = 'provider'
     AND lower(environmentname.attr_name) = 'environmentname'
+    AND environmentname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS autoscalinggroups
     ON autoscalinggroups.resource_id = R.id
     AND autoscalinggroups.type = 'provider'
     AND lower(autoscalinggroups.attr_name) = 'autoscalinggroups'
+    AND autoscalinggroups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS instances
     ON instances.resource_id = R.id
     AND instances.type = 'provider'
     AND lower(instances.attr_name) = 'instances'
+    AND instances.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchconfigurations
     ON launchconfigurations.resource_id = R.id
     AND launchconfigurations.type = 'provider'
     AND lower(launchconfigurations.attr_name) = 'launchconfigurations'
+    AND launchconfigurations.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchtemplates
     ON launchtemplates.resource_id = R.id
     AND launchtemplates.type = 'provider'
     AND lower(launchtemplates.attr_name) = 'launchtemplates'
+    AND launchtemplates.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loadbalancers
     ON loadbalancers.resource_id = R.id
     AND loadbalancers.type = 'provider'
     AND lower(loadbalancers.attr_name) = 'loadbalancers'
+    AND loadbalancers.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS triggers
     ON triggers.resource_id = R.id
     AND triggers.type = 'provider'
     AND lower(triggers.attr_name) = 'triggers'
+    AND triggers.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS queues
     ON queues.resource_id = R.id
     AND queues.type = 'provider'
     AND lower(queues.attr_name) = 'queues'
+    AND queues.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_elasticbeanstalk_application_relation.resource_id AS resource_id,
@@ -207,8 +237,10 @@ FROM
         ON _aws_elasticbeanstalk_application_relation.target_id = _aws_elasticbeanstalk_application.id
         AND _aws_elasticbeanstalk_application.provider_type = 'Application'
         AND _aws_elasticbeanstalk_application.service = 'elasticbeanstalk'
+        AND _aws_elasticbeanstalk_application.provider_account_id = :provider_account_id
     WHERE
       _aws_elasticbeanstalk_application_relation.relation = 'belongs-to'
+      AND _aws_elasticbeanstalk_application_relation.provider_account_id = :provider_account_id
   ) AS _application_id ON _application_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -220,8 +252,10 @@ FROM
         ON _aws_elasticbeanstalk_applicationversion_relation.target_id = _aws_elasticbeanstalk_applicationversion.id
         AND _aws_elasticbeanstalk_applicationversion.provider_type = 'ApplicationVersion'
         AND _aws_elasticbeanstalk_applicationversion.service = 'elasticbeanstalk'
+        AND _aws_elasticbeanstalk_applicationversion.provider_account_id = :provider_account_id
     WHERE
       _aws_elasticbeanstalk_applicationversion_relation.relation = 'belongs-to'
+      AND _aws_elasticbeanstalk_applicationversion_relation.provider_account_id = :provider_account_id
   ) AS _applicationversion_id ON _applicationversion_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -233,8 +267,10 @@ FROM
         ON _aws_iam_role_relation.target_id = _aws_iam_role.id
         AND _aws_iam_role.provider_type = 'Role'
         AND _aws_iam_role.service = 'iam'
+        AND _aws_iam_role.provider_account_id = :provider_account_id
     WHERE
       _aws_iam_role_relation.relation = 'acts-as'
+      AND _aws_iam_role_relation.provider_account_id = :provider_account_id
   ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -252,6 +288,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -261,11 +298,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Environment'
   AND R.service = 'elasticbeanstalk'
 ON CONFLICT (_id) DO UPDATE

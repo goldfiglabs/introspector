@@ -67,94 +67,117 @@ FROM
     ON availabilityzones.resource_id = R.id
     AND availabilityzones.type = 'provider'
     AND lower(availabilityzones.attr_name) = 'availabilityzones'
+    AND availabilityzones.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dbclustersnapshotidentifier
     ON dbclustersnapshotidentifier.resource_id = R.id
     AND dbclustersnapshotidentifier.type = 'provider'
     AND lower(dbclustersnapshotidentifier.attr_name) = 'dbclustersnapshotidentifier'
+    AND dbclustersnapshotidentifier.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dbclusteridentifier
     ON dbclusteridentifier.resource_id = R.id
     AND dbclusteridentifier.type = 'provider'
     AND lower(dbclusteridentifier.attr_name) = 'dbclusteridentifier'
+    AND dbclusteridentifier.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS snapshotcreatetime
     ON snapshotcreatetime.resource_id = R.id
     AND snapshotcreatetime.type = 'provider'
     AND lower(snapshotcreatetime.attr_name) = 'snapshotcreatetime'
+    AND snapshotcreatetime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS engine
     ON engine.resource_id = R.id
     AND engine.type = 'provider'
     AND lower(engine.attr_name) = 'engine'
+    AND engine.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS allocatedstorage
     ON allocatedstorage.resource_id = R.id
     AND allocatedstorage.type = 'provider'
     AND lower(allocatedstorage.attr_name) = 'allocatedstorage'
+    AND allocatedstorage.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS port
     ON port.resource_id = R.id
     AND port.type = 'provider'
     AND lower(port.attr_name) = 'port'
+    AND port.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcid
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+    AND vpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS clustercreatetime
     ON clustercreatetime.resource_id = R.id
     AND clustercreatetime.type = 'provider'
     AND lower(clustercreatetime.attr_name) = 'clustercreatetime'
+    AND clustercreatetime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS masterusername
     ON masterusername.resource_id = R.id
     AND masterusername.type = 'provider'
     AND lower(masterusername.attr_name) = 'masterusername'
+    AND masterusername.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS engineversion
     ON engineversion.resource_id = R.id
     AND engineversion.type = 'provider'
     AND lower(engineversion.attr_name) = 'engineversion'
+    AND engineversion.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS licensemodel
     ON licensemodel.resource_id = R.id
     AND licensemodel.type = 'provider'
     AND lower(licensemodel.attr_name) = 'licensemodel'
+    AND licensemodel.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS snapshottype
     ON snapshottype.resource_id = R.id
     AND snapshottype.type = 'provider'
     AND lower(snapshottype.attr_name) = 'snapshottype'
+    AND snapshottype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS percentprogress
     ON percentprogress.resource_id = R.id
     AND percentprogress.type = 'provider'
     AND lower(percentprogress.attr_name) = 'percentprogress'
+    AND percentprogress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS storageencrypted
     ON storageencrypted.resource_id = R.id
     AND storageencrypted.type = 'provider'
     AND lower(storageencrypted.attr_name) = 'storageencrypted'
+    AND storageencrypted.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS kmskeyid
     ON kmskeyid.resource_id = R.id
     AND kmskeyid.type = 'provider'
     AND lower(kmskeyid.attr_name) = 'kmskeyid'
+    AND kmskeyid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dbclustersnapshotarn
     ON dbclustersnapshotarn.resource_id = R.id
     AND dbclustersnapshotarn.type = 'provider'
     AND lower(dbclustersnapshotarn.attr_name) = 'dbclustersnapshotarn'
+    AND dbclustersnapshotarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sourcedbclustersnapshotarn
     ON sourcedbclustersnapshotarn.resource_id = R.id
     AND sourcedbclustersnapshotarn.type = 'provider'
     AND lower(sourcedbclustersnapshotarn.attr_name) = 'sourcedbclustersnapshotarn'
+    AND sourcedbclustersnapshotarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS iamdatabaseauthenticationenabled
     ON iamdatabaseauthenticationenabled.resource_id = R.id
     AND iamdatabaseauthenticationenabled.type = 'provider'
     AND lower(iamdatabaseauthenticationenabled.attr_name) = 'iamdatabaseauthenticationenabled'
+    AND iamdatabaseauthenticationenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS taglist
     ON taglist.resource_id = R.id
     AND taglist.type = 'provider'
     AND lower(taglist.attr_name) = 'taglist'
+    AND taglist.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS restore
     ON restore.resource_id = R.id
     AND restore.type = 'provider'
     AND lower(restore.attr_name) = 'restore'
+    AND restore.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -165,8 +188,10 @@ FROM
         ON _aws_kms_key_relation.target_id = _aws_kms_key.id
         AND _aws_kms_key.provider_type = 'Key'
         AND _aws_kms_key.service = 'kms'
+        AND _aws_kms_key.provider_account_id = :provider_account_id
     WHERE
       _aws_kms_key_relation.relation = 'encrypted-with'
+      AND _aws_kms_key_relation.provider_account_id = :provider_account_id
   ) AS _kms_key_id ON _kms_key_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -178,8 +203,10 @@ FROM
         ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
         AND _aws_ec2_vpc.provider_type = 'Vpc'
         AND _aws_ec2_vpc.service = 'ec2'
+        AND _aws_ec2_vpc.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_vpc_relation.relation = 'in'
+      AND _aws_ec2_vpc_relation.provider_account_id = :provider_account_id
   ) AS _ec2_vpc_id ON _ec2_vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -191,8 +218,10 @@ FROM
         ON _aws_rds_dbcluster_relation.target_id = _aws_rds_dbcluster.id
         AND _aws_rds_dbcluster.provider_type = 'DBCluster'
         AND _aws_rds_dbcluster.service = 'rds'
+        AND _aws_rds_dbcluster.provider_account_id = :provider_account_id
     WHERE
       _aws_rds_dbcluster_relation.relation = 'imaged'
+      AND _aws_rds_dbcluster_relation.provider_account_id = :provider_account_id
   ) AS _dbcluster_id ON _dbcluster_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -210,6 +239,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -219,11 +249,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'DBClusterSnapshot'
   AND R.service = 'rds'
 ON CONFLICT (_id) DO UPDATE

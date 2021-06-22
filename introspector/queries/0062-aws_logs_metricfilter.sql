@@ -29,22 +29,27 @@ FROM
     ON filtername.resource_id = R.id
     AND filtername.type = 'provider'
     AND lower(filtername.attr_name) = 'filtername'
+    AND filtername.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS filterpattern
     ON filterpattern.resource_id = R.id
     AND filterpattern.type = 'provider'
     AND lower(filterpattern.attr_name) = 'filterpattern'
+    AND filterpattern.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS metrictransformations
     ON metrictransformations.resource_id = R.id
     AND metrictransformations.type = 'provider'
     AND lower(metrictransformations.attr_name) = 'metrictransformations'
+    AND metrictransformations.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS creationtime
     ON creationtime.resource_id = R.id
     AND creationtime.type = 'provider'
     AND lower(creationtime.attr_name) = 'creationtime'
+    AND creationtime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loggroupname
     ON loggroupname.resource_id = R.id
     AND loggroupname.type = 'provider'
     AND lower(loggroupname.attr_name) = 'loggroupname'
+    AND loggroupname.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_logs_loggroup_relation.resource_id AS resource_id,
@@ -55,8 +60,10 @@ FROM
         ON _aws_logs_loggroup_relation.target_id = _aws_logs_loggroup.id
         AND _aws_logs_loggroup.provider_type = 'LogGroup'
         AND _aws_logs_loggroup.service = 'logs'
+        AND _aws_logs_loggroup.provider_account_id = :provider_account_id
     WHERE
       _aws_logs_loggroup_relation.relation = 'filters-group'
+      AND _aws_logs_loggroup_relation.provider_account_id = :provider_account_id
   ) AS _loggroup_id ON _loggroup_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -74,6 +81,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -83,11 +91,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'MetricFilter'
   AND R.service = 'logs'
 ON CONFLICT (_id) DO UPDATE

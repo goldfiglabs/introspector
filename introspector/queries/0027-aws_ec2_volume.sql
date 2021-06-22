@@ -17,6 +17,7 @@ INSERT INTO aws_ec2_volume (
   volumetype,
   fastrestored,
   multiattachenabled,
+  throughput,
   _tags,
   _account_id
 )
@@ -39,8 +40,9 @@ SELECT
   volumetype.attr_value #>> '{}' AS volumetype,
   (fastrestored.attr_value #>> '{}')::boolean AS fastrestored,
   (multiattachenabled.attr_value #>> '{}')::boolean AS multiattachenabled,
+  (throughput.attr_value #>> '{}')::integer AS throughput,
   _tags.attr_value::jsonb AS _tags,
-
+  
     _account_id.target_id AS _account_id
 FROM
   resource AS R
@@ -50,66 +52,87 @@ FROM
     ON attachments.resource_id = R.id
     AND attachments.type = 'provider'
     AND lower(attachments.attr_name) = 'attachments'
+    AND attachments.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availabilityzone
     ON availabilityzone.resource_id = R.id
     AND availabilityzone.type = 'provider'
     AND lower(availabilityzone.attr_name) = 'availabilityzone'
+    AND availabilityzone.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createtime
     ON createtime.resource_id = R.id
     AND createtime.type = 'provider'
     AND lower(createtime.attr_name) = 'createtime'
+    AND createtime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS encrypted
     ON encrypted.resource_id = R.id
     AND encrypted.type = 'provider'
     AND lower(encrypted.attr_name) = 'encrypted'
+    AND encrypted.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS kmskeyid
     ON kmskeyid.resource_id = R.id
     AND kmskeyid.type = 'provider'
     AND lower(kmskeyid.attr_name) = 'kmskeyid'
+    AND kmskeyid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS outpostarn
     ON outpostarn.resource_id = R.id
     AND outpostarn.type = 'provider'
     AND lower(outpostarn.attr_name) = 'outpostarn'
+    AND outpostarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS size
     ON size.resource_id = R.id
     AND size.type = 'provider'
     AND lower(size.attr_name) = 'size'
+    AND size.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS snapshotid
     ON snapshotid.resource_id = R.id
     AND snapshotid.type = 'provider'
     AND lower(snapshotid.attr_name) = 'snapshotid'
+    AND snapshotid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS state
     ON state.resource_id = R.id
     AND state.type = 'provider'
     AND lower(state.attr_name) = 'state'
+    AND state.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS volumeid
     ON volumeid.resource_id = R.id
     AND volumeid.type = 'provider'
     AND lower(volumeid.attr_name) = 'volumeid'
+    AND volumeid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS iops
     ON iops.resource_id = R.id
     AND iops.type = 'provider'
     AND lower(iops.attr_name) = 'iops'
+    AND iops.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS volumetype
     ON volumetype.resource_id = R.id
     AND volumetype.type = 'provider'
     AND lower(volumetype.attr_name) = 'volumetype'
+    AND volumetype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS fastrestored
     ON fastrestored.resource_id = R.id
     AND fastrestored.type = 'provider'
     AND lower(fastrestored.attr_name) = 'fastrestored'
+    AND fastrestored.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS multiattachenabled
     ON multiattachenabled.resource_id = R.id
     AND multiattachenabled.type = 'provider'
     AND lower(multiattachenabled.attr_name) = 'multiattachenabled'
+    AND multiattachenabled.provider_account_id = R.provider_account_id
+  LEFT JOIN resource_attribute AS throughput
+    ON throughput.resource_id = R.id
+    AND throughput.type = 'provider'
+    AND lower(throughput.attr_name) = 'throughput'
+    AND throughput.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -126,6 +149,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -135,11 +159,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Volume'
   AND R.service = 'ec2'
 ON CONFLICT (_id) DO UPDATE
@@ -159,6 +186,8 @@ SET
     volumetype = EXCLUDED.volumetype,
     fastrestored = EXCLUDED.fastrestored,
     multiattachenabled = EXCLUDED.multiattachenabled,
+    throughput = EXCLUDED.throughput,
     _tags = EXCLUDED._tags,
     _account_id = EXCLUDED._account_id
   ;
+

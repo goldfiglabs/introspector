@@ -61,86 +61,107 @@ FROM
     ON ReceiveMessageWaitTimeSeconds.resource_id = R.id
     AND ReceiveMessageWaitTimeSeconds.type = 'provider'
     AND lower(ReceiveMessageWaitTimeSeconds.attr_name) = 'receivemessagewaittimeseconds'
+    AND ReceiveMessageWaitTimeSeconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS VisibilityTimeout
     ON VisibilityTimeout.resource_id = R.id
     AND VisibilityTimeout.type = 'provider'
     AND lower(VisibilityTimeout.attr_name) = 'visibilitytimeout'
+    AND VisibilityTimeout.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ApproximateNumberOfMessages
     ON ApproximateNumberOfMessages.resource_id = R.id
     AND ApproximateNumberOfMessages.type = 'provider'
     AND lower(ApproximateNumberOfMessages.attr_name) = 'approximatenumberofmessages'
+    AND ApproximateNumberOfMessages.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ApproximateNumberOfMessagesNotVisible
     ON ApproximateNumberOfMessagesNotVisible.resource_id = R.id
     AND ApproximateNumberOfMessagesNotVisible.type = 'provider'
     AND lower(ApproximateNumberOfMessagesNotVisible.attr_name) = 'approximatenumberofmessagesnotvisible'
+    AND ApproximateNumberOfMessagesNotVisible.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ApproximateNumberOfMessagesDelayed
     ON ApproximateNumberOfMessagesDelayed.resource_id = R.id
     AND ApproximateNumberOfMessagesDelayed.type = 'provider'
     AND lower(ApproximateNumberOfMessagesDelayed.attr_name) = 'approximatenumberofmessagesdelayed'
+    AND ApproximateNumberOfMessagesDelayed.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS DelaySeconds
     ON DelaySeconds.resource_id = R.id
     AND DelaySeconds.type = 'provider'
     AND lower(DelaySeconds.attr_name) = 'delayseconds'
+    AND DelaySeconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS CreatedTimestamp
     ON CreatedTimestamp.resource_id = R.id
     AND CreatedTimestamp.type = 'provider'
     AND lower(CreatedTimestamp.attr_name) = 'createdtimestamp'
+    AND CreatedTimestamp.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS LastModifiedTimestamp
     ON LastModifiedTimestamp.resource_id = R.id
     AND LastModifiedTimestamp.type = 'provider'
     AND lower(LastModifiedTimestamp.attr_name) = 'lastmodifiedtimestamp'
+    AND LastModifiedTimestamp.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS QueueArn
     ON QueueArn.resource_id = R.id
     AND QueueArn.type = 'provider'
     AND lower(QueueArn.attr_name) = 'queuearn'
+    AND QueueArn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS MaximumMessageSize
     ON MaximumMessageSize.resource_id = R.id
     AND MaximumMessageSize.type = 'provider'
     AND lower(MaximumMessageSize.attr_name) = 'maximummessagesize'
+    AND MaximumMessageSize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS MessageRetentionPeriod
     ON MessageRetentionPeriod.resource_id = R.id
     AND MessageRetentionPeriod.type = 'provider'
     AND lower(MessageRetentionPeriod.attr_name) = 'messageretentionperiod'
+    AND MessageRetentionPeriod.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS url
     ON url.resource_id = R.id
     AND url.type = 'provider'
     AND lower(url.attr_name) = 'url'
+    AND url.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS Tags
     ON Tags.resource_id = R.id
     AND Tags.type = 'provider'
     AND lower(Tags.attr_name) = 'tags'
+    AND Tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS Policy
     ON Policy.resource_id = R.id
     AND Policy.type = 'provider'
     AND lower(Policy.attr_name) = 'policy'
+    AND Policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS RedrivePolicy
     ON RedrivePolicy.resource_id = R.id
     AND RedrivePolicy.type = 'provider'
     AND lower(RedrivePolicy.attr_name) = 'redrivepolicy'
+    AND RedrivePolicy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS FifoQueue
     ON FifoQueue.resource_id = R.id
     AND FifoQueue.type = 'provider'
     AND lower(FifoQueue.attr_name) = 'fifoqueue'
+    AND FifoQueue.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ContentBasedDeduplication
     ON ContentBasedDeduplication.resource_id = R.id
     AND ContentBasedDeduplication.type = 'provider'
     AND lower(ContentBasedDeduplication.attr_name) = 'contentbaseddeduplication'
+    AND ContentBasedDeduplication.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS KmsMasterKeyId
     ON KmsMasterKeyId.resource_id = R.id
     AND KmsMasterKeyId.type = 'provider'
     AND lower(KmsMasterKeyId.attr_name) = 'kmsmasterkeyid'
+    AND KmsMasterKeyId.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS KmsDataKeyReusePeriodSecond
     ON KmsDataKeyReusePeriodSecond.resource_id = R.id
     AND KmsDataKeyReusePeriodSecond.type = 'provider'
     AND lower(KmsDataKeyReusePeriodSecond.attr_name) = 'kmsdatakeyreuseperiodsecond'
+    AND KmsDataKeyReusePeriodSecond.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -151,8 +172,10 @@ FROM
         ON _aws_kms_key_relation.target_id = _aws_kms_key.id
         AND _aws_kms_key.provider_type = 'Key'
         AND _aws_kms_key.service = 'kms'
+        AND _aws_kms_key.provider_account_id = :provider_account_id
     WHERE
       _aws_kms_key_relation.relation = 'has-key'
+      AND _aws_kms_key_relation.provider_account_id = :provider_account_id
   ) AS _kms_key_id ON _kms_key_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -170,6 +193,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -179,11 +203,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Queue'
   AND R.service = 'sqs'
 ON CONFLICT (_id) DO UPDATE

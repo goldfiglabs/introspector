@@ -52,70 +52,87 @@ FROM
     ON arn.resource_id = R.id
     AND arn.type = 'provider'
     AND lower(arn.attr_name) = 'arn'
+    AND arn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS owneraccount
     ON owneraccount.resource_id = R.id
     AND owneraccount.type = 'provider'
     AND lower(owneraccount.attr_name) = 'owneraccount'
+    AND owneraccount.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdat
     ON createdat.resource_id = R.id
     AND createdat.type = 'provider'
     AND lower(createdat.attr_name) = 'createdat'
+    AND createdat.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS laststatechangeat
     ON laststatechangeat.resource_id = R.id
     AND laststatechangeat.type = 'provider'
     AND lower(laststatechangeat.attr_name) = 'laststatechangeat'
+    AND laststatechangeat.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS type
     ON type.resource_id = R.id
     AND type.type = 'provider'
     AND lower(type.attr_name) = 'type'
+    AND type.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS serial
     ON serial.resource_id = R.id
     AND serial.type = 'provider'
     AND lower(serial.attr_name) = 'serial'
+    AND serial.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS notbefore
     ON notbefore.resource_id = R.id
     AND notbefore.type = 'provider'
     AND lower(notbefore.attr_name) = 'notbefore'
+    AND notbefore.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS notafter
     ON notafter.resource_id = R.id
     AND notafter.type = 'provider'
     AND lower(notafter.attr_name) = 'notafter'
+    AND notafter.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS failurereason
     ON failurereason.resource_id = R.id
     AND failurereason.type = 'provider'
     AND lower(failurereason.attr_name) = 'failurereason'
+    AND failurereason.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS certificateauthorityconfiguration
     ON certificateauthorityconfiguration.resource_id = R.id
     AND certificateauthorityconfiguration.type = 'provider'
     AND lower(certificateauthorityconfiguration.attr_name) = 'certificateauthorityconfiguration'
+    AND certificateauthorityconfiguration.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS revocationconfiguration
     ON revocationconfiguration.resource_id = R.id
     AND revocationconfiguration.type = 'provider'
     AND lower(revocationconfiguration.attr_name) = 'revocationconfiguration'
+    AND revocationconfiguration.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS restorableuntil
     ON restorableuntil.resource_id = R.id
     AND restorableuntil.type = 'provider'
     AND lower(restorableuntil.attr_name) = 'restorableuntil'
+    AND restorableuntil.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policy
     ON policy.resource_id = R.id
     AND policy.type = 'provider'
     AND lower(policy.attr_name) = 'policy'
+    AND policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -132,6 +149,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -141,11 +159,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'CertificateAuthority'
   AND R.service = 'acm-pca'
 ON CONFLICT (_id) DO UPDATE

@@ -55,70 +55,87 @@ FROM
     ON dkimenabled.resource_id = R.id
     AND dkimenabled.type = 'provider'
     AND lower(dkimenabled.attr_name) = 'dkimenabled'
+    AND dkimenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dkimverificationstatus
     ON dkimverificationstatus.resource_id = R.id
     AND dkimverificationstatus.type = 'provider'
     AND lower(dkimverificationstatus.attr_name) = 'dkimverificationstatus'
+    AND dkimverificationstatus.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dkimtokens
     ON dkimtokens.resource_id = R.id
     AND dkimtokens.type = 'provider'
     AND lower(dkimtokens.attr_name) = 'dkimtokens'
+    AND dkimtokens.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mailfromdomain
     ON mailfromdomain.resource_id = R.id
     AND mailfromdomain.type = 'provider'
     AND lower(mailfromdomain.attr_name) = 'mailfromdomain'
+    AND mailfromdomain.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mailfromdomainstatus
     ON mailfromdomainstatus.resource_id = R.id
     AND mailfromdomainstatus.type = 'provider'
     AND lower(mailfromdomainstatus.attr_name) = 'mailfromdomainstatus'
+    AND mailfromdomainstatus.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS behavioronmxfailure
     ON behavioronmxfailure.resource_id = R.id
     AND behavioronmxfailure.type = 'provider'
     AND lower(behavioronmxfailure.attr_name) = 'behavioronmxfailure'
+    AND behavioronmxfailure.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS bouncetopic
     ON bouncetopic.resource_id = R.id
     AND bouncetopic.type = 'provider'
     AND lower(bouncetopic.attr_name) = 'bouncetopic'
+    AND bouncetopic.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS complainttopic
     ON complainttopic.resource_id = R.id
     AND complainttopic.type = 'provider'
     AND lower(complainttopic.attr_name) = 'complainttopic'
+    AND complainttopic.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS deliverytopic
     ON deliverytopic.resource_id = R.id
     AND deliverytopic.type = 'provider'
     AND lower(deliverytopic.attr_name) = 'deliverytopic'
+    AND deliverytopic.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS forwardingenabled
     ON forwardingenabled.resource_id = R.id
     AND forwardingenabled.type = 'provider'
     AND lower(forwardingenabled.attr_name) = 'forwardingenabled'
+    AND forwardingenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS headersinbouncenotificationsenabled
     ON headersinbouncenotificationsenabled.resource_id = R.id
     AND headersinbouncenotificationsenabled.type = 'provider'
     AND lower(headersinbouncenotificationsenabled.attr_name) = 'headersinbouncenotificationsenabled'
+    AND headersinbouncenotificationsenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS headersincomplaintnotificationsenabled
     ON headersincomplaintnotificationsenabled.resource_id = R.id
     AND headersincomplaintnotificationsenabled.type = 'provider'
     AND lower(headersincomplaintnotificationsenabled.attr_name) = 'headersincomplaintnotificationsenabled'
+    AND headersincomplaintnotificationsenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS headersindeliverynotificationsenabled
     ON headersindeliverynotificationsenabled.resource_id = R.id
     AND headersindeliverynotificationsenabled.type = 'provider'
     AND lower(headersindeliverynotificationsenabled.attr_name) = 'headersindeliverynotificationsenabled'
+    AND headersindeliverynotificationsenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policies
     ON policies.resource_id = R.id
     AND policies.type = 'provider'
     AND lower(policies.attr_name) = 'policies'
+    AND policies.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS verificationstatus
     ON verificationstatus.resource_id = R.id
     AND verificationstatus.type = 'provider'
     AND lower(verificationstatus.attr_name) = 'verificationstatus'
+    AND verificationstatus.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS verificationtoken
     ON verificationtoken.resource_id = R.id
     AND verificationtoken.type = 'provider'
     AND lower(verificationtoken.attr_name) = 'verificationtoken'
+    AND verificationtoken.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_sns_topic_relation.resource_id AS resource_id,
@@ -129,8 +146,10 @@ FROM
         ON _aws_sns_topic_relation.target_id = _aws_sns_topic.id
         AND _aws_sns_topic.provider_type = 'Topic'
         AND _aws_sns_topic.service = 'sns'
+        AND _aws_sns_topic.provider_account_id = :provider_account_id
     WHERE
       _aws_sns_topic_relation.relation = 'publishes-to'
+      AND _aws_sns_topic_relation.provider_account_id = :provider_account_id
   ) AS _bouncetopic_id ON _bouncetopic_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -142,8 +161,10 @@ FROM
         ON _aws_sns_topic_relation.target_id = _aws_sns_topic.id
         AND _aws_sns_topic.provider_type = 'Topic'
         AND _aws_sns_topic.service = 'sns'
+        AND _aws_sns_topic.provider_account_id = :provider_account_id
     WHERE
       _aws_sns_topic_relation.relation = 'publishes-to'
+      AND _aws_sns_topic_relation.provider_account_id = :provider_account_id
   ) AS _complainttopic_id ON _complainttopic_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -155,8 +176,10 @@ FROM
         ON _aws_sns_topic_relation.target_id = _aws_sns_topic.id
         AND _aws_sns_topic.provider_type = 'Topic'
         AND _aws_sns_topic.service = 'sns'
+        AND _aws_sns_topic.provider_account_id = :provider_account_id
     WHERE
       _aws_sns_topic_relation.relation = 'publishes-to'
+      AND _aws_sns_topic_relation.provider_account_id = :provider_account_id
   ) AS _deliverytopic_id ON _deliverytopic_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -174,6 +197,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -183,11 +207,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Identity'
   AND R.service = 'ses'
 ON CONFLICT (_id) DO UPDATE

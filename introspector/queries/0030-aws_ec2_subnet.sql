@@ -55,74 +55,92 @@ FROM
     ON availabilityzone.resource_id = R.id
     AND availabilityzone.type = 'provider'
     AND lower(availabilityzone.attr_name) = 'availabilityzone'
+    AND availabilityzone.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availabilityzoneid
     ON availabilityzoneid.resource_id = R.id
     AND availabilityzoneid.type = 'provider'
     AND lower(availabilityzoneid.attr_name) = 'availabilityzoneid'
+    AND availabilityzoneid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availableipaddresscount
     ON availableipaddresscount.resource_id = R.id
     AND availableipaddresscount.type = 'provider'
     AND lower(availableipaddresscount.attr_name) = 'availableipaddresscount'
+    AND availableipaddresscount.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cidrblock
     ON cidrblock.resource_id = R.id
     AND cidrblock.type = 'provider'
     AND lower(cidrblock.attr_name) = 'cidrblock'
+    AND cidrblock.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS defaultforaz
     ON defaultforaz.resource_id = R.id
     AND defaultforaz.type = 'provider'
     AND lower(defaultforaz.attr_name) = 'defaultforaz'
+    AND defaultforaz.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mappubliciponlaunch
     ON mappubliciponlaunch.resource_id = R.id
     AND mappubliciponlaunch.type = 'provider'
     AND lower(mappubliciponlaunch.attr_name) = 'mappubliciponlaunch'
+    AND mappubliciponlaunch.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mapcustomerownediponlaunch
     ON mapcustomerownediponlaunch.resource_id = R.id
     AND mapcustomerownediponlaunch.type = 'provider'
     AND lower(mapcustomerownediponlaunch.attr_name) = 'mapcustomerownediponlaunch'
+    AND mapcustomerownediponlaunch.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS customerownedipv4pool
     ON customerownedipv4pool.resource_id = R.id
     AND customerownedipv4pool.type = 'provider'
     AND lower(customerownedipv4pool.attr_name) = 'customerownedipv4pool'
+    AND customerownedipv4pool.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS state
     ON state.resource_id = R.id
     AND state.type = 'provider'
     AND lower(state.attr_name) = 'state'
+    AND state.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS subnetid
     ON subnetid.resource_id = R.id
     AND subnetid.type = 'provider'
     AND lower(subnetid.attr_name) = 'subnetid'
+    AND subnetid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcid
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+    AND vpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ownerid
     ON ownerid.resource_id = R.id
     AND ownerid.type = 'provider'
     AND lower(ownerid.attr_name) = 'ownerid'
+    AND ownerid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS assignipv6addressoncreation
     ON assignipv6addressoncreation.resource_id = R.id
     AND assignipv6addressoncreation.type = 'provider'
     AND lower(assignipv6addressoncreation.attr_name) = 'assignipv6addressoncreation'
+    AND assignipv6addressoncreation.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ipv6cidrblockassociationset
     ON ipv6cidrblockassociationset.resource_id = R.id
     AND ipv6cidrblockassociationset.type = 'provider'
     AND lower(ipv6cidrblockassociationset.attr_name) = 'ipv6cidrblockassociationset'
+    AND ipv6cidrblockassociationset.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS subnetarn
     ON subnetarn.resource_id = R.id
     AND subnetarn.type = 'provider'
     AND lower(subnetarn.attr_name) = 'subnetarn'
+    AND subnetarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS outpostarn
     ON outpostarn.resource_id = R.id
     AND outpostarn.type = 'provider'
     AND lower(outpostarn.attr_name) = 'outpostarn'
+    AND outpostarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -133,8 +151,10 @@ FROM
         ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
         AND _aws_ec2_vpc.provider_type = 'Vpc'
         AND _aws_ec2_vpc.service = 'ec2'
+        AND _aws_ec2_vpc.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_vpc_relation.relation = 'in'
+      AND _aws_ec2_vpc_relation.provider_account_id = :provider_account_id
   ) AS _vpc_id ON _vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -152,6 +172,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -161,11 +182,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Subnet'
   AND R.service = 'ec2'
 ON CONFLICT (_id) DO UPDATE

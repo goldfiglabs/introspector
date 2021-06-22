@@ -74,114 +74,142 @@ FROM
     ON architecture.resource_id = R.id
     AND architecture.type = 'provider'
     AND lower(architecture.attr_name) = 'architecture'
+    AND architecture.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS creationdate
     ON creationdate.resource_id = R.id
     AND creationdate.type = 'provider'
     AND lower(creationdate.attr_name) = 'creationdate'
+    AND creationdate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS imageid
     ON imageid.resource_id = R.id
     AND imageid.type = 'provider'
     AND lower(imageid.attr_name) = 'imageid'
+    AND imageid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS imagelocation
     ON imagelocation.resource_id = R.id
     AND imagelocation.type = 'provider'
     AND lower(imagelocation.attr_name) = 'imagelocation'
+    AND imagelocation.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS imagetype
     ON imagetype.resource_id = R.id
     AND imagetype.type = 'provider'
     AND lower(imagetype.attr_name) = 'imagetype'
+    AND imagetype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS public
     ON public.resource_id = R.id
     AND public.type = 'provider'
     AND lower(public.attr_name) = 'public'
+    AND public.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS kernelid
     ON kernelid.resource_id = R.id
     AND kernelid.type = 'provider'
     AND lower(kernelid.attr_name) = 'kernelid'
+    AND kernelid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ownerid
     ON ownerid.resource_id = R.id
     AND ownerid.type = 'provider'
     AND lower(ownerid.attr_name) = 'ownerid'
+    AND ownerid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS platform
     ON platform.resource_id = R.id
     AND platform.type = 'provider'
     AND lower(platform.attr_name) = 'platform'
+    AND platform.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS platformdetails
     ON platformdetails.resource_id = R.id
     AND platformdetails.type = 'provider'
     AND lower(platformdetails.attr_name) = 'platformdetails'
+    AND platformdetails.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS usageoperation
     ON usageoperation.resource_id = R.id
     AND usageoperation.type = 'provider'
     AND lower(usageoperation.attr_name) = 'usageoperation'
+    AND usageoperation.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS productcodes
     ON productcodes.resource_id = R.id
     AND productcodes.type = 'provider'
     AND lower(productcodes.attr_name) = 'productcodes'
+    AND productcodes.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ramdiskid
     ON ramdiskid.resource_id = R.id
     AND ramdiskid.type = 'provider'
     AND lower(ramdiskid.attr_name) = 'ramdiskid'
+    AND ramdiskid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS state
     ON state.resource_id = R.id
     AND state.type = 'provider'
     AND lower(state.attr_name) = 'state'
+    AND state.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS blockdevicemappings
     ON blockdevicemappings.resource_id = R.id
     AND blockdevicemappings.type = 'provider'
     AND lower(blockdevicemappings.attr_name) = 'blockdevicemappings'
+    AND blockdevicemappings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS enasupport
     ON enasupport.resource_id = R.id
     AND enasupport.type = 'provider'
     AND lower(enasupport.attr_name) = 'enasupport'
+    AND enasupport.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS hypervisor
     ON hypervisor.resource_id = R.id
     AND hypervisor.type = 'provider'
     AND lower(hypervisor.attr_name) = 'hypervisor'
+    AND hypervisor.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS imageowneralias
     ON imageowneralias.resource_id = R.id
     AND imageowneralias.type = 'provider'
     AND lower(imageowneralias.attr_name) = 'imageowneralias'
+    AND imageowneralias.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS name
     ON name.resource_id = R.id
     AND name.type = 'provider'
     AND lower(name.attr_name) = 'name'
+    AND name.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS rootdevicename
     ON rootdevicename.resource_id = R.id
     AND rootdevicename.type = 'provider'
     AND lower(rootdevicename.attr_name) = 'rootdevicename'
+    AND rootdevicename.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS rootdevicetype
     ON rootdevicetype.resource_id = R.id
     AND rootdevicetype.type = 'provider'
     AND lower(rootdevicetype.attr_name) = 'rootdevicetype'
+    AND rootdevicetype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sriovnetsupport
     ON sriovnetsupport.resource_id = R.id
     AND sriovnetsupport.type = 'provider'
     AND lower(sriovnetsupport.attr_name) = 'sriovnetsupport'
+    AND sriovnetsupport.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS statereason
     ON statereason.resource_id = R.id
     AND statereason.type = 'provider'
     AND lower(statereason.attr_name) = 'statereason'
+    AND statereason.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS virtualizationtype
     ON virtualizationtype.resource_id = R.id
     AND virtualizationtype.type = 'provider'
     AND lower(virtualizationtype.attr_name) = 'virtualizationtype'
+    AND virtualizationtype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchpermissions
     ON launchpermissions.resource_id = R.id
     AND launchpermissions.type = 'provider'
     AND lower(launchpermissions.attr_name) = 'launchpermissions'
+    AND launchpermissions.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -198,6 +226,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -207,11 +236,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Image'
   AND R.service = 'ec2'
 ON CONFLICT (_id) DO UPDATE

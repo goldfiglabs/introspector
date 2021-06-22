@@ -73,110 +73,137 @@ FROM
     ON targetgrouparn.resource_id = R.id
     AND targetgrouparn.type = 'provider'
     AND lower(targetgrouparn.attr_name) = 'targetgrouparn'
+    AND targetgrouparn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS targetgroupname
     ON targetgroupname.resource_id = R.id
     AND targetgroupname.type = 'provider'
     AND lower(targetgroupname.attr_name) = 'targetgroupname'
+    AND targetgroupname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS protocol
     ON protocol.resource_id = R.id
     AND protocol.type = 'provider'
     AND lower(protocol.attr_name) = 'protocol'
+    AND protocol.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS port
     ON port.resource_id = R.id
     AND port.type = 'provider'
     AND lower(port.attr_name) = 'port'
+    AND port.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcid
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+    AND vpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckprotocol
     ON healthcheckprotocol.resource_id = R.id
     AND healthcheckprotocol.type = 'provider'
     AND lower(healthcheckprotocol.attr_name) = 'healthcheckprotocol'
+    AND healthcheckprotocol.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckport
     ON healthcheckport.resource_id = R.id
     AND healthcheckport.type = 'provider'
     AND lower(healthcheckport.attr_name) = 'healthcheckport'
+    AND healthcheckport.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckenabled
     ON healthcheckenabled.resource_id = R.id
     AND healthcheckenabled.type = 'provider'
     AND lower(healthcheckenabled.attr_name) = 'healthcheckenabled'
+    AND healthcheckenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckintervalseconds
     ON healthcheckintervalseconds.resource_id = R.id
     AND healthcheckintervalseconds.type = 'provider'
     AND lower(healthcheckintervalseconds.attr_name) = 'healthcheckintervalseconds'
+    AND healthcheckintervalseconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthchecktimeoutseconds
     ON healthchecktimeoutseconds.resource_id = R.id
     AND healthchecktimeoutseconds.type = 'provider'
     AND lower(healthchecktimeoutseconds.attr_name) = 'healthchecktimeoutseconds'
+    AND healthchecktimeoutseconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthythresholdcount
     ON healthythresholdcount.resource_id = R.id
     AND healthythresholdcount.type = 'provider'
     AND lower(healthythresholdcount.attr_name) = 'healthythresholdcount'
+    AND healthythresholdcount.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS unhealthythresholdcount
     ON unhealthythresholdcount.resource_id = R.id
     AND unhealthythresholdcount.type = 'provider'
     AND lower(unhealthythresholdcount.attr_name) = 'unhealthythresholdcount'
+    AND unhealthythresholdcount.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckpath
     ON healthcheckpath.resource_id = R.id
     AND healthcheckpath.type = 'provider'
     AND lower(healthcheckpath.attr_name) = 'healthcheckpath'
+    AND healthcheckpath.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS matcher
     ON matcher.resource_id = R.id
     AND matcher.type = 'provider'
     AND lower(matcher.attr_name) = 'matcher'
+    AND matcher.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loadbalancerarns
     ON loadbalancerarns.resource_id = R.id
     AND loadbalancerarns.type = 'provider'
     AND lower(loadbalancerarns.attr_name) = 'loadbalancerarns'
+    AND loadbalancerarns.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS targettype
     ON targettype.resource_id = R.id
     AND targettype.type = 'provider'
     AND lower(targettype.attr_name) = 'targettype'
+    AND targettype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS protocolversion
     ON protocolversion.resource_id = R.id
     AND protocolversion.type = 'provider'
     AND lower(protocolversion.attr_name) = 'protocolversion'
+    AND protocolversion.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS deregistration_delay_timeout_seconds
     ON deregistration_delay_timeout_seconds.resource_id = R.id
     AND deregistration_delay_timeout_seconds.type = 'provider'
     AND lower(deregistration_delay_timeout_seconds.attr_name) = 'deregistration_delay_timeout_seconds'
+    AND deregistration_delay_timeout_seconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS stickiness_enabled
     ON stickiness_enabled.resource_id = R.id
     AND stickiness_enabled.type = 'provider'
     AND lower(stickiness_enabled.attr_name) = 'stickiness_enabled'
+    AND stickiness_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS stickiness_type
     ON stickiness_type.resource_id = R.id
     AND stickiness_type.type = 'provider'
     AND lower(stickiness_type.attr_name) = 'stickiness_type'
+    AND stickiness_type.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS load_balancing_algorithm_type
     ON load_balancing_algorithm_type.resource_id = R.id
     AND load_balancing_algorithm_type.type = 'provider'
     AND lower(load_balancing_algorithm_type.attr_name) = 'load_balancing_algorithm_type'
+    AND load_balancing_algorithm_type.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS slow_start_duration_seconds
     ON slow_start_duration_seconds.resource_id = R.id
     AND slow_start_duration_seconds.type = 'provider'
     AND lower(slow_start_duration_seconds.attr_name) = 'slow_start_duration_seconds'
+    AND slow_start_duration_seconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS stickiness_lb_cookie_duration_seconds
     ON stickiness_lb_cookie_duration_seconds.resource_id = R.id
     AND stickiness_lb_cookie_duration_seconds.type = 'provider'
     AND lower(stickiness_lb_cookie_duration_seconds.attr_name) = 'stickiness_lb_cookie_duration_seconds'
+    AND stickiness_lb_cookie_duration_seconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS lambda_multi_value_headers_enabled
     ON lambda_multi_value_headers_enabled.resource_id = R.id
     AND lambda_multi_value_headers_enabled.type = 'provider'
     AND lower(lambda_multi_value_headers_enabled.attr_name) = 'lambda_multi_value_headers_enabled'
+    AND lambda_multi_value_headers_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS proxy_protocol_v2_enabled
     ON proxy_protocol_v2_enabled.resource_id = R.id
     AND proxy_protocol_v2_enabled.type = 'provider'
     AND lower(proxy_protocol_v2_enabled.attr_name) = 'proxy_protocol_v2_enabled'
+    AND proxy_protocol_v2_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -187,8 +214,10 @@ FROM
         ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
         AND _aws_ec2_vpc.provider_type = 'Vpc'
         AND _aws_ec2_vpc.service = 'ec2'
+        AND _aws_ec2_vpc.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_vpc_relation.relation = 'in'
+      AND _aws_ec2_vpc_relation.provider_account_id = :provider_account_id
   ) AS _ec2_vpc_id ON _ec2_vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -206,6 +235,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -215,11 +245,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'TargetGroup'
   AND R.service = 'elbv2'
 ON CONFLICT (_id) DO UPDATE

@@ -43,50 +43,62 @@ FROM
     ON applicationversionarn.resource_id = R.id
     AND applicationversionarn.type = 'provider'
     AND lower(applicationversionarn.attr_name) = 'applicationversionarn'
+    AND applicationversionarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS applicationname
     ON applicationname.resource_id = R.id
     AND applicationname.type = 'provider'
     AND lower(applicationname.attr_name) = 'applicationname'
+    AND applicationname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS versionlabel
     ON versionlabel.resource_id = R.id
     AND versionlabel.type = 'provider'
     AND lower(versionlabel.attr_name) = 'versionlabel'
+    AND versionlabel.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sourcebuildinformation
     ON sourcebuildinformation.resource_id = R.id
     AND sourcebuildinformation.type = 'provider'
     AND lower(sourcebuildinformation.attr_name) = 'sourcebuildinformation'
+    AND sourcebuildinformation.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS buildarn
     ON buildarn.resource_id = R.id
     AND buildarn.type = 'provider'
     AND lower(buildarn.attr_name) = 'buildarn'
+    AND buildarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sourcebundle
     ON sourcebundle.resource_id = R.id
     AND sourcebundle.type = 'provider'
     AND lower(sourcebundle.attr_name) = 'sourcebundle'
+    AND sourcebundle.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS datecreated
     ON datecreated.resource_id = R.id
     AND datecreated.type = 'provider'
     AND lower(datecreated.attr_name) = 'datecreated'
+    AND datecreated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dateupdated
     ON dateupdated.resource_id = R.id
     AND dateupdated.type = 'provider'
     AND lower(dateupdated.attr_name) = 'dateupdated'
+    AND dateupdated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_elasticbeanstalk_application_relation.resource_id AS resource_id,
@@ -97,8 +109,10 @@ FROM
         ON _aws_elasticbeanstalk_application_relation.target_id = _aws_elasticbeanstalk_application.id
         AND _aws_elasticbeanstalk_application.provider_type = 'Application'
         AND _aws_elasticbeanstalk_application.service = 'elasticbeanstalk'
+        AND _aws_elasticbeanstalk_application.provider_account_id = :provider_account_id
     WHERE
       _aws_elasticbeanstalk_application_relation.relation = 'belongs-to'
+      AND _aws_elasticbeanstalk_application_relation.provider_account_id = :provider_account_id
   ) AS _application_id ON _application_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -116,6 +130,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -125,11 +140,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'ApplicationVersion'
   AND R.service = 'elasticbeanstalk'
 ON CONFLICT (_id) DO UPDATE

@@ -67,98 +67,122 @@ FROM
     ON loadbalancerarn.resource_id = R.id
     AND loadbalancerarn.type = 'provider'
     AND lower(loadbalancerarn.attr_name) = 'loadbalancerarn'
+    AND loadbalancerarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS dnsname
     ON dnsname.resource_id = R.id
     AND dnsname.type = 'provider'
     AND lower(dnsname.attr_name) = 'dnsname'
+    AND dnsname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS canonicalhostedzoneid
     ON canonicalhostedzoneid.resource_id = R.id
     AND canonicalhostedzoneid.type = 'provider'
     AND lower(canonicalhostedzoneid.attr_name) = 'canonicalhostedzoneid'
+    AND canonicalhostedzoneid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdtime
     ON createdtime.resource_id = R.id
     AND createdtime.type = 'provider'
     AND lower(createdtime.attr_name) = 'createdtime'
+    AND createdtime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loadbalancername
     ON loadbalancername.resource_id = R.id
     AND loadbalancername.type = 'provider'
     AND lower(loadbalancername.attr_name) = 'loadbalancername'
+    AND loadbalancername.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS scheme
     ON scheme.resource_id = R.id
     AND scheme.type = 'provider'
     AND lower(scheme.attr_name) = 'scheme'
+    AND scheme.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcid
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+    AND vpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS state
     ON state.resource_id = R.id
     AND state.type = 'provider'
     AND lower(state.attr_name) = 'state'
+    AND state.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS type
     ON type.resource_id = R.id
     AND type.type = 'provider'
     AND lower(type.attr_name) = 'type'
+    AND type.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availabilityzones
     ON availabilityzones.resource_id = R.id
     AND availabilityzones.type = 'provider'
     AND lower(availabilityzones.attr_name) = 'availabilityzones'
+    AND availabilityzones.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS securitygroups
     ON securitygroups.resource_id = R.id
     AND securitygroups.type = 'provider'
     AND lower(securitygroups.attr_name) = 'securitygroups'
+    AND securitygroups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ipaddresstype
     ON ipaddresstype.resource_id = R.id
     AND ipaddresstype.type = 'provider'
     AND lower(ipaddresstype.attr_name) = 'ipaddresstype'
+    AND ipaddresstype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS customerownedipv4pool
     ON customerownedipv4pool.resource_id = R.id
     AND customerownedipv4pool.type = 'provider'
     AND lower(customerownedipv4pool.attr_name) = 'customerownedipv4pool'
+    AND customerownedipv4pool.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_logs_s3_enabled
     ON access_logs_s3_enabled.resource_id = R.id
     AND access_logs_s3_enabled.type = 'provider'
     AND lower(access_logs_s3_enabled.attr_name) = 'access_logs_s3_enabled'
+    AND access_logs_s3_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_logs_s3_bucket
     ON access_logs_s3_bucket.resource_id = R.id
     AND access_logs_s3_bucket.type = 'provider'
     AND lower(access_logs_s3_bucket.attr_name) = 'access_logs_s3_bucket'
+    AND access_logs_s3_bucket.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_logs_s3_prefix
     ON access_logs_s3_prefix.resource_id = R.id
     AND access_logs_s3_prefix.type = 'provider'
     AND lower(access_logs_s3_prefix.attr_name) = 'access_logs_s3_prefix'
+    AND access_logs_s3_prefix.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS deletion_protection_enabled
     ON deletion_protection_enabled.resource_id = R.id
     AND deletion_protection_enabled.type = 'provider'
     AND lower(deletion_protection_enabled.attr_name) = 'deletion_protection_enabled'
+    AND deletion_protection_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS idle_timeout_timeout_seconds
     ON idle_timeout_timeout_seconds.resource_id = R.id
     AND idle_timeout_timeout_seconds.type = 'provider'
     AND lower(idle_timeout_timeout_seconds.attr_name) = 'idle_timeout_timeout_seconds'
+    AND idle_timeout_timeout_seconds.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS routing_http_desync_mitigation_mode
     ON routing_http_desync_mitigation_mode.resource_id = R.id
     AND routing_http_desync_mitigation_mode.type = 'provider'
     AND lower(routing_http_desync_mitigation_mode.attr_name) = 'routing_http_desync_mitigation_mode'
+    AND routing_http_desync_mitigation_mode.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS routing_http_drop_invalid_header_fields_enabled
     ON routing_http_drop_invalid_header_fields_enabled.resource_id = R.id
     AND routing_http_drop_invalid_header_fields_enabled.type = 'provider'
     AND lower(routing_http_drop_invalid_header_fields_enabled.attr_name) = 'routing_http_drop_invalid_header_fields_enabled'
+    AND routing_http_drop_invalid_header_fields_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS routing_http2_enabled
     ON routing_http2_enabled.resource_id = R.id
     AND routing_http2_enabled.type = 'provider'
     AND lower(routing_http2_enabled.attr_name) = 'routing_http2_enabled'
+    AND routing_http2_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS load_balancing_cross_zone_enabled
     ON load_balancing_cross_zone_enabled.resource_id = R.id
     AND load_balancing_cross_zone_enabled.type = 'provider'
     AND lower(load_balancing_cross_zone_enabled.attr_name) = 'load_balancing_cross_zone_enabled'
+    AND load_balancing_cross_zone_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_ec2_vpc_relation.resource_id AS resource_id,
@@ -169,8 +193,10 @@ FROM
         ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
         AND _aws_ec2_vpc.provider_type = 'Vpc'
         AND _aws_ec2_vpc.service = 'ec2'
+        AND _aws_ec2_vpc.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_vpc_relation.relation = 'in'
+      AND _aws_ec2_vpc_relation.provider_account_id = :provider_account_id
   ) AS _ec2_vpc_id ON _ec2_vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -188,6 +214,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -197,11 +224,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'LoadBalancer'
   AND R.service = 'elbv2'
 ON CONFLICT (_id) DO UPDATE

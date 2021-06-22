@@ -55,74 +55,92 @@ FROM
     ON deploymentid.resource_id = R.id
     AND deploymentid.type = 'provider'
     AND lower(deploymentid.attr_name) = 'deploymentid'
+    AND deploymentid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS clientcertificateid
     ON clientcertificateid.resource_id = R.id
     AND clientcertificateid.type = 'provider'
     AND lower(clientcertificateid.attr_name) = 'clientcertificateid'
+    AND clientcertificateid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS stagename
     ON stagename.resource_id = R.id
     AND stagename.type = 'provider'
     AND lower(stagename.attr_name) = 'stagename'
+    AND stagename.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cacheclusterenabled
     ON cacheclusterenabled.resource_id = R.id
     AND cacheclusterenabled.type = 'provider'
     AND lower(cacheclusterenabled.attr_name) = 'cacheclusterenabled'
+    AND cacheclusterenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cacheclustersize
     ON cacheclustersize.resource_id = R.id
     AND cacheclustersize.type = 'provider'
     AND lower(cacheclustersize.attr_name) = 'cacheclustersize'
+    AND cacheclustersize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cacheclusterstatus
     ON cacheclusterstatus.resource_id = R.id
     AND cacheclusterstatus.type = 'provider'
     AND lower(cacheclusterstatus.attr_name) = 'cacheclusterstatus'
+    AND cacheclusterstatus.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS methodsettings
     ON methodsettings.resource_id = R.id
     AND methodsettings.type = 'provider'
     AND lower(methodsettings.attr_name) = 'methodsettings'
+    AND methodsettings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS variables
     ON variables.resource_id = R.id
     AND variables.type = 'provider'
     AND lower(variables.attr_name) = 'variables'
+    AND variables.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS documentationversion
     ON documentationversion.resource_id = R.id
     AND documentationversion.type = 'provider'
     AND lower(documentationversion.attr_name) = 'documentationversion'
+    AND documentationversion.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS accesslogsettings
     ON accesslogsettings.resource_id = R.id
     AND accesslogsettings.type = 'provider'
     AND lower(accesslogsettings.attr_name) = 'accesslogsettings'
+    AND accesslogsettings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS canarysettings
     ON canarysettings.resource_id = R.id
     AND canarysettings.type = 'provider'
     AND lower(canarysettings.attr_name) = 'canarysettings'
+    AND canarysettings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tracingenabled
     ON tracingenabled.resource_id = R.id
     AND tracingenabled.type = 'provider'
     AND lower(tracingenabled.attr_name) = 'tracingenabled'
+    AND tracingenabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS webaclarn
     ON webaclarn.resource_id = R.id
     AND webaclarn.type = 'provider'
     AND lower(webaclarn.attr_name) = 'webaclarn'
+    AND webaclarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createddate
     ON createddate.resource_id = R.id
     AND createddate.type = 'provider'
     AND lower(createddate.attr_name) = 'createddate'
+    AND createddate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS lastupdateddate
     ON lastupdateddate.resource_id = R.id
     AND lastupdateddate.type = 'provider'
     AND lower(lastupdateddate.attr_name) = 'lastupdateddate'
+    AND lastupdateddate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_apigateway_restapi_relation.resource_id AS resource_id,
@@ -133,8 +151,10 @@ FROM
         ON _aws_apigateway_restapi_relation.target_id = _aws_apigateway_restapi.id
         AND _aws_apigateway_restapi.provider_type = 'RestApi'
         AND _aws_apigateway_restapi.service = 'apigateway'
+        AND _aws_apigateway_restapi.provider_account_id = :provider_account_id
     WHERE
       _aws_apigateway_restapi_relation.relation = 'belongs-to'
+      AND _aws_apigateway_restapi_relation.provider_account_id = :provider_account_id
   ) AS _restapi_id ON _restapi_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -152,6 +172,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -161,11 +182,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Stage'
   AND R.service = 'apigateway'
 ON CONFLICT (_id) DO UPDATE

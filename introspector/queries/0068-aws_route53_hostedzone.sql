@@ -42,50 +42,62 @@ FROM
     ON id.resource_id = R.id
     AND id.type = 'provider'
     AND lower(id.attr_name) = 'id'
+    AND id.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS name
     ON name.resource_id = R.id
     AND name.type = 'provider'
     AND lower(name.attr_name) = 'name'
+    AND name.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS callerreference
     ON callerreference.resource_id = R.id
     AND callerreference.type = 'provider'
     AND lower(callerreference.attr_name) = 'callerreference'
+    AND callerreference.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS config
     ON config.resource_id = R.id
     AND config.type = 'provider'
     AND lower(config.attr_name) = 'config'
+    AND config.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS resourcerecordsetcount
     ON resourcerecordsetcount.resource_id = R.id
     AND resourcerecordsetcount.type = 'provider'
     AND lower(resourcerecordsetcount.attr_name) = 'resourcerecordsetcount'
+    AND resourcerecordsetcount.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS linkedservice
     ON linkedservice.resource_id = R.id
     AND linkedservice.type = 'provider'
     AND lower(linkedservice.attr_name) = 'linkedservice'
+    AND linkedservice.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS resourcerecordsets
     ON resourcerecordsets.resource_id = R.id
     AND resourcerecordsets.type = 'provider'
     AND lower(resourcerecordsets.attr_name) = 'resourcerecordsets'
+    AND resourcerecordsets.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS trafficpolicyinstances
     ON trafficpolicyinstances.resource_id = R.id
     AND trafficpolicyinstances.type = 'provider'
     AND lower(trafficpolicyinstances.attr_name) = 'trafficpolicyinstances'
+    AND trafficpolicyinstances.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcs
     ON vpcs.resource_id = R.id
     AND vpcs.type = 'provider'
     AND lower(vpcs.attr_name) = 'vpcs'
+    AND vpcs.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS queryloggingconfigs
     ON queryloggingconfigs.resource_id = R.id
     AND queryloggingconfigs.type = 'provider'
     AND lower(queryloggingconfigs.attr_name) = 'queryloggingconfigs'
+    AND queryloggingconfigs.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -102,6 +114,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -111,11 +124,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'HostedZone'
   AND R.service = 'route53'
 ON CONFLICT (_id) DO UPDATE

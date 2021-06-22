@@ -32,30 +32,37 @@ FROM
     ON path.resource_id = R.id
     AND path.type = 'provider'
     AND lower(path.attr_name) = 'path'
+    AND path.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS groupname
     ON groupname.resource_id = R.id
     AND groupname.type = 'provider'
     AND lower(groupname.attr_name) = 'groupname'
+    AND groupname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS groupid
     ON groupid.resource_id = R.id
     AND groupid.type = 'provider'
     AND lower(groupid.attr_name) = 'groupid'
+    AND groupid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS arn
     ON arn.resource_id = R.id
     AND arn.type = 'provider'
     AND lower(arn.attr_name) = 'arn'
+    AND arn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdate
     ON createdate.resource_id = R.id
     AND createdate.type = 'provider'
     AND lower(createdate.attr_name) = 'createdate'
+    AND createdate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policylist
     ON policylist.resource_id = R.id
     AND policylist.type = 'provider'
     AND lower(policylist.attr_name) = 'policylist'
+    AND policylist.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS attachedpolicies
     ON attachedpolicies.resource_id = R.id
     AND attachedpolicies.type = 'provider'
     AND lower(attachedpolicies.attr_name) = 'attachedpolicies'
+    AND attachedpolicies.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -72,6 +79,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -81,11 +89,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Group'
   AND R.service = 'iam'
 ON CONFLICT (_id) DO UPDATE

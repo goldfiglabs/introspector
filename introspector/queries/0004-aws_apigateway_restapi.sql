@@ -50,66 +50,82 @@ FROM
     ON id.resource_id = R.id
     AND id.type = 'provider'
     AND lower(id.attr_name) = 'id'
+    AND id.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS name
     ON name.resource_id = R.id
     AND name.type = 'provider'
     AND lower(name.attr_name) = 'name'
+    AND name.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createddate
     ON createddate.resource_id = R.id
     AND createddate.type = 'provider'
     AND lower(createddate.attr_name) = 'createddate'
+    AND createddate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS version
     ON version.resource_id = R.id
     AND version.type = 'provider'
     AND lower(version.attr_name) = 'version'
+    AND version.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS warnings
     ON warnings.resource_id = R.id
     AND warnings.type = 'provider'
     AND lower(warnings.attr_name) = 'warnings'
+    AND warnings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS binarymediatypes
     ON binarymediatypes.resource_id = R.id
     AND binarymediatypes.type = 'provider'
     AND lower(binarymediatypes.attr_name) = 'binarymediatypes'
+    AND binarymediatypes.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS minimumcompressionsize
     ON minimumcompressionsize.resource_id = R.id
     AND minimumcompressionsize.type = 'provider'
     AND lower(minimumcompressionsize.attr_name) = 'minimumcompressionsize'
+    AND minimumcompressionsize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS apikeysource
     ON apikeysource.resource_id = R.id
     AND apikeysource.type = 'provider'
     AND lower(apikeysource.attr_name) = 'apikeysource'
+    AND apikeysource.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS endpointconfiguration
     ON endpointconfiguration.resource_id = R.id
     AND endpointconfiguration.type = 'provider'
     AND lower(endpointconfiguration.attr_name) = 'endpointconfiguration'
+    AND endpointconfiguration.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policy
     ON policy.resource_id = R.id
     AND policy.type = 'provider'
     AND lower(policy.attr_name) = 'policy'
+    AND policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS disableexecuteapiendpoint
     ON disableexecuteapiendpoint.resource_id = R.id
     AND disableexecuteapiendpoint.type = 'provider'
     AND lower(disableexecuteapiendpoint.attr_name) = 'disableexecuteapiendpoint'
+    AND disableexecuteapiendpoint.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS stages
     ON stages.resource_id = R.id
     AND stages.type = 'provider'
     AND lower(stages.attr_name) = 'stages'
+    AND stages.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -126,6 +142,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -135,11 +152,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'RestApi'
   AND R.service = 'apigateway'
 ON CONFLICT (_id) DO UPDATE

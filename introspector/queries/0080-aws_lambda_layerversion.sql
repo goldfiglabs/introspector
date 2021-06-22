@@ -36,38 +36,47 @@ FROM
     ON layerversionarn.resource_id = R.id
     AND layerversionarn.type = 'provider'
     AND lower(layerversionarn.attr_name) = 'layerversionarn'
+    AND layerversionarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS version
     ON version.resource_id = R.id
     AND version.type = 'provider'
     AND lower(version.attr_name) = 'version'
+    AND version.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createddate
     ON createddate.resource_id = R.id
     AND createddate.type = 'provider'
     AND lower(createddate.attr_name) = 'createddate'
+    AND createddate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS compatibleruntimes
     ON compatibleruntimes.resource_id = R.id
     AND compatibleruntimes.type = 'provider'
     AND lower(compatibleruntimes.attr_name) = 'compatibleruntimes'
+    AND compatibleruntimes.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS licenseinfo
     ON licenseinfo.resource_id = R.id
     AND licenseinfo.type = 'provider'
     AND lower(licenseinfo.attr_name) = 'licenseinfo'
+    AND licenseinfo.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policy
     ON policy.resource_id = R.id
     AND policy.type = 'provider'
     AND lower(policy.attr_name) = 'policy'
+    AND policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS name
     ON name.resource_id = R.id
     AND name.type = 'provider'
     AND lower(name.attr_name) = 'name'
+    AND name.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -84,6 +93,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -93,11 +103,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'LayerVersion'
   AND R.service = 'lambda'
 ON CONFLICT (_id) DO UPDATE

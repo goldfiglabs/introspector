@@ -76,114 +76,142 @@ FROM
     ON autoscalinggroupname.resource_id = R.id
     AND autoscalinggroupname.type = 'provider'
     AND lower(autoscalinggroupname.attr_name) = 'autoscalinggroupname'
+    AND autoscalinggroupname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS autoscalinggrouparn
     ON autoscalinggrouparn.resource_id = R.id
     AND autoscalinggrouparn.type = 'provider'
     AND lower(autoscalinggrouparn.attr_name) = 'autoscalinggrouparn'
+    AND autoscalinggrouparn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchconfigurationname
     ON launchconfigurationname.resource_id = R.id
     AND launchconfigurationname.type = 'provider'
     AND lower(launchconfigurationname.attr_name) = 'launchconfigurationname'
+    AND launchconfigurationname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchtemplate
     ON launchtemplate.resource_id = R.id
     AND launchtemplate.type = 'provider'
     AND lower(launchtemplate.attr_name) = 'launchtemplate'
+    AND launchtemplate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mixedinstancespolicy
     ON mixedinstancespolicy.resource_id = R.id
     AND mixedinstancespolicy.type = 'provider'
     AND lower(mixedinstancespolicy.attr_name) = 'mixedinstancespolicy'
+    AND mixedinstancespolicy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS minsize
     ON minsize.resource_id = R.id
     AND minsize.type = 'provider'
     AND lower(minsize.attr_name) = 'minsize'
+    AND minsize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS maxsize
     ON maxsize.resource_id = R.id
     AND maxsize.type = 'provider'
     AND lower(maxsize.attr_name) = 'maxsize'
+    AND maxsize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS desiredcapacity
     ON desiredcapacity.resource_id = R.id
     AND desiredcapacity.type = 'provider'
     AND lower(desiredcapacity.attr_name) = 'desiredcapacity'
+    AND desiredcapacity.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS defaultcooldown
     ON defaultcooldown.resource_id = R.id
     AND defaultcooldown.type = 'provider'
     AND lower(defaultcooldown.attr_name) = 'defaultcooldown'
+    AND defaultcooldown.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availabilityzones
     ON availabilityzones.resource_id = R.id
     AND availabilityzones.type = 'provider'
     AND lower(availabilityzones.attr_name) = 'availabilityzones'
+    AND availabilityzones.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loadbalancernames
     ON loadbalancernames.resource_id = R.id
     AND loadbalancernames.type = 'provider'
     AND lower(loadbalancernames.attr_name) = 'loadbalancernames'
+    AND loadbalancernames.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS targetgrouparns
     ON targetgrouparns.resource_id = R.id
     AND targetgrouparns.type = 'provider'
     AND lower(targetgrouparns.attr_name) = 'targetgrouparns'
+    AND targetgrouparns.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthchecktype
     ON healthchecktype.resource_id = R.id
     AND healthchecktype.type = 'provider'
     AND lower(healthchecktype.attr_name) = 'healthchecktype'
+    AND healthchecktype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS healthcheckgraceperiod
     ON healthcheckgraceperiod.resource_id = R.id
     AND healthcheckgraceperiod.type = 'provider'
     AND lower(healthcheckgraceperiod.attr_name) = 'healthcheckgraceperiod'
+    AND healthcheckgraceperiod.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS instances
     ON instances.resource_id = R.id
     AND instances.type = 'provider'
     AND lower(instances.attr_name) = 'instances'
+    AND instances.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdtime
     ON createdtime.resource_id = R.id
     AND createdtime.type = 'provider'
     AND lower(createdtime.attr_name) = 'createdtime'
+    AND createdtime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS suspendedprocesses
     ON suspendedprocesses.resource_id = R.id
     AND suspendedprocesses.type = 'provider'
     AND lower(suspendedprocesses.attr_name) = 'suspendedprocesses'
+    AND suspendedprocesses.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS placementgroup
     ON placementgroup.resource_id = R.id
     AND placementgroup.type = 'provider'
     AND lower(placementgroup.attr_name) = 'placementgroup'
+    AND placementgroup.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpczoneidentifier
     ON vpczoneidentifier.resource_id = R.id
     AND vpczoneidentifier.type = 'provider'
     AND lower(vpczoneidentifier.attr_name) = 'vpczoneidentifier'
+    AND vpczoneidentifier.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS enabledmetrics
     ON enabledmetrics.resource_id = R.id
     AND enabledmetrics.type = 'provider'
     AND lower(enabledmetrics.attr_name) = 'enabledmetrics'
+    AND enabledmetrics.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS terminationpolicies
     ON terminationpolicies.resource_id = R.id
     AND terminationpolicies.type = 'provider'
     AND lower(terminationpolicies.attr_name) = 'terminationpolicies'
+    AND terminationpolicies.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS newinstancesprotectedfromscalein
     ON newinstancesprotectedfromscalein.resource_id = R.id
     AND newinstancesprotectedfromscalein.type = 'provider'
     AND lower(newinstancesprotectedfromscalein.attr_name) = 'newinstancesprotectedfromscalein'
+    AND newinstancesprotectedfromscalein.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS servicelinkedrolearn
     ON servicelinkedrolearn.resource_id = R.id
     AND servicelinkedrolearn.type = 'provider'
     AND lower(servicelinkedrolearn.attr_name) = 'servicelinkedrolearn'
+    AND servicelinkedrolearn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS maxinstancelifetime
     ON maxinstancelifetime.resource_id = R.id
     AND maxinstancelifetime.type = 'provider'
     AND lower(maxinstancelifetime.attr_name) = 'maxinstancelifetime'
+    AND maxinstancelifetime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS capacityrebalance
     ON capacityrebalance.resource_id = R.id
     AND capacityrebalance.type = 'provider'
     AND lower(capacityrebalance.attr_name) = 'capacityrebalance'
+    AND capacityrebalance.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_autoscaling_launchconfiguration_relation.resource_id AS resource_id,
@@ -194,8 +222,10 @@ FROM
         ON _aws_autoscaling_launchconfiguration_relation.target_id = _aws_autoscaling_launchconfiguration.id
         AND _aws_autoscaling_launchconfiguration.provider_type = 'LaunchConfiguration'
         AND _aws_autoscaling_launchconfiguration.service = 'autoscaling'
+        AND _aws_autoscaling_launchconfiguration.provider_account_id = :provider_account_id
     WHERE
       _aws_autoscaling_launchconfiguration_relation.relation = 'launches-with'
+      AND _aws_autoscaling_launchconfiguration_relation.provider_account_id = :provider_account_id
   ) AS _launchconfiguration_id ON _launchconfiguration_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -207,8 +237,10 @@ FROM
         ON _aws_iam_role_relation.target_id = _aws_iam_role.id
         AND _aws_iam_role.provider_type = 'Role'
         AND _aws_iam_role.service = 'iam'
+        AND _aws_iam_role.provider_account_id = :provider_account_id
     WHERE
       _aws_iam_role_relation.relation = 'acts-as'
+      AND _aws_iam_role_relation.provider_account_id = :provider_account_id
   ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -226,6 +258,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -235,11 +268,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'AutoScalingGroup'
   AND R.service = 'autoscaling'
 ON CONFLICT (_id) DO UPDATE

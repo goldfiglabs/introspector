@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 import logging
 import os
-import re
 import subprocess
+import time
 from typing import Callable, List, Optional
 import urllib.parse
 
@@ -110,25 +110,6 @@ _SuperUserCredential = DbCredential(
 _import_engine: Optional[Engine] = None
 _readonly_engine: Optional[Engine] = None
 
-_find_resource_alias = re.compile('resource AS ([_a-zA-Z0-9]+)', re.M | re.S)
-_find_where = re.compile('^.*(WHERE).*$', re.M | re.S)
-
-
-def _process_query(query_text: str, provider_account_id: int) -> str:
-  # HACK: should really parse the query and edit it instead
-  m = _find_resource_alias.search(query_text)
-  alias = m[1]
-  m = _find_where.match(query_text)
-  _, where_end = m.span(1)
-  to_insert = f'\n  {alias}.provider_account_id = {provider_account_id} AND '
-  return query_text[:where_end] + to_insert + query_text[where_end:]
-
-
-def _process_queries(query_text: str, provider_account_id: int):
-  queries = [q.strip() for q in query_text.split(';') if q.strip() != '']
-  processed = [_process_query(q, provider_account_id) for q in queries]
-  return processed
-
 
 def provider_tables(db: Session, provider_type: str) -> List[str]:
   provider_prefix = f'{provider_type}_%'
@@ -152,9 +133,14 @@ def refresh_views(db: Session, provider_account_id: int):
   for filename in files:
     with open(os.path.join(path, filename), 'r') as f:
       query_txt = f.read()
-    to_run = _process_queries(query_txt, provider_account_id)
+    # HACK. only use for query files we generated. not robust to strings containing ';'
+    to_run = [q.strip() for q in query_txt.split(';') if q.strip() != '']
+    start = time.time()
     for query in to_run:
-      result = db.execute(query)
+      result = db.execute(query, {'provider_account_id': provider_account_id})
+    end = time.time()
+    _log.debug(filename, end - start)
+    db.commit()
 
 
 def _run_migration(cred: DbCredential,
@@ -197,10 +183,14 @@ def _install_db_and_roles():
 def run_tool_migrations(tool_name: str):
   folder = os.path.join('tools', tool_name)
   label = 'tools_' + tool_name
-  _run_migration(_SuperUserCredential, os.path.join(folder, 'superuser'),
-                 label + '_superuser', skip_if_empty=True)
-  _run_migration(_ImportCredential, os.path.join(folder, 'import_user'),
-                 label, skip_if_empty=True)
+  _run_migration(_SuperUserCredential,
+                 os.path.join(folder, 'superuser'),
+                 label + '_superuser',
+                 skip_if_empty=True)
+  _run_migration(_ImportCredential,
+                 os.path.join(folder, 'import_user'),
+                 label,
+                 skip_if_empty=True)
 
 
 def init_db():

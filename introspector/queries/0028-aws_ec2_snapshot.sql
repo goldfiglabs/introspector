@@ -52,66 +52,82 @@ FROM
     ON dataencryptionkeyid.resource_id = R.id
     AND dataencryptionkeyid.type = 'provider'
     AND lower(dataencryptionkeyid.attr_name) = 'dataencryptionkeyid'
+    AND dataencryptionkeyid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS encrypted
     ON encrypted.resource_id = R.id
     AND encrypted.type = 'provider'
     AND lower(encrypted.attr_name) = 'encrypted'
+    AND encrypted.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS kmskeyid
     ON kmskeyid.resource_id = R.id
     AND kmskeyid.type = 'provider'
     AND lower(kmskeyid.attr_name) = 'kmskeyid'
+    AND kmskeyid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ownerid
     ON ownerid.resource_id = R.id
     AND ownerid.type = 'provider'
     AND lower(ownerid.attr_name) = 'ownerid'
+    AND ownerid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS progress
     ON progress.resource_id = R.id
     AND progress.type = 'provider'
     AND lower(progress.attr_name) = 'progress'
+    AND progress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS snapshotid
     ON snapshotid.resource_id = R.id
     AND snapshotid.type = 'provider'
     AND lower(snapshotid.attr_name) = 'snapshotid'
+    AND snapshotid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS starttime
     ON starttime.resource_id = R.id
     AND starttime.type = 'provider'
     AND lower(starttime.attr_name) = 'starttime'
+    AND starttime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS state
     ON state.resource_id = R.id
     AND state.type = 'provider'
     AND lower(state.attr_name) = 'state'
+    AND state.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS statemessage
     ON statemessage.resource_id = R.id
     AND statemessage.type = 'provider'
     AND lower(statemessage.attr_name) = 'statemessage'
+    AND statemessage.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS volumeid
     ON volumeid.resource_id = R.id
     AND volumeid.type = 'provider'
     AND lower(volumeid.attr_name) = 'volumeid'
+    AND volumeid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS volumesize
     ON volumesize.resource_id = R.id
     AND volumesize.type = 'provider'
     AND lower(volumesize.attr_name) = 'volumesize'
+    AND volumesize.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS owneralias
     ON owneralias.resource_id = R.id
     AND owneralias.type = 'provider'
     AND lower(owneralias.attr_name) = 'owneralias'
+    AND owneralias.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createvolumepermissions
     ON createvolumepermissions.resource_id = R.id
     AND createvolumepermissions.type = 'provider'
     AND lower(createvolumepermissions.attr_name) = 'createvolumepermissions'
+    AND createvolumepermissions.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_kms_key_relation.resource_id AS resource_id,
@@ -122,8 +138,10 @@ FROM
         ON _aws_kms_key_relation.target_id = _aws_kms_key.id
         AND _aws_kms_key.provider_type = 'Key'
         AND _aws_kms_key.service = 'kms'
+        AND _aws_kms_key.provider_account_id = :provider_account_id
     WHERE
       _aws_kms_key_relation.relation = 'encrypted-using'
+      AND _aws_kms_key_relation.provider_account_id = :provider_account_id
   ) AS _kms_key_id ON _kms_key_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -135,8 +153,10 @@ FROM
         ON _aws_ec2_volume_relation.target_id = _aws_ec2_volume.id
         AND _aws_ec2_volume.provider_type = 'Volume'
         AND _aws_ec2_volume.service = 'ec2'
+        AND _aws_ec2_volume.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_volume_relation.relation = 'imaged'
+      AND _aws_ec2_volume_relation.provider_account_id = :provider_account_id
   ) AS _volume_id ON _volume_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -154,6 +174,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -163,11 +184,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Snapshot'
   AND R.service = 'ec2'
 ON CONFLICT (_id) DO UPDATE

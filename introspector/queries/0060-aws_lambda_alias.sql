@@ -35,34 +35,42 @@ FROM
     ON aliasarn.resource_id = R.id
     AND aliasarn.type = 'provider'
     AND lower(aliasarn.attr_name) = 'aliasarn'
+    AND aliasarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS name
     ON name.resource_id = R.id
     AND name.type = 'provider'
     AND lower(name.attr_name) = 'name'
+    AND name.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS functionversion
     ON functionversion.resource_id = R.id
     AND functionversion.type = 'provider'
     AND lower(functionversion.attr_name) = 'functionversion'
+    AND functionversion.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS routingconfig
     ON routingconfig.resource_id = R.id
     AND routingconfig.type = 'provider'
     AND lower(routingconfig.attr_name) = 'routingconfig'
+    AND routingconfig.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS revisionid
     ON revisionid.resource_id = R.id
     AND revisionid.type = 'provider'
     AND lower(revisionid.attr_name) = 'revisionid'
+    AND revisionid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS Policy
     ON Policy.resource_id = R.id
     AND Policy.type = 'provider'
     AND lower(Policy.attr_name) = 'policy'
+    AND Policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_lambda_function_relation.resource_id AS resource_id,
@@ -73,8 +81,10 @@ FROM
         ON _aws_lambda_function_relation.target_id = _aws_lambda_function.id
         AND _aws_lambda_function.provider_type = 'Function'
         AND _aws_lambda_function.service = 'lambda'
+        AND _aws_lambda_function.provider_account_id = :provider_account_id
     WHERE
       _aws_lambda_function_relation.relation = 'aliases'
+      AND _aws_lambda_function_relation.provider_account_id = :provider_account_id
   ) AS _function_id ON _function_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -92,6 +102,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -101,11 +112,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Alias'
   AND R.service = 'lambda'
 ON CONFLICT (_id) DO UPDATE

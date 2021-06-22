@@ -44,54 +44,67 @@ FROM
     ON topicarn.resource_id = R.id
     AND topicarn.type = 'provider'
     AND lower(topicarn.attr_name) = 'topicarn'
+    AND topicarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS DeliveryPolicy
     ON DeliveryPolicy.resource_id = R.id
     AND DeliveryPolicy.type = 'provider'
     AND lower(DeliveryPolicy.attr_name) = 'deliverypolicy'
+    AND DeliveryPolicy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS DisplayName
     ON DisplayName.resource_id = R.id
     AND DisplayName.type = 'provider'
     AND lower(DisplayName.attr_name) = 'displayname'
+    AND DisplayName.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS Owner
     ON Owner.resource_id = R.id
     AND Owner.type = 'provider'
     AND lower(Owner.attr_name) = 'owner'
+    AND Owner.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS Policy
     ON Policy.resource_id = R.id
     AND Policy.type = 'provider'
     AND lower(Policy.attr_name) = 'policy'
+    AND Policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS SubscriptionsConfirmed
     ON SubscriptionsConfirmed.resource_id = R.id
     AND SubscriptionsConfirmed.type = 'provider'
     AND lower(SubscriptionsConfirmed.attr_name) = 'subscriptionsconfirmed'
+    AND SubscriptionsConfirmed.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS SubscriptionsDeleted
     ON SubscriptionsDeleted.resource_id = R.id
     AND SubscriptionsDeleted.type = 'provider'
     AND lower(SubscriptionsDeleted.attr_name) = 'subscriptionsdeleted'
+    AND SubscriptionsDeleted.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS SubscriptionsPending
     ON SubscriptionsPending.resource_id = R.id
     AND SubscriptionsPending.type = 'provider'
     AND lower(SubscriptionsPending.attr_name) = 'subscriptionspending'
+    AND SubscriptionsPending.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS EffectiveDeliveryPolicy
     ON EffectiveDeliveryPolicy.resource_id = R.id
     AND EffectiveDeliveryPolicy.type = 'provider'
     AND lower(EffectiveDeliveryPolicy.attr_name) = 'effectivedeliverypolicy'
+    AND EffectiveDeliveryPolicy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS KmsMasterKeyId
     ON KmsMasterKeyId.resource_id = R.id
     AND KmsMasterKeyId.type = 'provider'
     AND lower(KmsMasterKeyId.attr_name) = 'kmsmasterkeyid'
+    AND KmsMasterKeyId.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -108,6 +121,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -117,11 +131,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Topic'
   AND R.service = 'sns'
 ON CONFLICT (_id) DO UPDATE

@@ -60,82 +60,102 @@ FROM
     ON launchconfigurationname.resource_id = R.id
     AND launchconfigurationname.type = 'provider'
     AND lower(launchconfigurationname.attr_name) = 'launchconfigurationname'
+    AND launchconfigurationname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS launchconfigurationarn
     ON launchconfigurationarn.resource_id = R.id
     AND launchconfigurationarn.type = 'provider'
     AND lower(launchconfigurationarn.attr_name) = 'launchconfigurationarn'
+    AND launchconfigurationarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS imageid
     ON imageid.resource_id = R.id
     AND imageid.type = 'provider'
     AND lower(imageid.attr_name) = 'imageid'
+    AND imageid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS keyname
     ON keyname.resource_id = R.id
     AND keyname.type = 'provider'
     AND lower(keyname.attr_name) = 'keyname'
+    AND keyname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS securitygroups
     ON securitygroups.resource_id = R.id
     AND securitygroups.type = 'provider'
     AND lower(securitygroups.attr_name) = 'securitygroups'
+    AND securitygroups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS classiclinkvpcid
     ON classiclinkvpcid.resource_id = R.id
     AND classiclinkvpcid.type = 'provider'
     AND lower(classiclinkvpcid.attr_name) = 'classiclinkvpcid'
+    AND classiclinkvpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS classiclinkvpcsecuritygroups
     ON classiclinkvpcsecuritygroups.resource_id = R.id
     AND classiclinkvpcsecuritygroups.type = 'provider'
     AND lower(classiclinkvpcsecuritygroups.attr_name) = 'classiclinkvpcsecuritygroups'
+    AND classiclinkvpcsecuritygroups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS userdata
     ON userdata.resource_id = R.id
     AND userdata.type = 'provider'
     AND lower(userdata.attr_name) = 'userdata'
+    AND userdata.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS instancetype
     ON instancetype.resource_id = R.id
     AND instancetype.type = 'provider'
     AND lower(instancetype.attr_name) = 'instancetype'
+    AND instancetype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS kernelid
     ON kernelid.resource_id = R.id
     AND kernelid.type = 'provider'
     AND lower(kernelid.attr_name) = 'kernelid'
+    AND kernelid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ramdiskid
     ON ramdiskid.resource_id = R.id
     AND ramdiskid.type = 'provider'
     AND lower(ramdiskid.attr_name) = 'ramdiskid'
+    AND ramdiskid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS blockdevicemappings
     ON blockdevicemappings.resource_id = R.id
     AND blockdevicemappings.type = 'provider'
     AND lower(blockdevicemappings.attr_name) = 'blockdevicemappings'
+    AND blockdevicemappings.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS instancemonitoring
     ON instancemonitoring.resource_id = R.id
     AND instancemonitoring.type = 'provider'
     AND lower(instancemonitoring.attr_name) = 'instancemonitoring'
+    AND instancemonitoring.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS spotprice
     ON spotprice.resource_id = R.id
     AND spotprice.type = 'provider'
     AND lower(spotprice.attr_name) = 'spotprice'
+    AND spotprice.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS iaminstanceprofile
     ON iaminstanceprofile.resource_id = R.id
     AND iaminstanceprofile.type = 'provider'
     AND lower(iaminstanceprofile.attr_name) = 'iaminstanceprofile'
+    AND iaminstanceprofile.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdtime
     ON createdtime.resource_id = R.id
     AND createdtime.type = 'provider'
     AND lower(createdtime.attr_name) = 'createdtime'
+    AND createdtime.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ebsoptimized
     ON ebsoptimized.resource_id = R.id
     AND ebsoptimized.type = 'provider'
     AND lower(ebsoptimized.attr_name) = 'ebsoptimized'
+    AND ebsoptimized.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS associatepublicipaddress
     ON associatepublicipaddress.resource_id = R.id
     AND associatepublicipaddress.type = 'provider'
     AND lower(associatepublicipaddress.attr_name) = 'associatepublicipaddress'
+    AND associatepublicipaddress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS placementtenancy
     ON placementtenancy.resource_id = R.id
     AND placementtenancy.type = 'provider'
     AND lower(placementtenancy.attr_name) = 'placementtenancy'
+    AND placementtenancy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS metadataoptions
     ON metadataoptions.resource_id = R.id
     AND metadataoptions.type = 'provider'
     AND lower(metadataoptions.attr_name) = 'metadataoptions'
+    AND metadataoptions.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_ec2_image_relation.resource_id AS resource_id,
@@ -146,8 +166,10 @@ FROM
         ON _aws_ec2_image_relation.target_id = _aws_ec2_image.id
         AND _aws_ec2_image.provider_type = 'Image'
         AND _aws_ec2_image.service = 'ec2'
+        AND _aws_ec2_image.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_image_relation.relation = 'imaged'
+      AND _aws_ec2_image_relation.provider_account_id = :provider_account_id
   ) AS _ec2_image_id ON _ec2_image_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -159,8 +181,10 @@ FROM
         ON _aws_iam_instanceprofile_relation.target_id = _aws_iam_instanceprofile.id
         AND _aws_iam_instanceprofile.provider_type = 'InstanceProfile'
         AND _aws_iam_instanceprofile.service = 'iam'
+        AND _aws_iam_instanceprofile.provider_account_id = :provider_account_id
     WHERE
       _aws_iam_instanceprofile_relation.relation = 'acts-as'
+      AND _aws_iam_instanceprofile_relation.provider_account_id = :provider_account_id
   ) AS _iam_instanceprofile_id ON _iam_instanceprofile_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -178,6 +202,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -187,11 +212,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'LaunchConfiguration'
   AND R.service = 'autoscaling'
 ON CONFLICT (_id) DO UPDATE

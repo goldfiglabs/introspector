@@ -38,42 +38,52 @@ FROM
     ON vaultarn.resource_id = R.id
     AND vaultarn.type = 'provider'
     AND lower(vaultarn.attr_name) = 'vaultarn'
+    AND vaultarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vaultname
     ON vaultname.resource_id = R.id
     AND vaultname.type = 'provider'
     AND lower(vaultname.attr_name) = 'vaultname'
+    AND vaultname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS creationdate
     ON creationdate.resource_id = R.id
     AND creationdate.type = 'provider'
     AND lower(creationdate.attr_name) = 'creationdate'
+    AND creationdate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS lastinventorydate
     ON lastinventorydate.resource_id = R.id
     AND lastinventorydate.type = 'provider'
     AND lower(lastinventorydate.attr_name) = 'lastinventorydate'
+    AND lastinventorydate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS numberofarchives
     ON numberofarchives.resource_id = R.id
     AND numberofarchives.type = 'provider'
     AND lower(numberofarchives.attr_name) = 'numberofarchives'
+    AND numberofarchives.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sizeinbytes
     ON sizeinbytes.resource_id = R.id
     AND sizeinbytes.type = 'provider'
     AND lower(sizeinbytes.attr_name) = 'sizeinbytes'
+    AND sizeinbytes.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policy
     ON policy.resource_id = R.id
     AND policy.type = 'provider'
     AND lower(policy.attr_name) = 'policy'
+    AND policy.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _policy
     ON _policy.resource_id = R.id
     AND _policy.type = 'Metadata'
     AND lower(_policy.attr_name) = 'policy'
+    AND _policy.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -90,6 +100,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -99,11 +110,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'Vault'
   AND R.service = 'glacier'
 ON CONFLICT (_id) DO UPDATE

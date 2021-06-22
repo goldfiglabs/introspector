@@ -90,146 +90,182 @@ FROM
     ON path.resource_id = R.id
     AND path.type = 'provider'
     AND lower(path.attr_name) = 'path'
+    AND path.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS username
     ON username.resource_id = R.id
     AND username.type = 'provider'
     AND lower(username.attr_name) = 'username'
+    AND username.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS userid
     ON userid.resource_id = R.id
     AND userid.type = 'provider'
     AND lower(userid.attr_name) = 'userid'
+    AND userid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS arn
     ON arn.resource_id = R.id
     AND arn.type = 'provider'
     AND lower(arn.attr_name) = 'arn'
+    AND arn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS createdate
     ON createdate.resource_id = R.id
     AND createdate.type = 'provider'
     AND lower(createdate.attr_name) = 'createdate'
+    AND createdate.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS passwordlastused
     ON passwordlastused.resource_id = R.id
     AND passwordlastused.type = 'provider'
     AND lower(passwordlastused.attr_name) = 'passwordlastused'
+    AND passwordlastused.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS permissionsboundary
     ON permissionsboundary.resource_id = R.id
     AND permissionsboundary.type = 'provider'
     AND lower(permissionsboundary.attr_name) = 'permissionsboundary'
+    AND permissionsboundary.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tags
     ON tags.resource_id = R.id
     AND tags.type = 'provider'
     AND lower(tags.attr_name) = 'tags'
+    AND tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS policylist
     ON policylist.resource_id = R.id
     AND policylist.type = 'provider'
     AND lower(policylist.attr_name) = 'policylist'
+    AND policylist.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS attachedpolicies
     ON attachedpolicies.resource_id = R.id
     AND attachedpolicies.type = 'provider'
     AND lower(attachedpolicies.attr_name) = 'attachedpolicies'
+    AND attachedpolicies.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS accesskeys
     ON accesskeys.resource_id = R.id
     AND accesskeys.type = 'provider'
     AND lower(accesskeys.attr_name) = 'accesskeys'
+    AND accesskeys.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS groups
     ON groups.resource_id = R.id
     AND groups.type = 'provider'
     AND lower(groups.attr_name) = 'groups'
+    AND groups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mfadevices
     ON mfadevices.resource_id = R.id
     AND mfadevices.type = 'provider'
     AND lower(mfadevices.attr_name) = 'mfadevices'
+    AND mfadevices.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sshpublickeys
     ON sshpublickeys.resource_id = R.id
     AND sshpublickeys.type = 'provider'
     AND lower(sshpublickeys.attr_name) = 'sshpublickeys'
+    AND sshpublickeys.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS servicespecificcredentials
     ON servicespecificcredentials.resource_id = R.id
     AND servicespecificcredentials.type = 'provider'
     AND lower(servicespecificcredentials.attr_name) = 'servicespecificcredentials'
+    AND servicespecificcredentials.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS certificates
     ON certificates.resource_id = R.id
     AND certificates.type = 'provider'
     AND lower(certificates.attr_name) = 'certificates'
+    AND certificates.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS loginprofile
     ON loginprofile.resource_id = R.id
     AND loginprofile.type = 'provider'
     AND lower(loginprofile.attr_name) = 'loginprofile'
+    AND loginprofile.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS password_enabled
     ON password_enabled.resource_id = R.id
     AND password_enabled.type = 'provider'
     AND lower(password_enabled.attr_name) = 'password_enabled'
+    AND password_enabled.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS password_last_changed
     ON password_last_changed.resource_id = R.id
     AND password_last_changed.type = 'provider'
     AND lower(password_last_changed.attr_name) = 'password_last_changed'
+    AND password_last_changed.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS password_next_rotation
     ON password_next_rotation.resource_id = R.id
     AND password_next_rotation.type = 'provider'
     AND lower(password_next_rotation.attr_name) = 'password_next_rotation'
+    AND password_next_rotation.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS mfa_active
     ON mfa_active.resource_id = R.id
     AND mfa_active.type = 'provider'
     AND lower(mfa_active.attr_name) = 'mfa_active'
+    AND mfa_active.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_1_active
     ON access_key_1_active.resource_id = R.id
     AND access_key_1_active.type = 'provider'
     AND lower(access_key_1_active.attr_name) = 'access_key_1_active'
+    AND access_key_1_active.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_1_last_rotated
     ON access_key_1_last_rotated.resource_id = R.id
     AND access_key_1_last_rotated.type = 'provider'
     AND lower(access_key_1_last_rotated.attr_name) = 'access_key_1_last_rotated'
+    AND access_key_1_last_rotated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_1_last_used_date
     ON access_key_1_last_used_date.resource_id = R.id
     AND access_key_1_last_used_date.type = 'provider'
     AND lower(access_key_1_last_used_date.attr_name) = 'access_key_1_last_used_date'
+    AND access_key_1_last_used_date.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_1_last_used_region
     ON access_key_1_last_used_region.resource_id = R.id
     AND access_key_1_last_used_region.type = 'provider'
     AND lower(access_key_1_last_used_region.attr_name) = 'access_key_1_last_used_region'
+    AND access_key_1_last_used_region.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_1_last_used_service
     ON access_key_1_last_used_service.resource_id = R.id
     AND access_key_1_last_used_service.type = 'provider'
     AND lower(access_key_1_last_used_service.attr_name) = 'access_key_1_last_used_service'
+    AND access_key_1_last_used_service.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_2_active
     ON access_key_2_active.resource_id = R.id
     AND access_key_2_active.type = 'provider'
     AND lower(access_key_2_active.attr_name) = 'access_key_2_active'
+    AND access_key_2_active.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_2_last_rotated
     ON access_key_2_last_rotated.resource_id = R.id
     AND access_key_2_last_rotated.type = 'provider'
     AND lower(access_key_2_last_rotated.attr_name) = 'access_key_2_last_rotated'
+    AND access_key_2_last_rotated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_2_last_used_date
     ON access_key_2_last_used_date.resource_id = R.id
     AND access_key_2_last_used_date.type = 'provider'
     AND lower(access_key_2_last_used_date.attr_name) = 'access_key_2_last_used_date'
+    AND access_key_2_last_used_date.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_2_last_used_region
     ON access_key_2_last_used_region.resource_id = R.id
     AND access_key_2_last_used_region.type = 'provider'
     AND lower(access_key_2_last_used_region.attr_name) = 'access_key_2_last_used_region'
+    AND access_key_2_last_used_region.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS access_key_2_last_used_service
     ON access_key_2_last_used_service.resource_id = R.id
     AND access_key_2_last_used_service.type = 'provider'
     AND lower(access_key_2_last_used_service.attr_name) = 'access_key_2_last_used_service'
+    AND access_key_2_last_used_service.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cert_1_active
     ON cert_1_active.resource_id = R.id
     AND cert_1_active.type = 'provider'
     AND lower(cert_1_active.attr_name) = 'cert_1_active'
+    AND cert_1_active.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cert_1_last_rotated
     ON cert_1_last_rotated.resource_id = R.id
     AND cert_1_last_rotated.type = 'provider'
     AND lower(cert_1_last_rotated.attr_name) = 'cert_1_last_rotated'
+    AND cert_1_last_rotated.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cert_2_active
     ON cert_2_active.resource_id = R.id
     AND cert_2_active.type = 'provider'
     AND lower(cert_2_active.attr_name) = 'cert_2_active'
+    AND cert_2_active.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS cert_2_last_rotated
     ON cert_2_last_rotated.resource_id = R.id
     AND cert_2_last_rotated.type = 'provider'
     AND lower(cert_2_last_rotated.attr_name) = 'cert_2_last_rotated'
+    AND cert_2_last_rotated.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_organizations_account_relation.resource_id AS resource_id,
@@ -246,6 +282,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -255,11 +292,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'User'
   AND R.service = 'iam'
 ON CONFLICT (_id) DO UPDATE

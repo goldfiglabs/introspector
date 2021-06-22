@@ -65,90 +65,112 @@ FROM
     ON association.resource_id = R.id
     AND association.type = 'provider'
     AND lower(association.attr_name) = 'association'
+    AND association.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS attachment
     ON attachment.resource_id = R.id
     AND attachment.type = 'provider'
     AND lower(attachment.attr_name) = 'attachment'
+    AND attachment.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS availabilityzone
     ON availabilityzone.resource_id = R.id
     AND availabilityzone.type = 'provider'
     AND lower(availabilityzone.attr_name) = 'availabilityzone'
+    AND availabilityzone.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS description
     ON description.resource_id = R.id
     AND description.type = 'provider'
     AND lower(description.attr_name) = 'description'
+    AND description.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS groups
     ON groups.resource_id = R.id
     AND groups.type = 'provider'
     AND lower(groups.attr_name) = 'groups'
+    AND groups.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS interfacetype
     ON interfacetype.resource_id = R.id
     AND interfacetype.type = 'provider'
     AND lower(interfacetype.attr_name) = 'interfacetype'
+    AND interfacetype.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ipv6addresses
     ON ipv6addresses.resource_id = R.id
     AND ipv6addresses.type = 'provider'
     AND lower(ipv6addresses.attr_name) = 'ipv6addresses'
+    AND ipv6addresses.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS macaddress
     ON macaddress.resource_id = R.id
     AND macaddress.type = 'provider'
     AND lower(macaddress.attr_name) = 'macaddress'
+    AND macaddress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS networkinterfaceid
     ON networkinterfaceid.resource_id = R.id
     AND networkinterfaceid.type = 'provider'
     AND lower(networkinterfaceid.attr_name) = 'networkinterfaceid'
+    AND networkinterfaceid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS outpostarn
     ON outpostarn.resource_id = R.id
     AND outpostarn.type = 'provider'
     AND lower(outpostarn.attr_name) = 'outpostarn'
+    AND outpostarn.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS ownerid
     ON ownerid.resource_id = R.id
     AND ownerid.type = 'provider'
     AND lower(ownerid.attr_name) = 'ownerid'
+    AND ownerid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS privatednsname
     ON privatednsname.resource_id = R.id
     AND privatednsname.type = 'provider'
     AND lower(privatednsname.attr_name) = 'privatednsname'
+    AND privatednsname.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS privateipaddress
     ON privateipaddress.resource_id = R.id
     AND privateipaddress.type = 'provider'
     AND lower(privateipaddress.attr_name) = 'privateipaddress'
+    AND privateipaddress.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS privateipaddresses
     ON privateipaddresses.resource_id = R.id
     AND privateipaddresses.type = 'provider'
     AND lower(privateipaddresses.attr_name) = 'privateipaddresses'
+    AND privateipaddresses.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS requesterid
     ON requesterid.resource_id = R.id
     AND requesterid.type = 'provider'
     AND lower(requesterid.attr_name) = 'requesterid'
+    AND requesterid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS requestermanaged
     ON requestermanaged.resource_id = R.id
     AND requestermanaged.type = 'provider'
     AND lower(requestermanaged.attr_name) = 'requestermanaged'
+    AND requestermanaged.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS sourcedestcheck
     ON sourcedestcheck.resource_id = R.id
     AND sourcedestcheck.type = 'provider'
     AND lower(sourcedestcheck.attr_name) = 'sourcedestcheck'
+    AND sourcedestcheck.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS status
     ON status.resource_id = R.id
     AND status.type = 'provider'
     AND lower(status.attr_name) = 'status'
+    AND status.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS subnetid
     ON subnetid.resource_id = R.id
     AND subnetid.type = 'provider'
     AND lower(subnetid.attr_name) = 'subnetid'
+    AND subnetid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS tagset
     ON tagset.resource_id = R.id
     AND tagset.type = 'provider'
     AND lower(tagset.attr_name) = 'tagset'
+    AND tagset.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS vpcid
     ON vpcid.resource_id = R.id
     AND vpcid.type = 'provider'
     AND lower(vpcid.attr_name) = 'vpcid'
+    AND vpcid.provider_account_id = R.provider_account_id
   LEFT JOIN resource_attribute AS _tags
     ON _tags.resource_id = R.id
     AND _tags.type = 'Metadata'
     AND lower(_tags.attr_name) = 'tags'
+    AND _tags.provider_account_id = R.provider_account_id
   LEFT JOIN (
     SELECT
       _aws_ec2_instance_relation.resource_id AS resource_id,
@@ -159,8 +181,10 @@ FROM
         ON _aws_ec2_instance_relation.target_id = _aws_ec2_instance.id
         AND _aws_ec2_instance.provider_type = 'Instance'
         AND _aws_ec2_instance.service = 'ec2'
+        AND _aws_ec2_instance.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_instance_relation.relation = 'attached-to'
+      AND _aws_ec2_instance_relation.provider_account_id = :provider_account_id
   ) AS _instance_id ON _instance_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -172,8 +196,10 @@ FROM
         ON _aws_ec2_vpc_relation.target_id = _aws_ec2_vpc.id
         AND _aws_ec2_vpc.provider_type = 'Vpc'
         AND _aws_ec2_vpc.service = 'ec2'
+        AND _aws_ec2_vpc.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_vpc_relation.relation = 'in'
+      AND _aws_ec2_vpc_relation.provider_account_id = :provider_account_id
   ) AS _vpc_id ON _vpc_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -185,8 +211,10 @@ FROM
         ON _aws_ec2_subnet_relation.target_id = _aws_ec2_subnet.id
         AND _aws_ec2_subnet.provider_type = 'Subnet'
         AND _aws_ec2_subnet.service = 'ec2'
+        AND _aws_ec2_subnet.provider_account_id = :provider_account_id
     WHERE
       _aws_ec2_subnet_relation.relation = 'in'
+      AND _aws_ec2_subnet_relation.provider_account_id = :provider_account_id
   ) AS _subnet_id ON _subnet_id.resource_id = R.id
   LEFT JOIN (
     SELECT
@@ -204,6 +232,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
       WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
       GROUP BY _aws_organizations_account_relation.resource_id
       HAVING COUNT(*) = 1
     ) AS unique_account_mapping
@@ -213,11 +242,14 @@ FROM
       ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
       AND _aws_organizations_account.provider_type = 'Account'
       AND _aws_organizations_account.service = 'organizations'
+      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
     WHERE
         _aws_organizations_account_relation.relation = 'in'
+        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
-  PA.provider = 'aws'
+  R.provider_account_id = :provider_account_id
+  AND PA.provider = 'aws'
   AND R.provider_type = 'NetworkInterface'
   AND R.service = 'ec2'
 ON CONFLICT (_id) DO UPDATE
