@@ -2,13 +2,10 @@ FROM python:3.9-slim
 
 ADD https://github.com/amacneil/dbmate/releases/download/v1.11.0/dbmate-linux-arm64 /app/dbmate
 RUN chmod a+x /app/dbmate
-RUN apt-get update && apt-get install -y libpq-dev
 COPY requirements.txt /app/
 COPY migrations /app/migrations
 WORKDIR /app/
 RUN pip install -r requirements.txt
-COPY psycopg2_binary-2.8.6-cp39-cp39-linux_aarch64.whl /app/
-RUN pip install /app/psycopg2_binary-2.8.6-cp39-cp39-linux_aarch64.whl
 EXPOSE 5000/tcp
 COPY introspector.py /app/
 COPY introspector /app/introspector
