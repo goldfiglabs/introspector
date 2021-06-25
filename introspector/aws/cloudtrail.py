@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Dict, Generator, Tuple
 
+import botocore
+
 from introspector.aws.fetch import ServiceProxy
 from introspector.aws.svc import RegionalService, ServiceSpec, resource_gate
 
@@ -34,7 +36,18 @@ def _import_trails(proxy: ServiceProxy, region: str):
           # return an object with the same ARN in every region. This is to squash that down to one.
           if (trail['IsMultiRegionTrail'] is False) or (
               trail['IsMultiRegionTrail'] and trail['HomeRegion'] == region):
-            yield 'Trail', _import_trail(proxy, trail)
+            try:
+              yield 'Trail', _import_trail(proxy, trail)
+            except botocore.exceptions.ClientError as e:
+              code = e.response.get('Error', {}).get('Code')
+              # Some trails are visible to sub-accounts, but can't actually
+              # be accessed. Ignore them, the master account will pick them up
+              if code != 'TrailNotFoundException':
+                raise
+              else:
+                _log.info(
+                    f'Skipping trail {trail["Name"]}, not found in this account'
+                )
 
 
 def _import_cloudtrail_region(
