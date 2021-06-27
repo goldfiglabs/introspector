@@ -47,7 +47,7 @@ def _import_target_groups(proxy: ServiceProxy):
 
 def _import_listeners(proxy: ServiceProxy, loadbalancer_arn: str):
   listeners_resp = proxy.list('describe_listeners',
-                              LoadBalancerArn=[loadbalancer_arn])
+                              LoadBalancerArn=loadbalancer_arn)
   if listeners_resp is not None:
     listeners = listeners_resp[1].get('Listeners', [])
     for listener in listeners:
