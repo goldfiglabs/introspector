@@ -1,3 +1,14 @@
+WITH attrs AS (
+  SELECT
+    resource_id,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'provider') AS provider,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'Metadata') AS metadata
+  FROM
+    resource_attribute
+  WHERE
+    provider_account_id = :provider_account_id
+  GROUP BY resource_id
+)
 INSERT INTO aws_organizations_account (
   _id,
   uri,
@@ -19,79 +30,24 @@ SELECT
   R.id AS _id,
   R.uri,
   R.provider_account_id,
-  id.attr_value #>> '{}' AS id,
-  arn.attr_value #>> '{}' AS arn,
-  email.attr_value #>> '{}' AS email,
-  name.attr_value #>> '{}' AS name,
-  status.attr_value #>> '{}' AS status,
-  joinedmethod.attr_value #>> '{}' AS joinedmethod,
-  (TO_TIMESTAMP(joinedtimestamp.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS joinedtimestamp,
-  servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
-  tagpolicies.attr_value::jsonb AS tagpolicies,
-  tags.attr_value::jsonb AS tags,
-  _tags.attr_value::jsonb AS _tags,
+  attrs.provider ->> 'Id' AS id,
+  attrs.provider ->> 'Arn' AS arn,
+  attrs.provider ->> 'Email' AS email,
+  attrs.provider ->> 'Name' AS name,
+  attrs.provider ->> 'Status' AS status,
+  attrs.provider ->> 'JoinedMethod' AS joinedmethod,
+  (TO_TIMESTAMP(attrs.provider ->> 'JoinedTimestamp', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS joinedtimestamp,
+  attrs.provider -> 'ServiceControlPolicies' AS servicecontrolpolicies,
+  attrs.provider -> 'TagPolicies' AS tagpolicies,
+  attrs.provider -> 'Tags' AS tags,
+  attrs.metadata -> 'Tags' AS tags,
   
     _root_id.target_id AS _root_id,
     _organizational_unit_id.target_id AS _organizational_unit_id
 FROM
   resource AS R
-  INNER JOIN provider_account AS PA
-    ON PA.id = R.provider_account_id
-  LEFT JOIN resource_attribute AS id
-    ON id.resource_id = R.id
-    AND id.type = 'provider'
-    AND lower(id.attr_name) = 'id'
-    AND id.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS arn
-    ON arn.resource_id = R.id
-    AND arn.type = 'provider'
-    AND lower(arn.attr_name) = 'arn'
-    AND arn.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS email
-    ON email.resource_id = R.id
-    AND email.type = 'provider'
-    AND lower(email.attr_name) = 'email'
-    AND email.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS name
-    ON name.resource_id = R.id
-    AND name.type = 'provider'
-    AND lower(name.attr_name) = 'name'
-    AND name.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS status
-    ON status.resource_id = R.id
-    AND status.type = 'provider'
-    AND lower(status.attr_name) = 'status'
-    AND status.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS joinedmethod
-    ON joinedmethod.resource_id = R.id
-    AND joinedmethod.type = 'provider'
-    AND lower(joinedmethod.attr_name) = 'joinedmethod'
-    AND joinedmethod.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS joinedtimestamp
-    ON joinedtimestamp.resource_id = R.id
-    AND joinedtimestamp.type = 'provider'
-    AND lower(joinedtimestamp.attr_name) = 'joinedtimestamp'
-    AND joinedtimestamp.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS servicecontrolpolicies
-    ON servicecontrolpolicies.resource_id = R.id
-    AND servicecontrolpolicies.type = 'provider'
-    AND lower(servicecontrolpolicies.attr_name) = 'servicecontrolpolicies'
-    AND servicecontrolpolicies.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS tagpolicies
-    ON tagpolicies.resource_id = R.id
-    AND tagpolicies.type = 'provider'
-    AND lower(tagpolicies.attr_name) = 'tagpolicies'
-    AND tagpolicies.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS tags
-    ON tags.resource_id = R.id
-    AND tags.type = 'provider'
-    AND lower(tags.attr_name) = 'tags'
-    AND tags.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS _tags
-    ON _tags.resource_id = R.id
-    AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = 'tags'
-    AND _tags.provider_account_id = R.provider_account_id
+  LEFT JOIN attrs ON
+    attrs.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_root_relation.resource_id AS resource_id,
@@ -124,21 +80,20 @@ FROM
   ) AS _organizational_unit_id ON _organizational_unit_id.resource_id = R.id
   WHERE
   R.provider_account_id = :provider_account_id
-  AND PA.provider = 'aws'
   AND R.provider_type = 'Account'
   AND R.service = 'organizations'
 ON CONFLICT (_id) DO UPDATE
 SET
-    id = EXCLUDED.id,
-    arn = EXCLUDED.arn,
-    email = EXCLUDED.email,
-    name = EXCLUDED.name,
-    status = EXCLUDED.status,
-    joinedmethod = EXCLUDED.joinedmethod,
-    joinedtimestamp = EXCLUDED.joinedtimestamp,
-    servicecontrolpolicies = EXCLUDED.servicecontrolpolicies,
-    tagpolicies = EXCLUDED.tagpolicies,
-    tags = EXCLUDED.tags,
+    Id = EXCLUDED.Id,
+    Arn = EXCLUDED.Arn,
+    Email = EXCLUDED.Email,
+    Name = EXCLUDED.Name,
+    Status = EXCLUDED.Status,
+    JoinedMethod = EXCLUDED.JoinedMethod,
+    JoinedTimestamp = EXCLUDED.JoinedTimestamp,
+    ServiceControlPolicies = EXCLUDED.ServiceControlPolicies,
+    TagPolicies = EXCLUDED.TagPolicies,
+    Tags = EXCLUDED.Tags,
     _tags = EXCLUDED._tags,
     _root_id = EXCLUDED._root_id,
     _organizational_unit_id = EXCLUDED._organizational_unit_id

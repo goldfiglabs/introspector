@@ -1,3 +1,14 @@
+WITH attrs AS (
+  SELECT
+    resource_id,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'provider') AS provider,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'Metadata') AS metadata
+  FROM
+    resource_attribute
+  WHERE
+    provider_account_id = :provider_account_id
+  GROUP BY resource_id
+)
 INSERT INTO aws_organizations_root (
   _id,
   uri,
@@ -14,48 +25,18 @@ SELECT
   R.id AS _id,
   R.uri,
   R.provider_account_id,
-  id.attr_value #>> '{}' AS id,
-  arn.attr_value #>> '{}' AS arn,
-  name.attr_value #>> '{}' AS name,
-  policytypes.attr_value::jsonb AS policytypes,
-  servicecontrolpolicies.attr_value::jsonb AS servicecontrolpolicies,
-  tagpolicies.attr_value::jsonb AS tagpolicies,
+  attrs.provider ->> 'Id' AS id,
+  attrs.provider ->> 'Arn' AS arn,
+  attrs.provider ->> 'Name' AS name,
+  attrs.provider -> 'PolicyTypes' AS policytypes,
+  attrs.provider -> 'ServiceControlPolicies' AS servicecontrolpolicies,
+  attrs.provider -> 'TagPolicies' AS tagpolicies,
   
     _organization_id.target_id AS _organization_id
 FROM
   resource AS R
-  INNER JOIN provider_account AS PA
-    ON PA.id = R.provider_account_id
-  LEFT JOIN resource_attribute AS id
-    ON id.resource_id = R.id
-    AND id.type = 'provider'
-    AND lower(id.attr_name) = 'id'
-    AND id.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS arn
-    ON arn.resource_id = R.id
-    AND arn.type = 'provider'
-    AND lower(arn.attr_name) = 'arn'
-    AND arn.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS name
-    ON name.resource_id = R.id
-    AND name.type = 'provider'
-    AND lower(name.attr_name) = 'name'
-    AND name.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS policytypes
-    ON policytypes.resource_id = R.id
-    AND policytypes.type = 'provider'
-    AND lower(policytypes.attr_name) = 'policytypes'
-    AND policytypes.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS servicecontrolpolicies
-    ON servicecontrolpolicies.resource_id = R.id
-    AND servicecontrolpolicies.type = 'provider'
-    AND lower(servicecontrolpolicies.attr_name) = 'servicecontrolpolicies'
-    AND servicecontrolpolicies.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS tagpolicies
-    ON tagpolicies.resource_id = R.id
-    AND tagpolicies.type = 'provider'
-    AND lower(tagpolicies.attr_name) = 'tagpolicies'
-    AND tagpolicies.provider_account_id = R.provider_account_id
+  LEFT JOIN attrs ON
+    attrs.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_organizations_organization_relation.resource_id AS resource_id,
@@ -73,17 +54,16 @@ FROM
   ) AS _organization_id ON _organization_id.resource_id = R.id
   WHERE
   R.provider_account_id = :provider_account_id
-  AND PA.provider = 'aws'
   AND R.provider_type = 'Root'
   AND R.service = 'organizations'
 ON CONFLICT (_id) DO UPDATE
 SET
-    id = EXCLUDED.id,
-    arn = EXCLUDED.arn,
-    name = EXCLUDED.name,
-    policytypes = EXCLUDED.policytypes,
-    servicecontrolpolicies = EXCLUDED.servicecontrolpolicies,
-    tagpolicies = EXCLUDED.tagpolicies,
+    Id = EXCLUDED.Id,
+    Arn = EXCLUDED.Arn,
+    Name = EXCLUDED.Name,
+    PolicyTypes = EXCLUDED.PolicyTypes,
+    ServiceControlPolicies = EXCLUDED.ServiceControlPolicies,
+    TagPolicies = EXCLUDED.TagPolicies,
     _organization_id = EXCLUDED._organization_id
   ;
 

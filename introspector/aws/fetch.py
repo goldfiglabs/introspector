@@ -96,7 +96,7 @@ class ClientProxy(object):
       elif code == 'NoSuchEntity':
         # No results, return nothing
         return None
-      elif code == 'Throttling':
+      elif code == 'Throttling' or code == 'ThrottlingException':
         if retry_on_throttle:
           _log.warn(f'Throttled for {key}, retrying')
           time.sleep(3)

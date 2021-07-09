@@ -1,3 +1,14 @@
+WITH attrs AS (
+  SELECT
+    resource_id,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'provider') AS provider,
+    jsonb_object_agg(attr_name, attr_value) FILTER (WHERE type = 'Metadata') AS metadata
+  FROM
+    resource_attribute
+  WHERE
+    provider_account_id = :provider_account_id
+  GROUP BY resource_id
+)
 INSERT INTO aws_eks_nodegroup (
   _id,
   uri,
@@ -30,146 +41,36 @@ SELECT
   R.id AS _id,
   R.uri,
   R.provider_account_id,
-  nodegroupname.attr_value #>> '{}' AS nodegroupname,
-  nodegrouparn.attr_value #>> '{}' AS nodegrouparn,
-  clustername.attr_value #>> '{}' AS clustername,
-  version.attr_value #>> '{}' AS version,
-  releaseversion.attr_value #>> '{}' AS releaseversion,
-  (TO_TIMESTAMP(createdat.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdat,
-  (TO_TIMESTAMP(modifiedat.attr_value #>> '{}', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS modifiedat,
-  status.attr_value #>> '{}' AS status,
-  capacitytype.attr_value #>> '{}' AS capacitytype,
-  scalingconfig.attr_value::jsonb AS scalingconfig,
-  instancetypes.attr_value::jsonb AS instancetypes,
-  subnets.attr_value::jsonb AS subnets,
-  remoteaccess.attr_value::jsonb AS remoteaccess,
-  amitype.attr_value #>> '{}' AS amitype,
-  noderole.attr_value #>> '{}' AS noderole,
-  labels.attr_value::jsonb AS labels,
-  resources.attr_value::jsonb AS resources,
-  (disksize.attr_value #>> '{}')::integer AS disksize,
-  health.attr_value::jsonb AS health,
-  launchtemplate.attr_value::jsonb AS launchtemplate,
-  tags.attr_value::jsonb AS tags,
-  _tags.attr_value::jsonb AS _tags,
+  attrs.provider ->> 'nodegroupName' AS nodegroupname,
+  attrs.provider ->> 'nodegroupArn' AS nodegrouparn,
+  attrs.provider ->> 'clusterName' AS clustername,
+  attrs.provider ->> 'version' AS version,
+  attrs.provider ->> 'releaseVersion' AS releaseversion,
+  (TO_TIMESTAMP(attrs.provider ->> 'createdAt', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdat,
+  (TO_TIMESTAMP(attrs.provider ->> 'modifiedAt', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS modifiedat,
+  attrs.provider ->> 'status' AS status,
+  attrs.provider ->> 'capacityType' AS capacitytype,
+  attrs.provider -> 'scalingConfig' AS scalingconfig,
+  attrs.provider -> 'instanceTypes' AS instancetypes,
+  attrs.provider -> 'subnets' AS subnets,
+  attrs.provider -> 'remoteAccess' AS remoteaccess,
+  attrs.provider ->> 'amiType' AS amitype,
+  attrs.provider ->> 'nodeRole' AS noderole,
+  attrs.provider -> 'labels' AS labels,
+  attrs.provider -> 'resources' AS resources,
+  (attrs.provider ->> 'diskSize')::integer AS disksize,
+  attrs.provider -> 'health' AS health,
+  attrs.provider -> 'launchTemplate' AS launchtemplate,
+  attrs.provider -> 'tags' AS tags,
+  attrs.metadata -> 'Tags' AS tags,
   
     _cluster_id.target_id AS _cluster_id,
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
 FROM
   resource AS R
-  INNER JOIN provider_account AS PA
-    ON PA.id = R.provider_account_id
-  LEFT JOIN resource_attribute AS nodegroupname
-    ON nodegroupname.resource_id = R.id
-    AND nodegroupname.type = 'provider'
-    AND lower(nodegroupname.attr_name) = 'nodegroupname'
-    AND nodegroupname.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS nodegrouparn
-    ON nodegrouparn.resource_id = R.id
-    AND nodegrouparn.type = 'provider'
-    AND lower(nodegrouparn.attr_name) = 'nodegrouparn'
-    AND nodegrouparn.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS clustername
-    ON clustername.resource_id = R.id
-    AND clustername.type = 'provider'
-    AND lower(clustername.attr_name) = 'clustername'
-    AND clustername.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS version
-    ON version.resource_id = R.id
-    AND version.type = 'provider'
-    AND lower(version.attr_name) = 'version'
-    AND version.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS releaseversion
-    ON releaseversion.resource_id = R.id
-    AND releaseversion.type = 'provider'
-    AND lower(releaseversion.attr_name) = 'releaseversion'
-    AND releaseversion.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS createdat
-    ON createdat.resource_id = R.id
-    AND createdat.type = 'provider'
-    AND lower(createdat.attr_name) = 'createdat'
-    AND createdat.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS modifiedat
-    ON modifiedat.resource_id = R.id
-    AND modifiedat.type = 'provider'
-    AND lower(modifiedat.attr_name) = 'modifiedat'
-    AND modifiedat.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS status
-    ON status.resource_id = R.id
-    AND status.type = 'provider'
-    AND lower(status.attr_name) = 'status'
-    AND status.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS capacitytype
-    ON capacitytype.resource_id = R.id
-    AND capacitytype.type = 'provider'
-    AND lower(capacitytype.attr_name) = 'capacitytype'
-    AND capacitytype.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS scalingconfig
-    ON scalingconfig.resource_id = R.id
-    AND scalingconfig.type = 'provider'
-    AND lower(scalingconfig.attr_name) = 'scalingconfig'
-    AND scalingconfig.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS instancetypes
-    ON instancetypes.resource_id = R.id
-    AND instancetypes.type = 'provider'
-    AND lower(instancetypes.attr_name) = 'instancetypes'
-    AND instancetypes.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS subnets
-    ON subnets.resource_id = R.id
-    AND subnets.type = 'provider'
-    AND lower(subnets.attr_name) = 'subnets'
-    AND subnets.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS remoteaccess
-    ON remoteaccess.resource_id = R.id
-    AND remoteaccess.type = 'provider'
-    AND lower(remoteaccess.attr_name) = 'remoteaccess'
-    AND remoteaccess.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS amitype
-    ON amitype.resource_id = R.id
-    AND amitype.type = 'provider'
-    AND lower(amitype.attr_name) = 'amitype'
-    AND amitype.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS noderole
-    ON noderole.resource_id = R.id
-    AND noderole.type = 'provider'
-    AND lower(noderole.attr_name) = 'noderole'
-    AND noderole.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS labels
-    ON labels.resource_id = R.id
-    AND labels.type = 'provider'
-    AND lower(labels.attr_name) = 'labels'
-    AND labels.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS resources
-    ON resources.resource_id = R.id
-    AND resources.type = 'provider'
-    AND lower(resources.attr_name) = 'resources'
-    AND resources.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS disksize
-    ON disksize.resource_id = R.id
-    AND disksize.type = 'provider'
-    AND lower(disksize.attr_name) = 'disksize'
-    AND disksize.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS health
-    ON health.resource_id = R.id
-    AND health.type = 'provider'
-    AND lower(health.attr_name) = 'health'
-    AND health.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS launchtemplate
-    ON launchtemplate.resource_id = R.id
-    AND launchtemplate.type = 'provider'
-    AND lower(launchtemplate.attr_name) = 'launchtemplate'
-    AND launchtemplate.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS tags
-    ON tags.resource_id = R.id
-    AND tags.type = 'provider'
-    AND lower(tags.attr_name) = 'tags'
-    AND tags.provider_account_id = R.provider_account_id
-  LEFT JOIN resource_attribute AS _tags
-    ON _tags.resource_id = R.id
-    AND _tags.type = 'Metadata'
-    AND lower(_tags.attr_name) = 'tags'
-    AND _tags.provider_account_id = R.provider_account_id
+  LEFT JOIN attrs ON
+    attrs.resource_id = R.id
   LEFT JOIN (
     SELECT
       _aws_eks_cluster_relation.resource_id AS resource_id,
@@ -202,62 +103,53 @@ FROM
   ) AS _iam_role_id ON _iam_role_id.resource_id = R.id
   LEFT JOIN (
     SELECT
-      _aws_organizations_account_relation.resource_id AS resource_id,
-      _aws_organizations_account.id AS target_id
+      unique_account_mapping.resource_id,
+      unique_account_mapping.target_ids[1] as target_id
     FROM
-    (
-      SELECT
-        _aws_organizations_account_relation.resource_id AS resource_id
-      FROM
-        resource_relation AS _aws_organizations_account_relation
-        INNER JOIN resource AS _aws_organizations_account
-          ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-          AND _aws_organizations_account.provider_type = 'Account'
+      (
+        SELECT
+          ARRAY_AGG(_aws_organizations_account_relation.target_id) AS target_ids,
+          _aws_organizations_account_relation.resource_id
+        FROM
+          resource AS _aws_organizations_account
+          INNER JOIN resource_relation AS _aws_organizations_account_relation
+            ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
+        WHERE
+          _aws_organizations_account.provider_type = 'Account'
           AND _aws_organizations_account.service = 'organizations'
-      WHERE
-        _aws_organizations_account_relation.relation = 'in'
-        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
-      GROUP BY _aws_organizations_account_relation.resource_id
-      HAVING COUNT(*) = 1
-    ) AS unique_account_mapping
-    INNER JOIN resource_relation AS _aws_organizations_account_relation
-      ON _aws_organizations_account_relation.resource_id = unique_account_mapping.resource_id
-    INNER JOIN resource AS _aws_organizations_account
-      ON _aws_organizations_account_relation.target_id = _aws_organizations_account.id
-      AND _aws_organizations_account.provider_type = 'Account'
-      AND _aws_organizations_account.service = 'organizations'
-      AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
-    WHERE
-        _aws_organizations_account_relation.relation = 'in'
-        AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
+          AND _aws_organizations_account.provider_account_id = :provider_account_id
+          AND _aws_organizations_account_relation.relation = 'in'
+          AND _aws_organizations_account_relation.provider_account_id = 8
+        GROUP BY _aws_organizations_account_relation.resource_id
+        HAVING COUNT(*) = 1
+      ) AS unique_account_mapping
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   R.provider_account_id = :provider_account_id
-  AND PA.provider = 'aws'
   AND R.provider_type = 'Nodegroup'
   AND R.service = 'eks'
 ON CONFLICT (_id) DO UPDATE
 SET
-    nodegroupname = EXCLUDED.nodegroupname,
-    nodegrouparn = EXCLUDED.nodegrouparn,
-    clustername = EXCLUDED.clustername,
+    nodegroupName = EXCLUDED.nodegroupName,
+    nodegroupArn = EXCLUDED.nodegroupArn,
+    clusterName = EXCLUDED.clusterName,
     version = EXCLUDED.version,
-    releaseversion = EXCLUDED.releaseversion,
-    createdat = EXCLUDED.createdat,
-    modifiedat = EXCLUDED.modifiedat,
+    releaseVersion = EXCLUDED.releaseVersion,
+    createdAt = EXCLUDED.createdAt,
+    modifiedAt = EXCLUDED.modifiedAt,
     status = EXCLUDED.status,
-    capacitytype = EXCLUDED.capacitytype,
-    scalingconfig = EXCLUDED.scalingconfig,
-    instancetypes = EXCLUDED.instancetypes,
+    capacityType = EXCLUDED.capacityType,
+    scalingConfig = EXCLUDED.scalingConfig,
+    instanceTypes = EXCLUDED.instanceTypes,
     subnets = EXCLUDED.subnets,
-    remoteaccess = EXCLUDED.remoteaccess,
-    amitype = EXCLUDED.amitype,
-    noderole = EXCLUDED.noderole,
+    remoteAccess = EXCLUDED.remoteAccess,
+    amiType = EXCLUDED.amiType,
+    nodeRole = EXCLUDED.nodeRole,
     labels = EXCLUDED.labels,
     resources = EXCLUDED.resources,
-    disksize = EXCLUDED.disksize,
+    diskSize = EXCLUDED.diskSize,
     health = EXCLUDED.health,
-    launchtemplate = EXCLUDED.launchtemplate,
+    launchTemplate = EXCLUDED.launchTemplate,
     tags = EXCLUDED.tags,
     _tags = EXCLUDED._tags,
     _cluster_id = EXCLUDED._cluster_id,
@@ -281,8 +173,10 @@ FROM
     ON aws_ec2_subnet.id = RR.target_id
     AND aws_ec2_subnet.provider_type = 'Subnet'
     AND aws_ec2_subnet.service = 'ec2'
+    AND aws_ec2_subnet.provider_account_id = :provider_account_id
   WHERE
-    aws_eks_nodegroup.provider_type = 'Nodegroup'
+    aws_eks_nodegroup.provider_account_id = :provider_account_id
+    AND aws_eks_nodegroup.provider_type = 'Nodegroup'
     AND aws_eks_nodegroup.service = 'eks'
 ON CONFLICT (nodegroup_id, subnet_id)
 DO NOTHING

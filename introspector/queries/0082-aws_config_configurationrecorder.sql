@@ -9,50 +9,40 @@ WITH attrs AS (
     provider_account_id = :provider_account_id
   GROUP BY resource_id
 )
-INSERT INTO aws_eks_cluster (
+INSERT INTO aws_config_configurationrecorder (
   _id,
   uri,
   provider_account_id,
-  name,
-  arn,
-  createdat,
-  version,
-  endpoint,
   rolearn,
-  resourcesvpcconfig,
-  kubernetesnetworkconfig,
-  logging,
-  identity,
-  status,
-  certificateauthority,
-  clientrequesttoken,
-  platformversion,
-  tags,
-  encryptionconfig,
-  _tags,
+  allsupported,
+  includeglobalresourcetypes,
+  resourcetypes,
+  name,
+  laststarttime,
+  laststoptime,
+  recording,
+  laststatus,
+  lasterrorcode,
+  lasterrormessage,
+  laststatuschangetime,
   _iam_role_id,_account_id
 )
 SELECT
   R.id AS _id,
   R.uri,
   R.provider_account_id,
+  attrs.provider ->> 'roleARN' AS rolearn,
+  (attrs.provider ->> 'allSupported')::boolean AS allsupported,
+  (attrs.provider ->> 'includeGlobalResourceTypes')::boolean AS includeglobalresourcetypes,
+  attrs.provider -> 'resourceTypes' AS resourcetypes,
   attrs.provider ->> 'name' AS name,
-  attrs.provider ->> 'arn' AS arn,
-  (TO_TIMESTAMP(attrs.provider ->> 'createdAt', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS createdat,
-  attrs.provider ->> 'version' AS version,
-  attrs.provider ->> 'endpoint' AS endpoint,
-  attrs.provider ->> 'roleArn' AS rolearn,
-  attrs.provider -> 'resourcesVpcConfig' AS resourcesvpcconfig,
-  attrs.provider -> 'kubernetesNetworkConfig' AS kubernetesnetworkconfig,
-  attrs.provider -> 'logging' AS logging,
-  attrs.provider -> 'identity' AS identity,
-  attrs.provider ->> 'status' AS status,
-  attrs.provider -> 'certificateAuthority' AS certificateauthority,
-  attrs.provider ->> 'clientRequestToken' AS clientrequesttoken,
-  attrs.provider ->> 'platformVersion' AS platformversion,
-  attrs.provider -> 'tags' AS tags,
-  attrs.provider -> 'encryptionConfig' AS encryptionconfig,
-  attrs.metadata -> 'Tags' AS tags,
+  (TO_TIMESTAMP(attrs.provider ->> 'lastStartTime', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS laststarttime,
+  (TO_TIMESTAMP(attrs.provider ->> 'lastStopTime', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS laststoptime,
+  (attrs.provider ->> 'recording')::boolean AS recording,
+  attrs.provider ->> 'lastStatus' AS laststatus,
+  attrs.provider ->> 'lastErrorCode' AS lasterrorcode,
+  attrs.provider ->> 'lastErrorMessage' AS lasterrormessage,
+  (TO_TIMESTAMP(attrs.provider ->> 'lastStatusChangeTime', 'YYYY-MM-DD"T"HH24:MI:SS')::timestamp at time zone '00:00') AS laststatuschangetime,
   
     _iam_role_id.target_id AS _iam_role_id,
     _account_id.target_id AS _account_id
@@ -100,27 +90,22 @@ FROM
   ) AS _account_id ON _account_id.resource_id = R.id
   WHERE
   R.provider_account_id = :provider_account_id
-  AND R.provider_type = 'Cluster'
-  AND R.service = 'eks'
+  AND R.provider_type = 'ConfigurationRecorder'
+  AND R.service = 'config'
 ON CONFLICT (_id) DO UPDATE
 SET
+    roleARN = EXCLUDED.roleARN,
+    allSupported = EXCLUDED.allSupported,
+    includeGlobalResourceTypes = EXCLUDED.includeGlobalResourceTypes,
+    resourceTypes = EXCLUDED.resourceTypes,
     name = EXCLUDED.name,
-    arn = EXCLUDED.arn,
-    createdAt = EXCLUDED.createdAt,
-    version = EXCLUDED.version,
-    endpoint = EXCLUDED.endpoint,
-    roleArn = EXCLUDED.roleArn,
-    resourcesVpcConfig = EXCLUDED.resourcesVpcConfig,
-    kubernetesNetworkConfig = EXCLUDED.kubernetesNetworkConfig,
-    logging = EXCLUDED.logging,
-    identity = EXCLUDED.identity,
-    status = EXCLUDED.status,
-    certificateAuthority = EXCLUDED.certificateAuthority,
-    clientRequestToken = EXCLUDED.clientRequestToken,
-    platformVersion = EXCLUDED.platformVersion,
-    tags = EXCLUDED.tags,
-    encryptionConfig = EXCLUDED.encryptionConfig,
-    _tags = EXCLUDED._tags,
+    lastStartTime = EXCLUDED.lastStartTime,
+    lastStopTime = EXCLUDED.lastStopTime,
+    recording = EXCLUDED.recording,
+    lastStatus = EXCLUDED.lastStatus,
+    lastErrorCode = EXCLUDED.lastErrorCode,
+    lastErrorMessage = EXCLUDED.lastErrorMessage,
+    lastStatusChangeTime = EXCLUDED.lastStatusChangeTime,
     _iam_role_id = EXCLUDED._iam_role_id,
     _account_id = EXCLUDED._account_id
   ;
