@@ -114,9 +114,12 @@ def _get_or_create_provider(db: Session, proxy: Proxy, identity: Dict,
       org_id = f'OrgDummy:{identity["Account"]}'
     else:
       raise
-  account = db.query(ProviderAccount).filter(
-      ProviderAccount.provider == 'aws',
-      ProviderAccount.name == org_id).one_or_none()
+  account_query = db.query(ProviderAccount).filter(
+      ProviderAccount.provider == 'aws', ProviderAccount.name == org_id)
+  if external_id is not None:
+    account_query = account_query.filter(
+        ProviderAccount.external_id == external_id)
+  account = account_query.one_or_none()
   if account is not None:
     _require_credential(db, account.id, identity)
     return account
