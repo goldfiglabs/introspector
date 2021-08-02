@@ -29,3 +29,10 @@ resources:
         value: vpc
       id:
         path: ''
+  - relation: referenced-by
+    path: references
+    uri:
+      resource_name:
+        value: vpc-peering-connection
+      id:
+        path: VpcPeeringConnectionId

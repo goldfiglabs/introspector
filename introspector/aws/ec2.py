@@ -22,6 +22,17 @@ def _synthesize_defaults(proxy: ServiceProxy,
   yield 'Defaults', defaults
 
 
+def _add_security_group_references(proxy: ServiceProxy, response: Dict):
+  security_groups = response.get('SecurityGroups', [])
+  for security_group in security_groups:
+    group_id = security_group['GroupId']
+    result = proxy.list('describe_security_group_references', GroupId=group_id)
+    if result is not None:
+      # everything is mutable, sigh...
+      security_group['references'] = result[1].get('SecurityGroupReferenceSet',
+                                                   [])
+
+
 def _add_user_data(proxy: ServiceProxy, response: Dict):
   reservations = response.get('Reservations', [])
   for reservation in reservations:
@@ -86,6 +97,8 @@ def _import_ec2_region(
             _add_launch_permissions(proxy, result[1])
           elif resource == 'describe_images':
             _add_image_attributes(proxy, result[1])
+          elif resource == 'describe_security_groups':
+            _add_security_group_references(proxy, result[1])
           yield result[0], result[1]
         _log.info(f'done with {resource}')
   if resource_gate(spec, 'Defaults'):

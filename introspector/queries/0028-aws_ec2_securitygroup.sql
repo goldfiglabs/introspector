@@ -101,3 +101,27 @@ SET
     _account_id = EXCLUDED._account_id
   ;
 
+
+
+INSERT INTO aws_ec2_securitygroup_vpcpeeringconnection
+SELECT
+  aws_ec2_securitygroup.id AS securitygroup_id,
+  aws_ec2_vpcpeeringconnection.id AS vpcpeeringconnection_id,
+  aws_ec2_securitygroup.provider_account_id AS provider_account_id
+FROM
+  resource AS aws_ec2_securitygroup
+  INNER JOIN resource_relation AS RR
+    ON RR.resource_id = aws_ec2_securitygroup.id
+    AND RR.relation = 'referenced-by'
+  INNER JOIN resource AS aws_ec2_vpcpeeringconnection
+    ON aws_ec2_vpcpeeringconnection.id = RR.target_id
+    AND aws_ec2_vpcpeeringconnection.provider_type = 'VpcPeeringConnection'
+    AND aws_ec2_vpcpeeringconnection.service = 'ec2'
+    AND aws_ec2_vpcpeeringconnection.provider_account_id = :provider_account_id
+  WHERE
+    aws_ec2_securitygroup.provider_account_id = :provider_account_id
+    AND aws_ec2_securitygroup.provider_type = 'SecurityGroup'
+    AND aws_ec2_securitygroup.service = 'ec2'
+ON CONFLICT (securitygroup_id, vpcpeeringconnection_id)
+DO NOTHING
+;
