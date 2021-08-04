@@ -17,6 +17,8 @@ def _iam_uri_fn(resource_name: str, partition: str, account_id: str,
     return f'{account_id}/PasswordPolicy'
   elif resource_name == 'instance-profile':
     return f'arn:{partition}:iam::{account_id}:{resource_name}/{kwargs["id"]}'
+  elif resource_name == 'signing-certificate':
+    return f'arn:{partition}:iam::{account_id}:{resource_name}/{kwargs["certificate_id"]}'
   raise GFInternal(f'Failed IAM ARN ({resource_name}) {kwargs}')
 
 
@@ -71,6 +73,7 @@ def _require_account_id(args: Dict) -> str:
   if len(path_parts) < 2:
     raise GFInternal(f'Invalid path {path}')
   return path_parts[1]
+
 
 def _security_group_by_name(partition: str, **kwargs) -> DbFn:
   from introspector.models.resource import Resource, ResourceId

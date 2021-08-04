@@ -12,4 +12,5 @@ resources:
     - CertificateBody
     - Status
     - UploadDate
+  resource_name: signing-certificate
   category: Certificate

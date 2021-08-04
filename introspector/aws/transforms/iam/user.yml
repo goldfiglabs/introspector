@@ -60,6 +60,8 @@ resources:
         parent_path: Arn
       certificate_id:
         path: CertificateId
+      resource_name:
+        value: signing-certificate
     invert: true
 subresources:
 - type: signing-certificate
