@@ -115,7 +115,7 @@ FROM
           AND _aws_organizations_account.service = 'organizations'
           AND _aws_organizations_account.provider_account_id = :provider_account_id
           AND _aws_organizations_account_relation.relation = 'in'
-          AND _aws_organizations_account_relation.provider_account_id = 8
+          AND _aws_organizations_account_relation.provider_account_id = :provider_account_id
         GROUP BY _aws_organizations_account_relation.resource_id
         HAVING COUNT(*) = 1
       ) AS unique_account_mapping
