@@ -1,0 +1,73 @@
+version: 1
+resources:
+- service: ec2
+  provider_type: VpcEndpoint
+  name: VpcEndpointId
+  uri:
+    id: VpcEndpointId
+  attributes:
+    provider:
+    - VpcEndpointId
+    - VpcEndpointType
+    - VpcId
+    - ServiceName
+    - State
+    - PolicyDocument
+    - RouteTableIds
+    - SubnetIds
+    - Groups
+    - PrivateDnsEnabled
+    - RequesterManaged
+    - NetworkInterfaceIds
+    - DnsEntries
+    - CreationTimestamp
+    - Tags
+    - OwnerId
+    - LastError
+    custom:
+      Metadata:
+        Tags:
+          path: Tags
+          transform: aws_tags
+        Policy:
+          path: PolicyDocument
+          transform: aws_policy
+  resource_name: vpc-endpoint
+  relations:
+  - relation: in
+    path: VpcId
+    uri:
+      id:
+        path: ''
+      resource_name:
+        value: vpc
+      service:
+        value: ec2
+  - relation: in
+    path: SubnetIds
+    uri:
+      resource_name:
+        value: subnet
+      service:
+        value: ec2
+      id:
+        path: ''
+  - relation: in
+    path: Groups
+    uri:
+      resource_name:
+        value: security-group
+      service:
+        value: ec2
+      id:
+        path: GroupId
+  - relation: attached-to
+    path: NetworkInterfaceIds
+    uri:
+      resource_name:
+        value: networkinterfaces
+      service:
+        value: ec2
+      id:
+        path: ''
+    invert: true
