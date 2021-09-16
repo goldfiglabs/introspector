@@ -1,3 +1,4 @@
+import json
 import logging
 import re
 from typing import Any, Dict, List, Optional, Union
@@ -8,13 +9,16 @@ ALL_DIGITS = re.compile(r'^[0-9]{10}[0-9]*$')
 
 _log = logging.getLogger(__name__)
 
+
 def _zone_to_region(zone: str, **_) -> str:
   return zone[:-1]
+
 
 def _arrayize(inval: Union[str, List[str]]) -> List[str]:
   if isinstance(inval, str):
     return [inval]
   return sorted(inval)
+
 
 def _normalize_principal_map(
     raw: Union[str, Dict[str, Any]]) -> Dict[str, List[Any]]:
@@ -38,6 +42,7 @@ def _normalize_principal_map(
       values = principals
     result[key] = values
   return result
+
 
 EFFECTS = {'allow': 'Allow', 'deny': 'Deny'}
 
@@ -67,12 +72,17 @@ def policy_statement(raw: Dict[str, Any]) -> Dict[str, Any]:
     result['Condition'] = condition
   return result
 
+
 EMPTY_POLICY = {'Version': '2012-10-17', 'Statement': []}
 
 
-def _policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
-  if policy is None:
+def _policy(policy_raw: Optional[Union[str, Dict[str, Any]]]) -> Dict[str, Any]:
+  if policy_raw is None:
     return EMPTY_POLICY
+  elif isinstance(policy_raw, str):
+    policy: Dict[str, Any] = json.loads(policy_raw)
+  else:
+    policy = policy_raw
   result = {}
   lc = {k.lower(): v for k, v in policy.items()}
   result['Version'] = lc.get('version', '2012-10-17')
@@ -81,6 +91,7 @@ def _policy(policy: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     result['Id'] = policy_id
   result['Statement'] = [policy_statement(s) for s in lc.get('statement', [])]
   return result
+
 
 def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
   if m is None or len(m) == 0:
@@ -94,6 +105,7 @@ def _policy_map(m: Optional[Dict[str, Dict[str, Any]]]) -> Dict[str, Any]:
       'Id': 'Synthesized from map',
       'Statement': statements
   }
+
 
 _KEY_ATTRS = ['Key', 'key', 'TagKey']
 
@@ -150,6 +162,7 @@ def _lambda_alias_relations(parent_uri, target_raw, **kwargs):
       remaining
   }]
 
+
 AWS_TRANSFORMS = {
     'aws_zone_to_region': _zone_to_region,
     'aws_tags': _tag_list_to_object,
@@ -158,11 +171,13 @@ AWS_TRANSFORMS = {
     'aws_policy_map': _policy_map
 }
 
+
 def _get_aws_not_in_org(account_ids: List[str]):
   def _aws_not_in_org(account_id: str, **kwargs) -> bool:
     return account_id in account_ids
 
   return _aws_not_in_org
+
 
 def get_mapper_fns(account_ids: List[str], extra_fns=None):
   fns = AWS_TRANSFORMS.copy()
