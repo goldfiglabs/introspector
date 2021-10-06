@@ -48,7 +48,11 @@ We (@ [Gold Fig Labs](https://goldfiglabs.com)) were inspired by `osquery` to br
     unzip introspector_osx.zip
    ```
 
-1. Start Introspector containers:
+2. Start Introspector containers:
+   ```
+   docker compose up
+   ```
+   Alternatively, in older versions of Docker:
    ```
     docker-compose up -d
    ```
