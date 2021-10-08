@@ -116,10 +116,11 @@ def import_aws_cmd(debug: bool, force: bool, external_id: Optional[int],
         db.commit()
         refresh_views(db, reloaded_import_job.provider_account_id)
         reloaded_import_job.mark_complete(exceptions=[])
-      except:
+      except Exception as e:
         _log.error('exception caught in map', exc_info=True)
         exception = traceback.format_exc()
         reloaded_import_job.mark_complete(exceptions=[exception])
+        exceptions.append(str(e))
     else:
       reloaded_import_job.mark_complete(exceptions)
     db.add(reloaded_import_job)
